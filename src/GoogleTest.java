@@ -1,7 +1,12 @@
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
 
 import srl.visgo.gui.Login;
+
+import Gdrdb.Gdrdb;
 
 import com.google.gdata.client.GoogleAuthTokenFactory.UserToken;
 import com.google.gdata.client.docs.DocsService;
@@ -19,11 +24,23 @@ public class GoogleTest {
 		GoogleTest test = new GoogleTest();
 		try {
 			test.showAllDocs();
+			
+			Gdrdb db = new Gdrdb();
+			db.setDatabase("visgo_db");
+			Map<String, ArrayList<String>> results = db.select("files", new ArrayList<String>() {{ add("file_id"); add("file_name"); }}, null);
+			ArrayList<String> fileNames = results.get("file_name");
+			for(String name : fileNames)
+			{
+				System.out.println(name);
+			}
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ServiceException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
