@@ -9,7 +9,8 @@ public class CalendarTest {
 	public static void main(String[] args) {
 		try{
 			CalendarService myService = new CalendarService("exampleCo-exampleApp-1.0");
-			myService.setUserCredentials("eyce9000@gmail.com", "");
+			//put your google email address and password in these fields
+			myService.setUserCredentials("heychrisaikens@gmail.com", "");
 
 			URL feedUrl = new URL("http://www.google.com/calendar/feeds/default/allcalendars/full");
 			CalendarFeed resultFeed = myService.getFeed(feedUrl, CalendarFeed.class);
