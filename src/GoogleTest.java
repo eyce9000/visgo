@@ -24,16 +24,7 @@ public class GoogleTest {
 		GoogleTest test = new GoogleTest();
 		try {
 			test.showAllDocs();
-			
-			Gdrdb db = new Gdrdb();
-			db.setDatabase("visgo_db");
-			Map<String, ArrayList<String>> results = db.select("files", new ArrayList<String>() {{ add("file_id"); add("file_name"); }}, null);
-			ArrayList<String> fileNames = results.get("file_name");
-			for(String name : fileNames)
-			{
-				System.out.println(name);
-			}
-			
+			test.showDatabaseContents();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -102,5 +93,17 @@ public class GoogleTest {
 		System.out.println("  starred? " + entry.isStarred());
 		System.out.println("  trashed? " + entry.isTrashed());
 		System.out.println();
+	}
+	
+	public void showDatabaseContents() throws Exception
+	{
+		Gdrdb db = new Gdrdb();
+		db.setDatabase("visgo_db");
+		Map<String, ArrayList<String>> results = db.select("files", new ArrayList<String>() {{ add("file_id"); add("file_name"); }}, null);
+		ArrayList<String> fileNames = results.get("file_name");
+		for(String name : fileNames)
+		{
+			System.out.println(name);
+		}
 	}
 }

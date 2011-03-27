@@ -148,7 +148,7 @@ public class Gdrdb
 		HashMap<String, Integer> headers = getColumnHeaders(worksheet);
 		HashMap<String, ArrayList<String>> results = new HashMap<String, ArrayList<String>>();
 
-		if(conditions.length() == 0)
+		if(conditions == null || conditions.length() == 0)
 		{
 			CellQuery cellQuery = new CellQuery(worksheet.getCellFeedUrl());
 			for(String column : columns)
