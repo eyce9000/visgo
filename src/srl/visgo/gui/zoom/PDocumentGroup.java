@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import edu.umd.cs.piccolo.PNode;
+import edu.umd.cs.piccolo.event.PDragEventHandler;
 import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
@@ -19,6 +20,7 @@ public class PDocumentGroup extends PNode{
 	DocumentGroup mGroup;
 	List<PDocument> docNodes;
 	int mColCount = 1;
+	
 	public PDocumentGroup(DocumentGroup group){
 		super();
 		mGroup = group;
@@ -33,12 +35,14 @@ public class PDocumentGroup extends PNode{
 		return mColCount;
 	}
 	
+	//add docs, set dragging to docs, set size of area, etc.
 	public void invalidate(){
 		this.removeAllChildren();
 		Collection<Document> docs = mGroup.getDocuments();
 		int i=0;
-		for(Document doc:docs){
+		for(Document doc: docs){
 			PDocument docNode = new PDocument(doc);
+
 			docNodes.add(docNode);
 			this.addChild(docNode);
 			int col = i % mColCount;

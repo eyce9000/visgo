@@ -12,6 +12,7 @@ import srl.visgo.gui.DocPanel;
 import srl.visgo.gui.Resources;
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
+import edu.umd.cs.piccolo.event.PDragEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.event.PInputEventFilter;
 import edu.umd.cs.piccolo.event.PInputEventListener;
@@ -27,9 +28,12 @@ public class PDocument extends PNode {
 	PText textNode;
 	PPath backgroundNode;
 	PDocumentEventHandler eventHandler;
+	
+	
+	//TODO: Have title and image be grouped together as a single, movable node
 	public PDocument(Document document){
 		super();
-		eventHandler = new PDocumentEventHandler(this);
+
 		mDocument = document;
 		
 
@@ -47,8 +51,10 @@ public class PDocument extends PNode {
 		
 		textNode = new PText(shortTitle);
 		imageNode.setImage(Resources.getImage("doc.png"));
+		
 		this.addChild(imageNode);
 		this.addChild(textNode);
+		
 		double h = imageNode.getHeight();
 		double w = imageNode.getWidth();
 		double tw = textNode.getWidth();
@@ -58,12 +64,17 @@ public class PDocument extends PNode {
 		backgroundNode.setOffset(0,0);
 		backgroundNode.setWidth(this.getWidth());
 		backgroundNode.setHeight(this.getHeight());
+		backgroundNode.addInputEventListener(new PDragEventHandler());
 		this.setX(tw/2);
 		
-		
+		eventHandler = new PDocumentEventHandler(this);
 		this.addInputEventListener(eventHandler);
 	}
 	
+	//get the document behind this PDoc
+	public Document getDocument(){
+		return mDocument;
+	}
 }
 
 class PDocumentEventHandler extends PBasicInputEventHandler{
@@ -71,6 +82,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	
 	PDocumentEventHandler(PDocument document){
 		mDocument = document;
+		System.out.println("New event handler for: " + mDocument.getDocument().getName());
 	}
 	
 	@Override

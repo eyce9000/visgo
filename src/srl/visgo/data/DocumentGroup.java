@@ -29,6 +29,11 @@ public class DocumentGroup implements Entry{
 	public Collection<Document> getDocuments(){
 		return mDocuments.values();
 	}
+	
+	public Collection<DocumentGroup> getSubGroups(){
+		return mSubGroups.values();
+	}
+	
 	public void addSubGroup(DocumentGroup group){
 		mSubGroups.put(group.getName(),group);
 	}

@@ -29,6 +29,7 @@ import srl.visgo.gui.zoom.PDocumentGroup;
 
 import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.PCanvas;
+import edu.umd.cs.piccolo.event.PDragEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.event.PInputEventListener;
 import edu.umd.cs.piccolo.nodes.PText;
@@ -60,6 +61,9 @@ public class Visgo extends JFrame {
 
 		canvas.removeInputEventListener(canvas.getZoomEventHandler());
 		canvas.removeInputEventListener(canvas.getPanEventHandler());
+		
+		//add dragging of nodes
+//		canvas.addInputEventListener(new PDragEventHandler());
 		VisgoMouseListener mouseListener = new VisgoMouseListener(canvas);
 		canvas.addMouseWheelListener(mouseListener);
 		//canvas.addMouseListener(mouseListener);
@@ -77,6 +81,7 @@ public class Visgo extends JFrame {
 			PDocumentGroup prevNode = null;
 			ArrayList<PDocumentGroup> selectableParents = new ArrayList<PDocumentGroup>();
 			for(DocumentGroup group : workspace.getDocumentGroups()){
+
 				PDocumentGroup projectNode = new PDocumentGroup(group);
 				projectNode.setColumnCount(3);
 				projectNode.invalidate();
