@@ -146,16 +146,17 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 						//Dropped into a new group
 						System.out.println("<-- " + mDocument.getDocument().getName() + " removed from group: " + oldGroup.getName());
 						oldGroup.removeDocument(mDocument.getDocument());
+						
 						System.out.println("--> " + mDocument.getDocument().getName() + " moved to group: " + group.getDocumentGroup().getName());
 						group.getDocumentGroup().addDocument(mDocument.getDocument());
-						group.repaint();
+						group.invalidate();
 					}
 				}
 			}
 			else if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocument.class))
 			{
 				doc = (PDocument) layer.getChild(i);
-				System.out.println(doc.getDocument().getName());
+//				System.out.println(doc.getDocument().getName());
 			}
 		}
 		System.out.println();
