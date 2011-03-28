@@ -1,4 +1,4 @@
-package Gdrdb;
+package gDocsFileSystem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +31,7 @@ import com.google.gdata.data.spreadsheet.WorksheetFeed;
  * Worksheet = table
  *
  */
-public class Gdrdb
+public class GDatabase
 {
 	private String databaseName;
 	private SpreadsheetService service;
@@ -43,7 +43,7 @@ public class Gdrdb
 	 * Constructor
 	 * Checks to see if the user is authenticated through the Google services
 	 */
-	public Gdrdb()
+	public GDatabase()
 	{
 		try
 		{
@@ -226,10 +226,10 @@ public class Gdrdb
 	 * @param columns The desired columns
 	 * @param values The values to insert
 	 * @param conditions The conditions to find the row to update
-	 * @return a map of column values, mapped by column name
+	 * @return The number of affected rows
 	 * @throws Exception if error in retrieving the spreadsheet information
 	 */
-	public void update(String table, ArrayList<String> columns, ArrayList<String> values, String conditions) throws Exception
+	public Integer update(String table, ArrayList<String> columns, ArrayList<String> values, String conditions) throws Exception
 	{
 		if(columns.size() != values.size())
 		{
@@ -247,6 +247,7 @@ public class Gdrdb
 		ListFeed listFeed = service.query(query, ListFeed.class);
 
 		//Update the entries
+		Integer affected = 0;	//The number of rows affected
 		for (ListEntry entry : listFeed.getEntries())
 		{
 			for(int i = 0; i < columns.size(); i++)
@@ -254,6 +255,31 @@ public class Gdrdb
 				entry.getCustomElements().setValueLocal(columns.get(i), values.get(i));
 			}
 			entry.update();
+			affected++;
+		}
+		
+		return affected;
+	}
+	
+	/**
+	 * Gets the next available primary key
+	 * @param table The desired table
+	 * @param key The primary key for that table (You MUST have one if you're calling this!)
+	 * @return The next id
+	 */
+	public Integer getNextId(String table, String key) throws Exception
+	{
+		final String column = key;
+
+		Map<String, ArrayList<String>> results = select(table, new ArrayList<String>() {{ add(column); }}, "orderby=column:" + key + "&reverse=true");
+		if(results.size() > 0)
+		{
+			return Integer.parseInt(results.get(key).get(0));
+		}
+		else
+		{
+			//No rows, start the index at 1
+			return 1;
 		}
 	}
 }
