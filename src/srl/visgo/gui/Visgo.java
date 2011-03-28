@@ -39,6 +39,7 @@ import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolox.event.PSelectionEventHandler;
 import edu.umd.cs.piccolox.pswing.PSwingCanvas;
+import gDocsFileSystem.GFileSystem;
 
 public class Visgo extends JFrame {
 	public static void main(String[] args){
@@ -58,9 +59,17 @@ public class Visgo extends JFrame {
 
 	DocsService client;
 	public static PCanvas canvas;
+//	public static GFileSystem systemTest;
 	Visgo(){
 		super("Visgo");
 		canvas = new PCanvas();
+//		try {
+//			systemTest = new GFileSystem("visgo.workspace");
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+
 		
 		//an additional layer i am testing drag/drop with - Chris
 //		PRoot root = canvas.getRoot();             

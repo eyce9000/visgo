@@ -27,6 +27,7 @@ import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PDimension;
 import edu.umd.cs.piccolo.util.PPaintContext;
 import edu.umd.cs.piccolox.pswing.PSwing;
+import gDocsFileSystem.GFileSystem;
 
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.GRAY;
@@ -123,6 +124,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	/**
 	 * check if the new location of the node is within a group 
 	 * @param aNode
+	 * @throws Exception 
 	 */
 	public void checkLocation(PNode aNode){
 		PLayer layer = Visgo.canvas.getLayer();
@@ -159,6 +161,8 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 						//Add to new drop group
 						System.out.println("--> " + mDocument.getDocument().getName() + " added to group: " + group.getDocumentGroup().getName());
 						group.getDocumentGroup().addDocument(mDocument.getDocument());
+//						Visgo.systemTest.insertEntry(mDocument.getDocument(), group.getDocumentGroup(), true);
+						
 						group.invalidate();
 					}
 				}
@@ -174,7 +178,14 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			}
 		}
 		System.out.println();
-		
+		//TESTING PATRICK'S STUFF
+//		try {
+//			for(String s : Visgo.systemTest.getChildrenFiles(oldGroup))
+//				System.out.println("File in " + oldGroup.getName() + ": " + s);
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		//TODO: Remove the newly group document from the canvas layer's children!
 //		ArrayList<PDocument> toRemove = new ArrayList<PDocument>();
 //		for(int i = 0; i < layer.getChildrenCount(); i++)
