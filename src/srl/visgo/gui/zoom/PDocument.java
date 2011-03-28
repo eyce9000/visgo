@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
@@ -119,35 +120,44 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
         aNode.translate(delta.width, delta.height);
 	}
 	
-	//check if the new location of the node is within a group 
+	/**
+	 * check if the new location of the node is within a group 
+	 * @param aNode
+	 */
 	public void checkLocation(PNode aNode){
 		PLayer layer = Visgo.canvas.getLayer();
 		PDocumentGroup group;
 		PDocument doc;
 		DocumentGroup oldGroup = mDocument.getDocument().getParent();
+		PDocumentGroup oldPGroup = mDocument.getDocument().getParent().getPDocGroup();
 		
 		for(int i = 0; i < layer.getChildrenCount(); i++)
 		{
 			if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
 			{
+				//The node is a group of documents
 				group = (PDocumentGroup) layer.getChild(i);
 				System.out.println(group.getDocumentGroup().getName());
 
-				//TODO: Need a better way to check if dropped into a group! This bounds check is broken
-				if(group.getCachedBounds().contains(aNode.getBounds().getCenter2D()))
+				/**********************
+				 * TODO: Need a better way to check if dropped into a group! This bounds check is invalid
+				 **********************/
+				if(PDocumentGroup.currentBounds.contains(aNode.getBounds().getCenter2D()))
 				{
 					//Dropped into same group
 					if(group.getDocumentGroup().getDocuments().contains(mDocument.getDocument()))
 					{
 							System.out.println(">--< Back into same group");
 					}
-					else
+					else 	//Dropped into a new group
 					{
-						//Dropped into a new group
+						//Remove from old drag group
 						System.out.println("<-- " + mDocument.getDocument().getName() + " removed from group: " + oldGroup.getName());
 						oldGroup.removeDocument(mDocument.getDocument());
-						
-						System.out.println("--> " + mDocument.getDocument().getName() + " moved to group: " + group.getDocumentGroup().getName());
+						oldPGroup.invalidate();
+
+						//Add to new drop group
+						System.out.println("--> " + mDocument.getDocument().getName() + " added to group: " + group.getDocumentGroup().getName());
 						group.getDocumentGroup().addDocument(mDocument.getDocument());
 						group.invalidate();
 					}
@@ -155,10 +165,31 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			}
 			else if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocument.class))
 			{
+				//The node is a free-floating document
 				doc = (PDocument) layer.getChild(i);
-//				System.out.println(doc.getDocument().getName());
+				if(doc.getDocument().getName().equals(mDocument.getDocument().getName()))
+				{
+					System.out.println(doc.getDocument().getName());
+				}
 			}
 		}
+		System.out.println();
+		
+		//TODO: Remove the newly group document from the canvas layer's children!
+//		ArrayList<PDocument> toRemove = new ArrayList<PDocument>();
+//		for(int i = 0; i < layer.getChildrenCount(); i++)
+//		{
+//			if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocument.class))
+//			{
+//				doc = (PDocument) layer.getChild(i);
+//				System.out.println(doc.getDocument().getName() + " is in: " + doc.getDocument().getParent().getName());
+//				if(doc.getDocument().getParent() != null)
+//					toRemove.add(doc);
+//			}
+//		}
+//		layer.removeChildren(toRemove);
+//		layer.invalidatePaint();
+
 		System.out.println();
 	}
 	

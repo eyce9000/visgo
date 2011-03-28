@@ -3,6 +3,8 @@ package srl.visgo.data;
 import java.util.Collection;
 import java.util.HashMap;
 
+import srl.visgo.gui.zoom.PDocumentGroup;
+
 import com.google.gdata.data.docs.DocumentListEntry;
 
 public class DocumentGroup implements Entry{
@@ -11,6 +13,7 @@ public class DocumentGroup implements Entry{
 	String mName;
 	DocumentListEntry mEntry;
 	DocumentGroup mParent;
+	PDocumentGroup mPDGroup;
 	
 	
 	public DocumentGroup(DocumentListEntry entry) {
@@ -53,6 +56,16 @@ public class DocumentGroup implements Entry{
 	
 	public void removeDocument(Document document){
 		mDocuments.remove(document.getName());
+	}
+	
+
+	public void setPDocGroup(PDocumentGroup pDocGroup) {
+		mPDGroup = pDocGroup;
+		
+	}
+	
+	public PDocumentGroup getPDocGroup(){
+		return mPDGroup;
 	}
 	
 	@Override
@@ -105,4 +118,5 @@ public class DocumentGroup implements Entry{
 	public String getDocId() {
 		return mEntry.getDocId();
 	}
+	
 }

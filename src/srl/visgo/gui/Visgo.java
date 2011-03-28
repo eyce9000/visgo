@@ -107,10 +107,6 @@ public class Visgo extends JFrame {
 				}
 				i++;
 				canvas.getLayer().addChild(projectNode);
-				
-				//next line is for testing drag/drop doc nodes - Chris
-				canvas.getLayer().addChild(projectNode.getChildrenCount() <= 1 ? new PNode() : projectNode.getChild(0));
-				prevNode = projectNode;
 			}
 
 		}
