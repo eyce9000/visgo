@@ -12,14 +12,14 @@ import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.DocumentListFeed;
 import com.google.gdata.util.ServiceException;
 
-public class Workspace {
+public class DocumentRoot {
 	HashMap<String,Document> mDocuments = new HashMap<String,Document>();
 	HashMap<String,DocumentGroup> mDocumentGroups = new HashMap<String,DocumentGroup>();
-	public Workspace(DocsService client) throws IOException, ServiceException {
+	HashMap<String,Document> mNoCategoryDocuments = new HashMap<String,Document>();
+	public DocumentRoot(DocsService service) throws IOException, ServiceException {
 
 		URL feedUri = new URL("https://docs.google.com/feeds/default/private/full/?showfolders=true");
-		DocumentListFeed feed = client.getFeed(feedUri, DocumentListFeed.class);
-
+		DocumentListFeed feed = service.getFeed(feedUri, DocumentListFeed.class);
 		HashMap<String,Entry> entries = new HashMap<String,Entry>();
 		HashMap<String,DocumentGroup> groups = new HashMap<String,DocumentGroup>();
 		for (DocumentListEntry listEntry : feed.getEntries()) {
@@ -50,6 +50,12 @@ public class Workspace {
 					}
 				}
 			}
+			else{
+				if(entry instanceof Document){
+					Document doc = (Document) entry;
+					mNoCategoryDocuments.put(doc.getDocId(), doc);
+				}
+			}
 		}
 		for(DocumentGroup group: groups.values()){
 			if(!group.hasParent()){
@@ -57,7 +63,10 @@ public class Workspace {
 			}
 		}
 	}
-	public Collection<DocumentGroup> getDocumentGroups(){
+	public Collection<DocumentGroup> getRootDocumentGroups(){
 		return mDocumentGroups.values();
+	}
+	public Collection<Document> getRootDocuments(){
+		return mNoCategoryDocuments.values();
 	}
 }
