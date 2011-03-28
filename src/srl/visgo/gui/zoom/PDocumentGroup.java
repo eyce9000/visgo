@@ -106,4 +106,12 @@ public class PDocumentGroup extends PNode{
         }
         return super.validateFullBounds();
     }
+    
+    public DocumentGroup getDocumentGroup(){
+    	return mGroup;
+    }
+    
+    public PBounds getCachedBounds(){
+    	return cachedChildBounds;
+    }
 }

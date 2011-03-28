@@ -8,9 +8,12 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
 import srl.visgo.data.Document;
+import srl.visgo.data.DocumentGroup;
 import srl.visgo.gui.DocPanel;
 import srl.visgo.gui.Resources;
+import srl.visgo.gui.Visgo;
 import srl.visgo.gui.interaction.VisgoDragEventHandler;
+import edu.umd.cs.piccolo.PLayer;
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
@@ -20,6 +23,7 @@ import edu.umd.cs.piccolo.event.PInputEventListener;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
+import edu.umd.cs.piccolo.util.PDimension;
 import edu.umd.cs.piccolo.util.PPaintContext;
 import edu.umd.cs.piccolox.pswing.PSwing;
 
@@ -39,16 +43,12 @@ public class PDocument extends PNode {
 	public PDocument(Document document){
 		super();
 		mDocument = document;
-		dragger = new VisgoDragEventHandler(mDocument);
-
-		
 
 		backgroundNode = PPath.createRoundRectangle(0f, 0f, 50, 50, 5f, 5f);
 		backgroundNode.setPaint(BACK_COLOR);
 		
 		this.addChild(backgroundNode);	
 		backgroundNode.setVisible(true);
-		backgroundNode.addInputEventListener(dragger);
 		
 
 		String shortTitle = document.getName();
@@ -104,4 +104,61 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	public void mouseEntered(PInputEvent event){
 		mDocument.backgroundNode.setPaint(PDocument.SELECT_COLOR);
 	}
+	
+	@Override
+	public void mouseReleased(PInputEvent event){
+		PNode aNode = event.getPickedNode();
+		aNode.setPaint(Color.GREEN);
+        checkLocation(aNode);
+		
+	}
+	@Override
+	public void mouseDragged(PInputEvent event){
+		PNode aNode = event.getPickedNode();
+        PDimension delta = event.getDeltaRelativeTo(aNode);
+        aNode.translate(delta.width, delta.height);
+	}
+	
+	//check if the new location of the node is within a group 
+	public void checkLocation(PNode aNode){
+		PLayer layer = Visgo.canvas.getLayer();
+		PDocumentGroup group;
+		PDocument doc;
+		DocumentGroup oldGroup = mDocument.getDocument().getParent();
+		
+		for(int i = 0; i < layer.getChildrenCount(); i++)
+		{
+			if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
+			{
+				group = (PDocumentGroup) layer.getChild(i);
+				System.out.println(group.getDocumentGroup().getName());
+
+				//TODO: Need a better way to check if dropped into a group! This bounds check is broken
+				if(group.getCachedBounds().contains(aNode.getBounds().getCenter2D()))
+				{
+					//Dropped into same group
+					if(group.getDocumentGroup().getDocuments().contains(mDocument.getDocument()))
+					{
+							System.out.println(">--< Back into same group");
+					}
+					else
+					{
+						//Dropped into a new group
+						System.out.println("<-- " + mDocument.getDocument().getName() + " removed from group: " + oldGroup.getName());
+						oldGroup.removeDocument(mDocument.getDocument());
+						System.out.println("--> " + mDocument.getDocument().getName() + " moved to group: " + group.getDocumentGroup().getName());
+						group.getDocumentGroup().addDocument(mDocument.getDocument());
+						group.repaint();
+					}
+				}
+			}
+			else if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocument.class))
+			{
+				doc = (PDocument) layer.getChild(i);
+				System.out.println(doc.getDocument().getName());
+			}
+		}
+		System.out.println();
+	}
+	
 }

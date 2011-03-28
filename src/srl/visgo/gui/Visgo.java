@@ -29,6 +29,9 @@ import srl.visgo.gui.zoom.PDocumentGroup;
 
 import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.PCanvas;
+import edu.umd.cs.piccolo.PLayer;
+import edu.umd.cs.piccolo.PNode;
+import edu.umd.cs.piccolo.PRoot;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.event.PInputEventListener;
@@ -54,10 +57,20 @@ public class Visgo extends JFrame {
 	}
 
 	DocsService client;
-	PCanvas canvas;
+	public static PCanvas canvas;
 	Visgo(){
 		super("Visgo");
 		canvas = new PCanvas();
+		
+		//an additional layer i am testing drag/drop with - Chris
+//		PRoot root = canvas.getRoot();             
+//		PCamera camera = canvas.getCamera();             
+//		PLayer mainLayer =  canvas.getLayer();
+//		PLayer pathLayer = new PLayer();             
+//		root.addChild(pathLayer);             
+//		camera.addLayer(0, pathLayer); 
+//		
+//		PSelectionEventHandler myselectionEventHandler = new PSelectionEventHandler(mainLayer, mainLayer);
 
 		canvas.removeInputEventListener(canvas.getZoomEventHandler());
 		canvas.removeInputEventListener(canvas.getPanEventHandler());
@@ -94,6 +107,9 @@ public class Visgo extends JFrame {
 				}
 				i++;
 				canvas.getLayer().addChild(projectNode);
+				
+				//next line is for testing drag/drop doc nodes - Chris
+				canvas.getLayer().addChild(projectNode.getChildrenCount() <= 1 ? new PNode() : projectNode.getChild(0));
 				prevNode = projectNode;
 			}
 

@@ -20,6 +20,7 @@ public class DocumentGroup implements Entry{
 	}
 	public void addDocument(Document document){
 		mDocuments.put(document.getName(),document);
+		document.mParent = this;
 	}
 	public void addDocuments(Document[] documents){
 		for(Document doc : documents){
@@ -49,6 +50,11 @@ public class DocumentGroup implements Entry{
 	public String getName(){
 		return mEntry.getTitle().getPlainText();
 	}
+	
+	public void removeDocument(Document document){
+		mDocuments.remove(document.getName());
+	}
+	
 	@Override
 	public DocumentListEntry getListEntry() {
 		return mEntry;
