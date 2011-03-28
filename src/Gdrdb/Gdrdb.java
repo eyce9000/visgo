@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import srl.visgo.gui.Login;
+
 import com.google.gdata.client.spreadsheet.CellQuery;
 import com.google.gdata.client.spreadsheet.FeedURLFactory;
 import com.google.gdata.client.spreadsheet.ListQuery;
@@ -46,7 +48,7 @@ public class Gdrdb
 		try
 		{
 			service = new SpreadsheetService("SRL-VISGO-v1");
-			service.setUserCredentials("noxwizard@gmail.com", "");
+			Login.authenticateService(service);
 			factory = FeedURLFactory.getDefault();
 			isAuthed = true;	//Well, maybe
 		}

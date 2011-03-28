@@ -73,7 +73,8 @@ public class Visgo extends JFrame {
 
 	private void load(){
 		try{
-			client = Login.getServiceLoggedIn();
+			client = new DocsService("VISGO-V1");
+			Login.authenticateService(client);
 
 			Workspace workspace = new Workspace(client);
 

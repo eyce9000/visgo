@@ -28,51 +28,56 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import com.google.gdata.client.GoogleAuthTokenFactory.UserToken;
+import com.google.gdata.client.GoogleService;
+import com.google.gdata.client.Service;
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.util.AuthenticationException;
 
 
 public class Login {
-	public static File tokenFile = new File(".authToken");
+	private static String password;
+	private static String username;
+	private static boolean credentialsLoaded = false;
+	
 	
 	public static void main(String[] args){
-		tokenFile.delete();
-		getServiceLoggedIn();
+		DocsService service = new DocsService("Test");
+		authenticateService(service);
 	}
 
-	private synchronized DocsService getServiceDialog(){
+	private synchronized void getCredentials(){
 		final Login login = this;
 		final LoginDialog loginDialog = new LoginDialog();
-		DocsService client = null;
-		boolean finished = false;
+		loginDialog.addWindowListener(new WindowListener(){
+			@Override
+			public void windowActivated(WindowEvent arg0) {}
+
+			@Override
+			public void windowClosed(WindowEvent arg0) {
+			}
+
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				arg0.getWindow().setVisible(false);
+				synchronized(login){
+					login.notify();
+				}
+			}
+			@Override
+			public void windowDeactivated(WindowEvent arg0) {}
+
+			@Override
+			public void windowDeiconified(WindowEvent arg0) {}
+
+			@Override
+			public void windowIconified(WindowEvent arg0) {}
+
+			@Override
+			public void windowOpened(WindowEvent arg0) {}
+		});
+		boolean finished = false; 
 		while(!finished){
-			loginDialog.addWindowListener(new WindowListener(){
-				@Override
-				public void windowActivated(WindowEvent arg0) {}
-
-				@Override
-				public void windowClosed(WindowEvent arg0) {
-				}
-
-				@Override
-				public void windowClosing(WindowEvent arg0) {
-					arg0.getWindow().setVisible(false);
-					synchronized(login){
-						login.notify();
-					}
-				}
-				@Override
-				public void windowDeactivated(WindowEvent arg0) {}
-
-				@Override
-				public void windowDeiconified(WindowEvent arg0) {}
-
-				@Override
-				public void windowIconified(WindowEvent arg0) {}
-
-				@Override
-				public void windowOpened(WindowEvent arg0) {}
-			});
+			
 			loginDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 			loginDialog.setAlwaysOnTop(true);
 			loginDialog.pack();
@@ -85,37 +90,29 @@ public class Login {
 				e1.printStackTrace();
 			}
 			if(!loginDialog.wasCanceled()){
-				client = new DocsService("SRL-VISGO-v1");
-				try {
-					client.setUserCredentials(loginDialog.getUsername(), new String(loginDialog.getPassword()));
-					break;
-				} catch (AuthenticationException e) {
-					JOptionPane.showMessageDialog(null, "Unabled to log into google docs with the supplied information.\n"+
-					"Please retry.");
-				}
+				username = loginDialog.getUsername();
+				password = new String(loginDialog.getPassword());
+				credentialsLoaded = true;
+				break;
 			}
 			else{
 				finished = true;
 			}
 		}
 		loginDialog.dispose();
-		return client;
 	}
 
-
-	public static DocsService getServiceLoggedIn(){
+	public static void authenticateService(GoogleService service){
 
 		Login login = new Login();
-		DocsService client = null;
-
+		File tokenFile = getTokenFile(service);
 		boolean success = false;
 		if(tokenFile.exists()){
 			try{
 				BufferedReader reader = new BufferedReader(new FileReader(tokenFile));
 				String token = reader.readLine();
-				client = new DocsService("SRL-VISGO-v1");
-				client.setUserToken(token);
-				return client;
+				service.setUserToken(token);
+				return;
 			}
 			catch(Exception e){
 				e.printStackTrace();
@@ -123,9 +120,10 @@ public class Login {
 		}
 
 		try{
-			client = login.getServiceDialog();
-			if(client!=null){
-				UserToken token = (UserToken)client.getAuthTokenFactory().getAuthToken();
+			if(!credentialsLoaded)login.getCredentials();
+			service.setUserCredentials(username, password);
+			if(service!=null){
+				UserToken token = (UserToken)service.getAuthTokenFactory().getAuthToken();
 				tokenFile.createNewFile();
 				BufferedWriter writer = new BufferedWriter(new FileWriter(tokenFile));
 				writer.write(token.getValue());
@@ -135,7 +133,11 @@ public class Login {
 		catch(Exception e){
 			e.printStackTrace();
 		}
-		return client;
+	}
+	private static File getTokenFile(GoogleService service){
+		String name = service.getClass().getCanonicalName();
+		File authToken = new File("."+name+".authToken");
+		return authToken;
 	}
 
 }
@@ -315,6 +317,7 @@ class LoginDialog extends JFrame implements ActionListener{
 			cancelPressed = false;
 		}
 		else if(e.getSource() == cancelButton){
+			cancelPressed = true;
 		}
 		WindowListener[] listeners = this.getWindowListeners();
 		for(WindowListener listener:listeners){

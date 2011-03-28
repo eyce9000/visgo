@@ -37,7 +37,8 @@ public class GoogleTest {
 	}
 	DocsService client;
 	public GoogleTest(){
-		client = Login.getServiceLoggedIn();
+		client = new DocsService("SRL-VISGO-v1");
+		Login.authenticateService(client);
 	}
 	public void createDoc() {
 	}
