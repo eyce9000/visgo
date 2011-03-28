@@ -44,9 +44,8 @@ public class ReceiveChatTest extends JFrame implements WindowListener, MessageLi
 			
 			serverConnection.connect();
 		
-				
 			serverConnection.login(this.username, this.password, "VISGO2");
-			
+						
 			Chat newConversation = serverConnection.getChatManager().createChat(targetID1, "1", this);
 			
 			newConversation.sendMessage("hi");
