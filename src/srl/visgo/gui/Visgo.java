@@ -58,7 +58,7 @@ public class Visgo extends JFrame {
 	}
 
 	DocsService service;
-	PCanvas canvas;
+	public static PCanvas canvas;
 	Visgo(){
 		super("Visgo");
 		canvas = new PCanvas();
