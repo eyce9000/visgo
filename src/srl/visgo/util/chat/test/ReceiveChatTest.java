@@ -31,9 +31,7 @@ public class ReceiveChatTest extends JFrame implements WindowListener, MessageLi
 		rct.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		rct.setSize(1000,700);
 		rct.setVisible(true);
-		
-		
-		
+				
 	}
 	
 	public ReceiveChatTest(){
@@ -43,6 +41,7 @@ public class ReceiveChatTest extends JFrame implements WindowListener, MessageLi
 		serverConnection = new XMPPConnection(cc);
 		
 		try {
+			
 			serverConnection.connect();
 		
 				

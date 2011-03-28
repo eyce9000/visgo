@@ -20,10 +20,13 @@ public class PDocumentGroup extends PNode{
 	DocumentGroup mGroup;
 	List<PDocument> docNodes;
 	int mColCount = 1;
+	public static PBounds currentBounds;
 	
 	public PDocumentGroup(DocumentGroup group){
 		super();
 		mGroup = group;
+		mGroup.setPDocGroup(this);
+			
 		docNodes = new ArrayList<PDocument>();
 		this.setPaint(Color.GRAY);
 		invalidate();
@@ -55,6 +58,7 @@ public class PDocumentGroup extends PNode{
 		this.addChild(nameNode);
 		nameNode.setOffset(0,-40);
 	}
+	
 	int INDENT = 10;
 
     PBounds cachedChildBounds = new PBounds();
@@ -74,6 +78,7 @@ public class PDocumentGroup extends PNode{
             bounds.setRect(bounds.getX() - INDENT, bounds.getY() - INDENT, bounds.getWidth() + 2 * INDENT, bounds
                     .getHeight()
                     + 2 * INDENT);
+            currentBounds = bounds;
             g2.fill(bounds);
         }
     }
@@ -105,5 +110,13 @@ public class PDocumentGroup extends PNode{
             setPaintInvalid(true);
         }
         return super.validateFullBounds();
+    }
+    
+    public DocumentGroup getDocumentGroup(){
+    	return mGroup;
+    }
+    
+    public PBounds getCachedBounds(){
+    	return cachedChildBounds;
     }
 }

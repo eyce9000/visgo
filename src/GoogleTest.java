@@ -1,3 +1,5 @@
+import gDocsFileSystem.GDatabase;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -6,7 +8,6 @@ import java.util.Map;
 
 import srl.visgo.gui.Login;
 
-import Gdrdb.Gdrdb;
 
 import com.google.gdata.client.GoogleAuthTokenFactory.UserToken;
 import com.google.gdata.client.docs.DocsService;
@@ -37,7 +38,8 @@ public class GoogleTest {
 	}
 	DocsService client;
 	public GoogleTest(){
-		client = Login.getServiceLoggedIn();
+		client = new DocsService("SRL-VISGO-v1");
+		Login.authenticateService(client);
 	}
 	public void createDoc() {
 	}
@@ -97,8 +99,8 @@ public class GoogleTest {
 	
 	public void showDatabaseContents() throws Exception
 	{
-		Gdrdb db = new Gdrdb();
-		db.setDatabase("visgo_db");
+		GDatabase db = new GDatabase();
+		db.setDatabase("visgo.workspace");
 		Map<String, ArrayList<String>> results = db.select("files", new ArrayList<String>() {{ add("file_id"); add("file_name"); }}, null);
 		ArrayList<String> fileNames = results.get("file_name");
 		for(String name : fileNames)
