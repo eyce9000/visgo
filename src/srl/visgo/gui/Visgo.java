@@ -62,8 +62,6 @@ public class Visgo extends JFrame {
 		canvas.removeInputEventListener(canvas.getZoomEventHandler());
 		canvas.removeInputEventListener(canvas.getPanEventHandler());
 		
-		//add dragging of nodes
-//		canvas.addInputEventListener(new PDragEventHandler());
 		VisgoMouseListener mouseListener = new VisgoMouseListener(canvas);
 		canvas.addMouseWheelListener(mouseListener);
 		//canvas.addMouseListener(mouseListener);
