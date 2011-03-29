@@ -11,5 +11,5 @@ import org.jivesoftware.smack.Chat;
  */
 public interface CommandMessageListener extends EventListener{
 
-	public void CommandReceived(Chat conversation, CommandMessage notification);
+	public void CommandReceived(CommandMessage notification);
 }

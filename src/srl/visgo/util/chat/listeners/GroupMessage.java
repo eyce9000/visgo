@@ -11,7 +11,7 @@ import javax.xml.parsers.*;
  * Class represents the message sent to the whole group by the VISGO.
  * xml schema used
  * 
- * <GMessage> message text </GMessage>
+ * <gmessage> message text </gmessage>
  * Any modification to the schema will affect the following methods.
  * toXML ()
  * parse ()
@@ -62,7 +62,7 @@ public class GroupMessage extends EventObject {
 		
 		GroupMessage result = new GroupMessage(source, xml.getTextContent());
 		
-		return null;
+		return result;
 	}
 
 }

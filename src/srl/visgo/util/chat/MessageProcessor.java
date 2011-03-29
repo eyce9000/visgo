@@ -10,7 +10,9 @@ import javax.swing.event.EventListenerList;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
+import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
 
 import srl.visgo.util.chat.listeners.CommandMessage;
 import srl.visgo.util.chat.listeners.CommandMessageListener;
@@ -24,9 +26,9 @@ import org.w3c.dom.*;
 import javax.xml.parsers.*;	
 
 
-public class MessageProcessor implements MessageListener{
+public class MessageProcessor implements PacketListener{
 
-	private static final String XMLVERSION = "<?xml version=\"1.0\"?> ";
+	private static final String XMLVERSION = "<?xml version=\"1.0\"?>";
 	private EventListenerList commandMessageListeners = null; // listeners for command / notification
 	private EventListenerList groupMessageListeners = null; // listeners for the group message 
 	private EventListenerList individualMessageListeners = null; // listeners for the individual message
@@ -99,12 +101,12 @@ public class MessageProcessor implements MessageListener{
 	 * @param conversation - the chat conversation it belongs to. 
 	 * @param notification - the command itself
 	 */
-	private void fireCommandReceived(Chat conversation, CommandMessage notification){
+	private void fireCommandReceived(CommandMessage notification){
 		Object[] listenerList = commandMessageListeners.getListenerList();
 		
 		for(int i = 0; i < listenerList.length - 1; i++){
 			
-			((CommandMessageListener)listenerList[i+1]).CommandReceived(conversation, notification);
+			((CommandMessageListener)listenerList[i+1]).CommandReceived(notification);
 		}
 	}
 	
@@ -114,12 +116,12 @@ public class MessageProcessor implements MessageListener{
 	 * @param conversation - the chat conversation it belongs to. 
 	 * @param gMessage - the message itself
 	 */
-	private void fireGroupMessageReceived(Chat conversation, GroupMessage gMessage){
+	private void fireGroupMessageReceived(GroupMessage gMessage){
 		Object[] listenerList = groupMessageListeners.getListenerList();
 		
 		for(int i = 0; i < listenerList.length - 1; i++){
 			
-			((GroupMessageListener)listenerList[i + 1]).IncomingGroupMessage(conversation, gMessage);
+			((GroupMessageListener)listenerList[i + 1]).IncomingGroupMessage(gMessage);
 		}
 	}
 	
@@ -129,31 +131,31 @@ public class MessageProcessor implements MessageListener{
 	 * @param conversation - the chat conversation it belongs to. 
 	 * @param gMessage - the message itself
 	 */
-	private void fireIndividualMessageReceived(Chat conversation, IndividualMessage iMessage){
+	private void fireIndividualMessageReceived(IndividualMessage iMessage){
 		Object[] listenerList = individualMessageListeners.getListenerList();
 		
 		for(int i = 0; i < listenerList.length - 1; i++){
 			
-			((IndividualMessageListener)listenerList[i + 1]).IncomingIndividualMessage(conversation, iMessage);
+			((IndividualMessageListener)listenerList[i + 1]).IncomingIndividualMessage(iMessage);
 		}
 	}
 	
 	
 	@Override
-	public void processMessage(Chat conversation, Message currentMessage) {
+	public void processPacket(Packet currentMessage) {
 		
 		// Creating the DOM parser 
 		DocumentBuilder builder;
 		
 		Document parsedXMLMessage = null;
+		String xmlMessage = null;
 		try {
 			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 				
-			// TODO: if error replace &gt and &lt with  ">" & ">"
-			String xmlMessage = XMLVERSION + currentMessage.getBody();
-				
+			xmlMessage = XMLVERSION + ((Message)currentMessage).getBody();
+			
 			// creating the XML document object
-			parsedXMLMessage = builder.parse( new ByteArrayInputStream(xmlMessage.getBytes()));
+			parsedXMLMessage = builder.parse(new ByteArrayInputStream(xmlMessage.getBytes("UTF-8")));
 			
 			
 		} catch (SAXException e) {
@@ -179,25 +181,27 @@ public class MessageProcessor implements MessageListener{
 			if(commands.getLength() > 0){
 				
 				Element command = (Element)commands.item(0);
-				CommandMessage notification= CommandMessage.parse(currentMessage, command);
-				fireCommandReceived(conversation, notification);
+				CommandMessage notification= CommandMessage.parse((Message)currentMessage, command);
+				fireCommandReceived(notification);
 			}
 			// parse out the group message and fire notification to listeners
 			if(gMessages.getLength() > 0){
 				
 				Element gMessage = (Element)gMessages.item(0);
-				GroupMessage notification= GroupMessage.parse(currentMessage, gMessage);
-				fireGroupMessageReceived(conversation, notification);
+				GroupMessage notification= GroupMessage.parse((Message)currentMessage, gMessage);
+				fireGroupMessageReceived(notification);
 			}
 			// parse out the individual message and fire notification to listeners
 			if(iMessages.getLength() > 0){
 				
 				Element iMessage = (Element)iMessages.item(0);
-				IndividualMessage notification= IndividualMessage.parse(currentMessage, iMessage);
-				fireIndividualMessageReceived(conversation, notification);
+				IndividualMessage notification= IndividualMessage.parse((Message)currentMessage, iMessage);
+				fireIndividualMessageReceived(notification);
 			}
 		}
 	}
+
+	
 	
 	
 

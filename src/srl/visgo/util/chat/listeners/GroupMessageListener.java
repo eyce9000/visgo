@@ -11,5 +11,5 @@ import org.jivesoftware.smack.Chat;
  */
 public interface GroupMessageListener extends EventListener {
 
-	public void IncomingGroupMessage(Chat from, GroupMessage currentMessage);
+	public void IncomingGroupMessage(GroupMessage currentMessage);
 }
