@@ -73,6 +73,7 @@ public class GFileSystem
 		}
 	}
 	
+	
 	/**
 	 * Inserts a document or folder into the workspace
 	 * @param file File to insert
@@ -80,7 +81,7 @@ public class GFileSystem
 	 * @param isFile Whether it's a file or not (document group)
 	 * @return Insertion success/failure
 	 */
-	public boolean insertEntry(Entry file, DocumentGroup parent, boolean isFile)
+	public boolean insertEntry(Entry file)
 	{
 		String fileId = docIdPrefix + file.getDocId();
 		String parentId;
@@ -89,16 +90,18 @@ public class GFileSystem
 		ArrayList<String> columns = new ArrayList<String>();
 		ArrayList<String> values = new ArrayList<String>();
 		
-		if(parent != null)
+		
+		
+		if(file.hasParent())
 		{
-			parentId = docIdPrefix + parent.getDocId();
+			parentId = docIdPrefix + file.getParent().getDocId();
 		}
 		else
 		{
 			parentId = "";
 		}
 		
-		if(isFile)
+		if(file instanceof Document)
 		{
 			idColumn = "gfid";
 			table = "files";

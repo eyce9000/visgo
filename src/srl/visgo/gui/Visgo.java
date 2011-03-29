@@ -26,7 +26,7 @@ import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import srl.visgo.data.Data;
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
-import srl.visgo.data.DocumentRoot;
+import srl.visgo.data.Workspace;
 import srl.visgo.gui.chat.ChatPanel;
 import srl.visgo.gui.zoom.PDocument;
 import srl.visgo.gui.zoom.PDocumentGroup;

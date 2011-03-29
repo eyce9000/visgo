@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import srl.visgo.data.DocumentRoot;
+import srl.visgo.data.Workspace;
 
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.docs.DocumentListFeed;
@@ -15,6 +15,6 @@ public class DocsListPanel {
 		
 	}
 	
-	public void updateList(DocumentRoot docs) throws IOException, ServiceException{
+	public void updateList(Workspace docs) throws IOException, ServiceException{
 	}
 }

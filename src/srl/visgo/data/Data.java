@@ -19,7 +19,7 @@ import com.google.gdata.util.ServiceException;
 import gDocsFileSystem.GDatabase;
 
 public class Data {
-	private DocumentRoot documentRoot;
+	private Workspace documentRoot;
 	private GDatabase database;
 	private ChatManager chatManager;
 	private HashMap<String,Collaborator> collaborators;
@@ -41,7 +41,7 @@ public class Data {
 		}
 	}
 	
-	public DocumentRoot getDocumentRoot(){
+	public Workspace getDocumentRoot(){
 		return documentRoot;
 	}
 	

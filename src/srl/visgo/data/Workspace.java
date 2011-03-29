@@ -15,7 +15,7 @@ import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.DocumentListFeed;
 import com.google.gdata.util.ServiceException;
 
-public class DocumentRoot {
+public class Workspace {
 	HashMap<String,Entry> mEntries = new HashMap<String,Entry>();
 	HashMap<String,Document> mDocuments = new HashMap<String,Document>();
 	HashMap<String,DocumentGroup> mDocumentGroups = new HashMap<String,DocumentGroup>();
@@ -23,7 +23,7 @@ public class DocumentRoot {
 	HashMap<String,Document> mRootCategoryDocuments = new HashMap<String,Document>();
 	DocsService docsService;
 	GFileSystem mFileSystem;
-	public DocumentRoot(GFileSystem fileSystem) throws IOException, ServiceException {
+	public Workspace(GFileSystem fileSystem) throws IOException, ServiceException {
 		mFileSystem = fileSystem;
 		reload();
 	}
