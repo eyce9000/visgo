@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.Link;
@@ -13,38 +14,51 @@ import com.google.gdata.data.docs.DocumentListFeed;
 import com.google.gdata.util.ServiceException;
 
 public class DocumentRoot {
+	HashMap<String,Entry> mEntries = new HashMap<String,Entry>();
 	HashMap<String,Document> mDocuments = new HashMap<String,Document>();
 	HashMap<String,DocumentGroup> mDocumentGroups = new HashMap<String,DocumentGroup>();
-	HashMap<String,Document> mNoCategoryDocuments = new HashMap<String,Document>();
+	HashMap<String,DocumentGroup> mRootDocumentGroups = new HashMap<String,DocumentGroup>();
+	HashMap<String,Document> mRootCategoryDocuments = new HashMap<String,Document>();
 	public DocumentRoot(DocsService service) throws IOException, ServiceException {
-
+		reload(service);
+	}
+	public void reload(DocsService service) throws IOException, ServiceException{
 		URL feedUri = new URL("https://docs.google.com/feeds/default/private/full/?showfolders=true");
 		DocumentListFeed feed = service.getFeed(feedUri, DocumentListFeed.class);
-		HashMap<String,Entry> entries = new HashMap<String,Entry>();
-		HashMap<String,DocumentGroup> groups = new HashMap<String,DocumentGroup>();
 		for (DocumentListEntry listEntry : feed.getEntries()) {
 			if(listEntry.getType().equals("folder")){
 				//This is a document group
-				DocumentGroup group = new DocumentGroup(listEntry);
-				entries.put(group.getDocId(),group);
-				groups.put(group.getDocId(),group);
-				//System.out.println(group.getDocId());
+				DocumentGroup group = mDocumentGroups.get(listEntry.getDocId());
+				if(group == null){
+					group = new DocumentGroup(listEntry);
+					mEntries.put(group.getDocId(),group);
+					mDocumentGroups.put(group.getDocId(),group);
+				}
+				else{
+					group.setListEntry(listEntry);
+				}
 			}
 			else{
 				//This is a document
-				Document doc = new Document(listEntry);
-				entries.put(listEntry.getDocId(), doc);
-				mDocuments.put(doc.getHref(), doc);
+				Document doc = mDocuments.get(listEntry.getDocId());
+				if(doc == null){
+					doc = new Document(listEntry);
+					mEntries.put(listEntry.getDocId(), doc);
+					mDocuments.put(doc.getHref(), doc);
+				}
+				else{
+					doc.setListEntry(listEntry);
+				}
 			}
 		}
 		for(DocumentListEntry listEntry : feed.getEntries()){
-			Entry entry = entries.get(listEntry.getDocId());
+			Entry entry = mEntries.get(listEntry.getDocId());
 			if (!listEntry.getParentLinks().isEmpty()) {
 				for (Link link : listEntry.getParentLinks()) {
 					//System.out.println(link.getHref());
 					String[] split = link.getHref().split("folder%3A");
 					if(split.length==2){
-						DocumentGroup group = groups.get(split[1]);
+						DocumentGroup group = mDocumentGroups.get(split[1]);
 						if(group!=null)
 							group.addEntry(entry);
 					}
@@ -53,20 +67,20 @@ public class DocumentRoot {
 			else{
 				if(entry instanceof Document){
 					Document doc = (Document) entry;
-					mNoCategoryDocuments.put(doc.getDocId(), doc);
+					mRootCategoryDocuments.put(doc.getDocId(), doc);
 				}
 			}
 		}
-		for(DocumentGroup group: groups.values()){
+		for(DocumentGroup group: mDocumentGroups.values()){
 			if(!group.hasParent()){
-				mDocumentGroups.put(group.getName(),group);
+				mRootDocumentGroups.put(group.getName(),group);
 			}
 		}
 	}
 	public Collection<DocumentGroup> getRootDocumentGroups(){
-		return mDocumentGroups.values();
+		return mRootDocumentGroups.values();
 	}
 	public Collection<Document> getRootDocuments(){
-		return mNoCategoryDocuments.values();
+		return mRootCategoryDocuments.values();
 	}
 }

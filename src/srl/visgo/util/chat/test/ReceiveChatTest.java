@@ -101,7 +101,6 @@ public class ReceiveChatTest extends JFrame implements WindowListener, MessageLi
 	@Override
 	public void processMessage(Chat arg0, Message arg1) {
 		// TODO Auto-generated method stub
-		
 		System.out.println(" Message ::" + arg1.getBody());
 	}
 

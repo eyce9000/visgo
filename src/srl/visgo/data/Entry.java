@@ -10,4 +10,5 @@ public interface Entry {
 	public void setParent(DocumentGroup parent);
 	public DocumentGroup getParent();
 	public boolean hasParent();
+	public void setListEntry(DocumentListEntry entry);
 }

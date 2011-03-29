@@ -17,7 +17,7 @@ public class DocumentGroup implements Entry{
 	
 	
 	public DocumentGroup(DocumentListEntry entry) {
-		mEntry = new DocumentListEntry(entry);
+		setListEntry(entry);
 		mSubGroups = new HashMap<String,DocumentGroup>();
 		mDocuments = new HashMap<String,Document>();
 	}
@@ -117,6 +117,11 @@ public class DocumentGroup implements Entry{
 	@Override
 	public String getDocId() {
 		return mEntry.getDocId();
+	}
+	@Override
+	public void setListEntry(DocumentListEntry entry) {
+		mEntry = new DocumentListEntry(entry);
+		mParent = null;
 	}
 	
 }

@@ -7,7 +7,7 @@ public class Document implements Entry {
 	DocumentGroup mParent = null;
 
 	public Document(DocumentListEntry entry){
-		mEntry = new DocumentListEntry(entry);
+		setListEntry(entry);
 	}
 	
 	public String getName(){
@@ -42,5 +42,11 @@ public class Document implements Entry {
 	@Override
 	public String getDocId() {
 		return mEntry.getDocId();
+	}
+
+	@Override
+	public void setListEntry(DocumentListEntry entry) {
+		this.mEntry = new DocumentListEntry(entry);
+		this.mParent = null;
 	}
 }

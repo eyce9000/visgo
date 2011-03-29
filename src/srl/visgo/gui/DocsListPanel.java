@@ -16,6 +16,5 @@ public class DocsListPanel {
 	}
 	
 	public void updateList(DocumentRoot docs) throws IOException, ServiceException{
-		docs.
 	}
 }

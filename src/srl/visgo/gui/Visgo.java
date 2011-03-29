@@ -1,5 +1,7 @@
 package srl.visgo.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -21,9 +23,11 @@ import com.google.gdata.data.docs.DocumentListFeed;
 import chrriis.common.UIUtils;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 
+import srl.visgo.data.Data;
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.data.DocumentRoot;
+import srl.visgo.gui.chat.ChatPanel;
 import srl.visgo.gui.zoom.PDocument;
 import srl.visgo.gui.zoom.PDocumentGroup;
 
@@ -39,11 +43,12 @@ import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolox.event.PSelectionEventHandler;
 import edu.umd.cs.piccolox.pswing.PSwingCanvas;
+import gDocsFileSystem.GDatabase;
 import gDocsFileSystem.GFileSystem;
 
 public class Visgo extends JFrame {
 	public static void main(String[] args){
-		//UIUtils.setPreferredLookAndFeel();
+		UIUtils.setPreferredLookAndFeel();
 		NativeInterface.open();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -57,10 +62,19 @@ public class Visgo extends JFrame {
 		NativeInterface.runEventPump();
 	}
 
-	DocsService service;
+	DocsService docsService;
 	public static PCanvas canvas;
+	public static Data data;
+	ChatPanel chatPanel;
+	
 	Visgo(){
 		super("Visgo");
+		Container contentPane = this.getContentPane();
+		
+		chatPanel = new ChatPanel();
+		
+		data = new Data();
+		
 		canvas = new PCanvas();
 //		try {
 //			systemTest = new GFileSystem("visgo.workspace");
@@ -87,22 +101,20 @@ public class Visgo extends JFrame {
 		canvas.addMouseWheelListener(mouseListener);
 		//canvas.addMouseListener(mouseListener);
 		//canvas.addMouseMotionListener(mouseListener);
-		add(canvas);
+		contentPane.add(canvas,BorderLayout.CENTER);
+		contentPane.add(chatPanel,BorderLayout.WEST);
 	}
 
 	private void load(){
 		try{
-			service = new DocsService("VISGO-V1");
-			Login.authenticateService(service);
 
-			URL feedUri = new URL("https://docs.google.com/feeds/default/private/full/?showfolders=true");
-			DocumentListFeed feed = service.getFeed(feedUri, DocumentListFeed.class);
-			DocumentRoot docs = new DocumentRoot(service);
-
+			data.database = new GDatabase();
+			data.reloadAll();
+			Login.authenticateService(docsService);
+			
 			int i = 1;
 			PDocumentGroup prevNode = null;
-			ArrayList<PDocumentGroup> selectableParents = new ArrayList<PDocumentGroup>();
-			for(DocumentGroup group : docs.getRootDocumentGroups()){
+			for(DocumentGroup group : data.getDocumentRoot().getRootDocumentGroups()){
 
 				PDocumentGroup projectNode = new PDocumentGroup(group);
 				projectNode.setColumnCount(3);
