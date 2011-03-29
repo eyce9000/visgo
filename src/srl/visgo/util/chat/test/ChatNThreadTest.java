@@ -103,8 +103,8 @@ IndividualMessageListener, WindowListener{
 		//Use the Create Chat to add members to the group
 		// The members should be part of your IM list. External members cannot receiver chat messages
 		conversationManager.createChat(targetID1, "1", null);	
-		conversationManager.createChat(targetID2, "2", null);	
-		//conversationManager.createChat(targetID3, "3", null);	
+		//conversationManager.createChat(targetID2, "2", null);	
+		conversationManager.createChat(targetID3, "3", null);	
 		//conversationManager.createChat(targetID4, "4", null);	
 		
 		interpretedMessage = new JLabel();
@@ -153,13 +153,13 @@ IndividualMessageListener, WindowListener{
 			GroupMessage gMessage = new GroupMessage(new Message(), conversationTextEntry.getText());
 			
 			//Sending the command notification to individual - choose the target person
-			conversationManager.sendIndividualCommand(targetID1, command);
+			conversationManager.sendIndividualCommand(targetID3, command);
 			
 			//Sending the command to the group
 			conversationManager.sendGroupCommand(command);
 			
 			//Sending messages to individual - choose the target person
-			conversationManager.sendIndividualMessage(targetID1, iMessage);
+			conversationManager.sendIndividualMessage(targetID3, iMessage);
 			
 			//Sending message to the group
 			conversationManager.sendGroupMessage(gMessage);

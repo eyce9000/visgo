@@ -52,11 +52,13 @@ public class Visgo extends JFrame {
 		NativeInterface.open();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				Login.getCredentials();
+				Visgo.data = new Data();
 				Visgo visgo = new Visgo();
 				visgo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				visgo.setSize(1000,700);
 				visgo.setVisible(true);
-				visgo.load();
+
 			}
 		});
 		NativeInterface.runEventPump();
@@ -66,37 +68,35 @@ public class Visgo extends JFrame {
 	public static PCanvas canvas;
 	public static Data data;
 	ChatPanel chatPanel;
-	
+
 	Visgo(){
 		super("Visgo");
 		Container contentPane = this.getContentPane();
-		
-		chatPanel = new ChatPanel();
-		
-		data = new Data();
-		
-		canvas = new PCanvas();
-//		try {
-//			systemTest = new GFileSystem("visgo.workspace");
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 
-		
+		chatPanel = new ChatPanel();
+
+		canvas = new PCanvas();
+		//		try {
+		//			systemTest = new GFileSystem("visgo.workspace");
+		//		} catch (Exception e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
+
+
 		//an additional layer i am testing drag/drop with - Chris
-//		PRoot root = canvas.getRoot();             
-//		PCamera camera = canvas.getCamera();             
-//		PLayer mainLayer =  canvas.getLayer();
-//		PLayer pathLayer = new PLayer();             
-//		root.addChild(pathLayer);             
-//		camera.addLayer(0, pathLayer); 
-//		
-//		PSelectionEventHandler myselectionEventHandler = new PSelectionEventHandler(mainLayer, mainLayer);
+		//		PRoot root = canvas.getRoot();             
+		//		PCamera camera = canvas.getCamera();             
+		//		PLayer mainLayer =  canvas.getLayer();
+		//		PLayer pathLayer = new PLayer();             
+		//		root.addChild(pathLayer);             
+		//		camera.addLayer(0, pathLayer); 
+		//		
+		//		PSelectionEventHandler myselectionEventHandler = new PSelectionEventHandler(mainLayer, mainLayer);
 
 		canvas.removeInputEventListener(canvas.getZoomEventHandler());
 		canvas.removeInputEventListener(canvas.getPanEventHandler());
-		
+
 		VisgoMouseListener mouseListener = new VisgoMouseListener(canvas);
 		canvas.addMouseWheelListener(mouseListener);
 		//canvas.addMouseListener(mouseListener);
@@ -107,11 +107,8 @@ public class Visgo extends JFrame {
 
 	private void load(){
 		try{
+			data = new Data();
 
-			data.database = new GDatabase();
-			data.reloadAll();
-			Login.authenticateService(docsService);
-			
 			int i = 1;
 			PDocumentGroup prevNode = null;
 			for(DocumentGroup group : data.getDocumentRoot().getRootDocumentGroups()){

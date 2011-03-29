@@ -48,7 +48,7 @@ public class GDatabase
 		try
 		{
 			service = new SpreadsheetService("SRL-VISGO-v1");
-			Login.authenticateService(service);
+			service.setUserCredentials(Login.username, Login.password);
 			factory = FeedURLFactory.getDefault();
 			isAuthed = true;	//Well, maybe
 		}

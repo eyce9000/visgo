@@ -35,17 +35,27 @@ import com.google.gdata.util.AuthenticationException;
 
 
 public class Login {
-	private static String password;
-	private static String username;
+	public static String password;
+	public static String username;
 	private static boolean credentialsLoaded = false;
 	
-	
-	public static void main(String[] args){
-		DocsService service = new DocsService("Test");
-		authenticateService(service);
+	public static synchronized void getCredentials(){
+		boolean successfulLogIn = false;
+		DocsService service = new DocsService("VISGO-TEST-LOGIN");
+		while(!successfulLogIn){
+			if(!new Login().getCredentialsInput())
+				System.exit(0);
+			try {
+				service.setUserCredentials(Login.username, Login.password);
+				successfulLogIn = true;
+			} catch (AuthenticationException e) {
+				successfulLogIn = false;
+				JOptionPane.showMessageDialog(null, "Google username or password invalid. Please re-enter.");
+			}
+		}
 	}
-
-	private synchronized void getCredentials(){
+	public synchronized boolean getCredentialsInput(){
+		credentialsLoaded = false;
 		final Login login = this;
 		final LoginDialog loginDialog = new LoginDialog();
 		loginDialog.addWindowListener(new WindowListener(){
@@ -100,13 +110,14 @@ public class Login {
 			}
 		}
 		loginDialog.dispose();
+		return credentialsLoaded;
 	}
-
 	public static void authenticateService(GoogleService service){
 
-		Login login = new Login();
 		File tokenFile = getTokenFile(service);
 		boolean success = false;
+		new Login().getCredentialsInput();
+		
 		if(tokenFile.exists()){
 			try{
 				BufferedReader reader = new BufferedReader(new FileReader(tokenFile));
@@ -120,7 +131,6 @@ public class Login {
 		}
 
 		try{
-			if(!credentialsLoaded)login.getCredentials();
 			service.setUserCredentials(username, password);
 			if(service!=null){
 				UserToken token = (UserToken)service.getAuthTokenFactory().getAuthToken();
@@ -134,12 +144,13 @@ public class Login {
 			e.printStackTrace();
 		}
 	}
+	
 	private static File getTokenFile(GoogleService service){
 		String name = service.getClass().getCanonicalName();
 		File authToken = new File("."+name+".authToken");
 		return authToken;
 	}
-
+	
 }
 class LoginDialog extends JFrame implements ActionListener{
 	private static final long serialVersionUID = 1L;

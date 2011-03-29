@@ -21,8 +21,10 @@ import srl.visgo.data.Data;
 import srl.visgo.data.DataEventType;
 import srl.visgo.data.DataListener;
 import srl.visgo.gui.Visgo;
+import srl.visgo.util.chat.listeners.GroupMessage;
+import srl.visgo.util.chat.listeners.GroupMessageListener;
 
-public class ChatPanel extends JPanel implements MessageListener{
+public class ChatPanel extends JPanel implements GroupMessageListener{
 
 	JScrollPane mScroll;
 	JPanel mMessagesPanel;
@@ -37,12 +39,10 @@ public class ChatPanel extends JPanel implements MessageListener{
 		this.add(mTextInputPanel,BorderLayout.SOUTH);
 	}
 
-	public void addMessage(Message message){
-	}
-
 	@Override
-	public void processMessage(Chat chat, Message message) {
-		chat.getParticipant();
+	public void IncomingGroupMessage(GroupMessage currentMessage) {
+		// TODO Auto-generated method stub
+		Message message = (Message)currentMessage.getSource();
 
 		MessagePanel messagePanel = new MessagePanel(message);
 		mMessagesPanel.add(messagePanel);

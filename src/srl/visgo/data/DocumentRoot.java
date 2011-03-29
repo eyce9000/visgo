@@ -1,5 +1,7 @@
 package srl.visgo.data;
 
+import gDocsFileSystem.GFileSystem;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,12 +21,15 @@ public class DocumentRoot {
 	HashMap<String,DocumentGroup> mDocumentGroups = new HashMap<String,DocumentGroup>();
 	HashMap<String,DocumentGroup> mRootDocumentGroups = new HashMap<String,DocumentGroup>();
 	HashMap<String,Document> mRootCategoryDocuments = new HashMap<String,Document>();
-	public DocumentRoot(DocsService service) throws IOException, ServiceException {
-		reload(service);
+	DocsService docsService;
+	GFileSystem mFileSystem;
+	public DocumentRoot(GFileSystem fileSystem) throws IOException, ServiceException {
+		mFileSystem = fileSystem;
+		reload();
 	}
-	public void reload(DocsService service) throws IOException, ServiceException{
+	public void reload() throws IOException, ServiceException{
 		URL feedUri = new URL("https://docs.google.com/feeds/default/private/full/?showfolders=true");
-		DocumentListFeed feed = service.getFeed(feedUri, DocumentListFeed.class);
+		DocumentListFeed feed = docsService.getFeed(feedUri, DocumentListFeed.class);
 		for (DocumentListEntry listEntry : feed.getEntries()) {
 			if(listEntry.getType().equals("folder")){
 				//This is a document group

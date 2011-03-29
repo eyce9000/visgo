@@ -16,10 +16,9 @@ public class GFileSystem
 	 * @param workspace Name of the workspace spreadsheet (Database)
 	 * @throws Exception The user is not authenticated to access the files
 	 */
-	public GFileSystem(String workspace) throws Exception
+	public GFileSystem(GDatabase database) throws Exception
 	{
-		db = new GDatabase();
-		db.setDatabase(workspace);
+		db = database;
 	}
 	
 	/**
