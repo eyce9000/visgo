@@ -23,7 +23,7 @@ import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
-import srl.visgo.data.Workspace;
+import srl.visgo.data.DocumentRoot;
 import srl.visgo.gui.zoom.PDocument;
 import srl.visgo.gui.zoom.PDocumentGroup;
 
@@ -57,9 +57,8 @@ public class Visgo extends JFrame {
 		NativeInterface.runEventPump();
 	}
 
-	DocsService client;
+	DocsService service;
 	public static PCanvas canvas;
-//	public static GFileSystem systemTest;
 	Visgo(){
 		super("Visgo");
 		canvas = new PCanvas();
@@ -93,15 +92,17 @@ public class Visgo extends JFrame {
 
 	private void load(){
 		try{
-			client = new DocsService("VISGO-V1");
-			Login.authenticateService(client);
+			service = new DocsService("VISGO-V1");
+			Login.authenticateService(service);
 
-			Workspace workspace = new Workspace(client);
+			URL feedUri = new URL("https://docs.google.com/feeds/default/private/full/?showfolders=true");
+			DocumentListFeed feed = service.getFeed(feedUri, DocumentListFeed.class);
+			DocumentRoot docs = new DocumentRoot(service);
 
 			int i = 1;
 			PDocumentGroup prevNode = null;
 			ArrayList<PDocumentGroup> selectableParents = new ArrayList<PDocumentGroup>();
-			for(DocumentGroup group : workspace.getDocumentGroups()){
+			for(DocumentGroup group : docs.getRootDocumentGroups()){
 
 				PDocumentGroup projectNode = new PDocumentGroup(group);
 				projectNode.setColumnCount(3);
