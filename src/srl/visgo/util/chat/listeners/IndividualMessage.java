@@ -11,11 +11,11 @@ import javax.xml.parsers.*;
  * Class represents the message sent to one person by the VISGO.
  * xml schema used
  * 
- * <IMessage> message text </IMessage>
+ * <imessage> message text </imessage>
  * 
  * THINGS BELOW ARE NOT IMPLEMENTED YET
  * - add the location if needed as attributes.
- * EX: <IMessage xloc = ## yloc = ##> message text </IMessage>
+ * EX: <imessage xloc = ## yloc = ##> message text </imessage>
  * 
  * Any modification to the schema will affect the following methods.
  * toXML ()

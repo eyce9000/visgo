@@ -6,6 +6,6 @@ import org.jivesoftware.smack.Chat;
 
 public interface IndividualMessageListener extends EventListener {
 	
-	public void IncomingIndividualMessage(Chat from, IndividualMessage currentMessage);
+	public void IncomingIndividualMessage(IndividualMessage currentMessage);
 
 }

@@ -1,9 +1,14 @@
 package srl.visgo.util.chat;
 
 import java.util.HashMap;
-import java.util.UUID;
 
 import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.filter.*;
+
+import srl.visgo.util.chat.listeners.CommandMessage;
+import srl.visgo.util.chat.listeners.GroupMessage;
+import srl.visgo.util.chat.listeners.IndividualMessage;
 
 public class ChatManager implements ChatManagerListener {
 
@@ -61,6 +66,8 @@ public class ChatManager implements ChatManagerListener {
 		serverConnection.connect();
 				
 		serverConnection.login(this.loginName, this.password, "VISGO");
+		
+		serverConnection.addPacketListener(messageInterpreter, new PacketTypeFilter(Message.class));
 	}
 	
 	/**
@@ -94,9 +101,7 @@ public class ChatManager implements ChatManagerListener {
 		if(serverConnection.isConnected()){
 			
 			Chat newConversation = serverConnection.getChatManager().createChat(friendName, conversationID, conversationListener);
-			
-			newConversation.addMessageListener(messageInterpreter);
-			
+						
 			chatInstanceMap.put(friendName, newConversation);
 			
 			chatCreated = true;
@@ -140,7 +145,7 @@ public class ChatManager implements ChatManagerListener {
 	 * @param userID - user ID 
 	 * @param message - message in string format
 	 */
-	public void sendMessage(String userID, String message){
+	private void sendMessage(String userID, String message){
 		
 		if(chatInstanceMap.containsKey(userID)){
 			
@@ -160,7 +165,7 @@ public class ChatManager implements ChatManagerListener {
 	 * Function to send a message to the whole group.
 	 * @param message
 	 */
-	public void sendGroupMessage(String message){
+	private void sendGroupMessage(String message){
 		
 		Object[] userIDs = chatInstanceMap.keySet().toArray();
 		
@@ -185,10 +190,57 @@ public class ChatManager implements ChatManagerListener {
 		if(!localCreated){
 			
 			chatInstanceMap.put(conversation.getThreadID(), conversation);
-			
-			conversation.addMessageListener(messageInterpreter);
-		
+					
 		}
 	}
+
+	/***
+	 * use this to continue individual conversations
+	 * @param userID - user Id of the person to send the message
+	 * @param iMessage - the message object itself
+	 */
+	public void sendIndividualMessage(String userID, IndividualMessage iMessage){
+		
+		MessageCreator mc = new MessageCreator(iMessage	);
+		
+		sendMessage(userID, mc.toXML());
+		
+	}
+
+	/***
+	 * use this to send notification/ commands to individuals
+	 * @param userID
+	 * @param command
+	 */
+	public void sendIndividualCommand(String userID, CommandMessage command){
+		
+		MessageCreator mc = new MessageCreator(command);
+		
+		sendMessage(userID, mc.toXML());
+		
+	}
 	
+	/***
+	 * use this to send notificaitons to the whole group
+	 * @param command
+	 */
+	public void sendGroupCommand(CommandMessage command){
+		
+		MessageCreator mc = new MessageCreator(command);
+		
+		sendGroupMessage(mc.toXML());
+		
+	}
+	
+	/***
+	 * use this to send group messages 
+	 * @param gMessage
+	 */
+	public void sendGroupMessage(GroupMessage gMessage){
+		
+		MessageCreator mc = new MessageCreator(gMessage);
+		
+		sendGroupMessage(mc.toXML());
+		
+	}
 }
