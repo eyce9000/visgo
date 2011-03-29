@@ -8,6 +8,8 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import com.google.gdata.util.InvalidEntryException;
+
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.gui.DocPanel;
@@ -161,7 +163,8 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 						//Add to new drop group
 						System.out.println("--> " + mDocument.getDocument().getName() + " added to group: " + group.getDocumentGroup().getName());
 						group.getDocumentGroup().addDocument(mDocument.getDocument());
-//						Visgo.systemTest.insertEntry(mDocument.getDocument(), group.getDocumentGroup(), true);
+						//Visgo.systemTest.insertEntry(mDocument.getDocument(), group.getDocumentGroup(), true);	//TODO: Move to adding files from local to workspace
+						//Visgo.systemTest.setParent(mDocument.getDocument(), group.getDocumentGroup(), true);
 						
 						group.invalidate();
 					}

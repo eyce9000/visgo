@@ -10,6 +10,7 @@ import srl.visgo.data.Entry;
 public class GFileSystem
 {
 	private GDatabase db;
+	private static final String docIdPrefix = "GDFS_"; //Because Google hates queries starting with a digit but uses doc IDs thst start with digits
 	
 	/**
 	 * File System abstraction on top of GDatabase
@@ -30,8 +31,8 @@ public class GFileSystem
 	 */
 	public boolean setParent(Entry file, DocumentGroup parent, boolean isFile)
 	{
-		String fileId = file.getDocId();
-		String parentId = parent.getDocId();
+		String fileId = docIdPrefix + file.getDocId();
+		String parentId = docIdPrefix + parent.getDocId();
 		String idColumn;
 		String table;
 		
@@ -42,12 +43,12 @@ public class GFileSystem
 		}
 		else
 		{
-			idColumn = "folder_id";
+			idColumn = "folderid";
 			table = "folders";
 		}
 		
 		ArrayList<String> columns = new ArrayList<String>();
-		columns.add("parent_folder");
+		columns.add("parentfolder");
 		
 		ArrayList<String> values = new ArrayList<String>();
 		values.add(parentId);
@@ -81,7 +82,7 @@ public class GFileSystem
 	 */
 	public boolean insertEntry(Entry file, DocumentGroup parent, boolean isFile)
 	{
-		String fileId = file.getDocId();
+		String fileId = docIdPrefix + file.getDocId();
 		String parentId;
 		String idColumn;
 		String table;
@@ -90,7 +91,7 @@ public class GFileSystem
 		
 		if(parent != null)
 		{
-			parentId = parent.getDocId();
+			parentId = docIdPrefix + parent.getDocId();
 		}
 		else
 		{
@@ -101,21 +102,21 @@ public class GFileSystem
 		{
 			idColumn = "gfid";
 			table = "files";
-			columns.add("file_id");
+			columns.add("fileid");
 			columns.add("gfid");
-			columns.add("parent_folder");
-			columns.add("file_name");
+			columns.add("parentfolder");
+			columns.add("filename");
 			values.add(fileId);
 			values.add(parentId);
 			values.add(file.getName());
 		}
 		else
 		{
-			idColumn = "folder_id";
+			idColumn = "folderid";
 			table = "folders";
-			columns.add("parent_id");
-			columns.add("parent_folder");
-			columns.add("folder_name");
+			columns.add("parentid");
+			columns.add("parentfolder");
+			columns.add("foldername");
 			values.add(parentId);
 			values.add(file.getName());
 		}
@@ -154,13 +155,13 @@ public class GFileSystem
 	public ArrayList<String> getChildrenFiles(DocumentGroup folder) throws Exception
 	{
 		ArrayList<String> columns = new ArrayList<String>();
-		columns.add("file_id");
-		columns.add("file_name");
-		columns.add("parent_folder");
+		columns.add("fileid");
+		columns.add("filename");
+		columns.add("parentfolder");
 
-		Map<String, ArrayList<String>> results = db.select("files", columns, "parent_folder = " + folder.getName());
+		Map<String, ArrayList<String>> results = db.select("files", columns, "parentfolder == " + docIdPrefix + folder.getDocId());
 		
-		ArrayList<String> fileIds = results.get("file_id");
+		ArrayList<String> fileIds = results.get("fileid");
 		return fileIds;
 	}
 	
@@ -173,13 +174,70 @@ public class GFileSystem
 	public ArrayList<String> getChildrenFolders(DocumentGroup folder) throws Exception
 	{
 		ArrayList<String> columns = new ArrayList<String>();
-		columns.add("folder_id");
-		columns.add("folder_name");
-		columns.add("parent_folder");
+		columns.add("folderid");
+		columns.add("foldername");
+		columns.add("parentfolder");
 
-		Map<String, ArrayList<String>> results = db.select("folders", columns, "parent_folder = " + folder.getName());
+		Map<String, ArrayList<String>> results = db.select("folders", columns, "parentfolder == " + docIdPrefix + folder.getDocId());
 		
-		ArrayList<String> fileIds = results.get("file_id");
+		ArrayList<String> fileIds = results.get("fileid");
 		return fileIds;
+	}
+	
+	/**
+	 * Gets a list of open files and their positions (fileid, posx, posy)
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, ArrayList<String>> getOpenFiles() throws Exception
+	{
+		ArrayList<String> columns = new ArrayList<String>();
+		columns.add("fileid");
+		columns.add("posx");
+		columns.add("posy");
+
+		Map<String, ArrayList<String>> results = db.select("open", columns, null);
+
+		return results;
+	}
+	
+	/**
+	 * Marks a file as open in the workspace
+	 * @param file The document to open
+	 * @param posX Its X coordinate
+	 * @param posY Its Y coordinate
+	 */
+	public void setFileOpen(Document file, Integer posX, Integer posY)
+	{
+		String fileId = docIdPrefix + file.getDocId();
+		ArrayList<String> columns = new ArrayList<String>();
+		ArrayList<String> values = new ArrayList<String>();
+
+		//columns.add("fileid");
+		columns.add("gfid");
+		columns.add("filename");
+		columns.add("posx");
+		columns.add("posy");
+		values.add(fileId);
+		values.add(file.getName());
+		values.add(posX.toString());
+		values.add(posY.toString());
+
+		try
+		{
+			//See if it exists first
+			Map<String, ArrayList<String>> results = db.select("open", columns, "gfid = " + fileId);
+			if(results.size() > 0)
+			{
+				return;
+			}
+
+			db.insert("open", columns, values);
+		}
+		catch (Exception e)
+		{
+			//TODO: Do something with this?
+			return;
+		}
 	}
 }
