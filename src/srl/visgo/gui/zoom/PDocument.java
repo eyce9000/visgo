@@ -119,6 +119,14 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseDragged(PInputEvent event){
 		PNode aNode = event.getPickedNode();
+		double scale = aNode.getGlobalScale();
+		double x = aNode.getX();
+		double y = aNode.getY();
+		aNode.getParent().removeChild(aNode);
+		Visgo.canvas.getLayer().addChild(aNode);
+		aNode.setX(x);
+		aNode.setY(y);
+		aNode.setScale(scale);
         PDimension delta = event.getDeltaRelativeTo(aNode);
         aNode.translate(delta.width, delta.height);
 	}
@@ -146,7 +154,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				/**********************
 				 * TODO: Need a better way to check if dropped into a group! This bounds check is invalid
 				 **********************/
-				if(PDocumentGroup.currentBounds.contains(aNode.getBounds().getCenter2D()))
+				if(group.computeFullBounds(null).contains(aNode.getBounds().getCenter2D()))
 				{
 					//Dropped into same group
 					if(group.getDocumentGroup().getDocuments().contains(mDocument.getDocument()))

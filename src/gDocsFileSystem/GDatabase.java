@@ -13,6 +13,7 @@ import com.google.gdata.client.spreadsheet.ListQuery;
 import com.google.gdata.client.spreadsheet.SpreadsheetQuery;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.client.spreadsheet.WorksheetQuery;
+import com.google.gdata.data.Person;
 import com.google.gdata.data.spreadsheet.Cell;
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.CellFeed;
@@ -22,6 +23,7 @@ import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.data.spreadsheet.WorksheetFeed;
+import com.google.gdata.model.atom.Author;
 
 /**
  * Google Docs Relational Database
@@ -281,5 +283,13 @@ public class GDatabase
 			//No rows, start the index at 1
 			return 1;
 		}
+	}
+	
+	/**
+	 * 
+	 * @return authors of this database
+	 */
+	public List<Person> getAuthors(){
+		return database.getAuthors();
 	}
 }

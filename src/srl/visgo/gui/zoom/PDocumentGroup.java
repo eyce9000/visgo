@@ -28,7 +28,7 @@ public class PDocumentGroup extends PNode{
 		mGroup.setPDocGroup(this);
 			
 		docNodes = new ArrayList<PDocument>();
-		this.setPaint(Color.GRAY);
+		this.setPaint(Color.LIGHT_GRAY);
 		invalidate();
 	}
 	public void setColumnCount(int count){

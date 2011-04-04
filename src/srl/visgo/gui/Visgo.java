@@ -48,20 +48,26 @@ import gDocsFileSystem.GFileSystem;
 
 public class Visgo extends JFrame {
 	public static void main(String[] args){
-		UIUtils.setPreferredLookAndFeel();
-		NativeInterface.open();
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				Login.getCredentials();
+
+
+
+		//UIUtils.setPreferredLookAndFeel();
+		//NativeInterface.open();
+		//SwingUtilities.invokeLater(new Runnable() {
+			//public void run() {
+				//Login.getCredentials();
+				Login.username = "hpi.test.2@gmail.com";
+				Login.password = "Visgo2011";
 				Visgo.data = new Data();
+
 				Visgo visgo = new Visgo();
 				visgo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				visgo.setSize(1000,700);
 				visgo.setVisible(true);
+			//}
+		//});
+		//NativeInterface.runEventPump();
 
-			}
-		});
-		NativeInterface.runEventPump();
 	}
 
 	DocsService docsService;
@@ -71,6 +77,8 @@ public class Visgo extends JFrame {
 
 	Visgo(){
 		super("Visgo");
+
+		Visgo.data = new Data();
 		Container contentPane = this.getContentPane();
 
 		chatPanel = new ChatPanel();
@@ -103,15 +111,14 @@ public class Visgo extends JFrame {
 		//canvas.addMouseMotionListener(mouseListener);
 		contentPane.add(canvas,BorderLayout.CENTER);
 		contentPane.add(chatPanel,BorderLayout.WEST);
+		load();
 	}
 
 	private void load(){
 		try{
-			data = new Data();
-
 			int i = 1;
 			PDocumentGroup prevNode = null;
-			for(DocumentGroup group : data.getDocumentRoot().getRootDocumentGroups()){
+			for(DocumentGroup group : data.workspace.getRootDocumentGroups()){
 
 				PDocumentGroup projectNode = new PDocumentGroup(group);
 				projectNode.setColumnCount(3);

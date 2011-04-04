@@ -1,14 +1,19 @@
 package srl.visgo.data;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
+
 import srl.visgo.gui.Login;
 import srl.visgo.util.chat.ChatManager;
 import srl.visgo.util.chat.MessageProcessor;
 import srl.visgo.util.chat.listeners.CommandMessageListener;
+import srl.visgo.util.chat.listeners.GroupMessage;
 import srl.visgo.util.chat.listeners.GroupMessageListener;
 import srl.visgo.util.chat.listeners.IndividualMessageListener;
 
@@ -19,30 +24,83 @@ import com.google.gdata.util.ServiceException;
 import gDocsFileSystem.GDatabase;
 
 public class Data {
-	private Workspace documentRoot;
-	private GDatabase database;
+	public Workspace workspace;
+	private GDatabase mDatabase;
 	private ChatManager chatManager;
 	private HashMap<String,Collaborator> collaborators;
 	private DocsService docsService;
 	private LinkedList<DataListener> listeners;
 	private MessageProcessor messageProcessor;
+	private DocumentList mDocumentList;
 
 	public Data(){
+		mDatabase = new GDatabase();
 		
 		listeners = new LinkedList<DataListener>();
 		collaborators = new HashMap<String,Collaborator>();
 		docsService = new DocsService("VISGO-V1");
 		try {
 			docsService.setUserCredentials(Login.username, Login.password);
-			chatManager = new ChatManager(Login.username, Login.password);
-			messageProcessor = chatManager.getMessageInterpreter();
+			loginToChat();
+			mDocumentList = new DocumentList(docsService);
+			selectDatabase();
+			workspace = new Workspace(mDocumentList,mDatabase);
+			loadCollaborators();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public Workspace getDocumentRoot(){
-		return documentRoot;
+	private void loginToChat(){
+		chatManager = new ChatManager(Login.username, Login.password);
+		try
+		{
+			//connecting to gtalk 
+			chatManager.connect();		
+		}
+		catch (XMPPException xe){
+			
+			System.out.println("Cannot Connect to the gtalk server :");
+		}
+		catch (IllegalStateException ie){
+			
+			System.out.println("Cannot Connect to the gtalk server :");
+		}
+		messageProcessor = chatManager.getMessageInterpreter();
+	}
+	
+	private void loadCollaborators(){
+		collaborators = new HashMap<String, Collaborator>();
+		Collaborator collab = new Collaborator("hpi.test.1@gmail.com",Color.BLUE);
+		collaborators.put(collab.getUsername(),collab);
+		chatManager.createChat(collab.getUsername(), "1", null);	
+		
+	}
+	
+	private void selectDatabase(){
+		mDatabase = new GDatabase();
+		Collection<Document> databases = mDocumentList.getVisgoDatabases();
+		if(databases.size() == 0){
+			//TODO create new database
+			System.out.println("No database found");
+			System.exit(0);
+		}
+		else if(databases.size() == 1){
+			Document databaseDoc = (Document)databases.toArray()[0];
+			try{
+				mDatabase.setDatabase(databaseDoc.getName());
+			}
+			catch(Exception e){
+				e.printStackTrace();
+				System.exit(0);
+			}
+		}
+		else{
+			//TODO select from multiple databases
+			System.out.println("More than one database found");
+			System.exit(0);
+		}
+		
 	}
 	
 	public Collaborator getCollaborator(String username){
@@ -68,5 +126,10 @@ public class Data {
 	}
 	public void addCommandMessageListener(CommandMessageListener listener){
 		messageProcessor.addCommandMessageListener(listener);
+	}
+	
+	public GroupMessage sendGroupMessage(String text){
+		GroupMessage message = new GroupMessage(new Message(),text);
+		return chatManager.sendGroupMessage(message);
 	}
 }

@@ -152,7 +152,6 @@ public class ChatManager implements ChatManagerListener {
 			try {
 				chatInstanceMap.get(userID).sendMessage(message);
 				
-				
 			} catch (XMPPException e) {
 				
 				System.out.print("Problem with sending message :: " + message);
@@ -236,11 +235,13 @@ public class ChatManager implements ChatManagerListener {
 	 * use this to send group messages 
 	 * @param gMessage
 	 */
-	public void sendGroupMessage(GroupMessage gMessage){
+	public GroupMessage sendGroupMessage(GroupMessage gMessage){
 		
 		MessageCreator mc = new MessageCreator(gMessage);
 		
 		sendGroupMessage(mc.toXML());
+		
+		return mc.getGMessage();
 		
 	}
 }

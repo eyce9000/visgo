@@ -11,7 +11,7 @@ public class GFileSystem
 {
 	private GDatabase db;
 	private static final String docIdPrefix = "GDFS_"; //Because Google hates queries starting with a digit but uses doc IDs thst start with digits
-	
+
 	/**
 	 * File System abstraction on top of GDatabase
 	 * @param workspace Name of the workspace spreadsheet (Database)
@@ -21,7 +21,7 @@ public class GFileSystem
 	{
 		db = database;
 	}
-	
+
 	/**
 	 * Updates a file/folder's parent
 	 * @param file File to update
@@ -35,7 +35,7 @@ public class GFileSystem
 		String parentId = docIdPrefix + parent.getDocId();
 		String idColumn;
 		String table;
-		
+
 		if(isFile)
 		{
 			idColumn = "gfid";
@@ -46,10 +46,10 @@ public class GFileSystem
 			idColumn = "folderid";
 			table = "folders";
 		}
-		
+
 		ArrayList<String> columns = new ArrayList<String>();
 		columns.add("parentfolder");
-		
+
 		ArrayList<String> values = new ArrayList<String>();
 		values.add(parentId);
 
@@ -72,8 +72,70 @@ public class GFileSystem
 			return false;
 		}
 	}
-	
-	
+
+	/**
+	 * Indicates whether the entry is already added
+	 * @param file
+	 * @return
+	 */
+	public boolean containsEntry(Entry file){
+		String fileId = docIdPrefix + file.getDocId();
+		String parentId;
+		String idColumn;
+		String table;
+		ArrayList<String> columns = new ArrayList<String>();
+		ArrayList<String> values = new ArrayList<String>();
+
+
+
+		if(file.hasParent())
+		{
+			parentId = docIdPrefix + file.getParent().getDocId();
+		}
+		else
+		{
+			parentId = "";
+		}
+
+		if(file instanceof Document)
+		{
+			idColumn = "gfid";
+			table = "files";
+			columns.add("fileid");
+			columns.add("gfid");
+			columns.add("parentfolder");
+			columns.add("filename");
+			values.add(fileId);
+			values.add(parentId);
+			values.add(file.getName());
+		}
+		else
+		{
+			idColumn = "folderid";
+			table = "folders";
+			columns.add("parentid");
+			columns.add("parentfolder");
+			columns.add("foldername");
+			values.add(parentId);
+			values.add(file.getName());
+		}
+		try{
+			Map<String, ArrayList<String>> results = db.select(table, columns, idColumn + " = " + fileId);
+			if(results.size() > 0)
+			{
+				//Already exists
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+		catch (Exception e){
+			return false;
+		}
+	}
+
+
 	/**
 	 * Inserts a document or folder into the workspace
 	 * @param file File to insert
@@ -89,9 +151,9 @@ public class GFileSystem
 		String table;
 		ArrayList<String> columns = new ArrayList<String>();
 		ArrayList<String> values = new ArrayList<String>();
-		
-		
-		
+
+
+
 		if(file.hasParent())
 		{
 			parentId = docIdPrefix + file.getParent().getDocId();
@@ -100,7 +162,7 @@ public class GFileSystem
 		{
 			parentId = "";
 		}
-		
+
 		if(file instanceof Document)
 		{
 			idColumn = "gfid";
@@ -134,7 +196,7 @@ public class GFileSystem
 				//Already exists
 				return false;
 			}
-			
+
 			//Now get the next available id
 			Integer id = db.getNextId(table, idColumn);
 			columns.add(0, id.toString());
@@ -148,7 +210,7 @@ public class GFileSystem
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Gets a list of files in the document group
 	 * @param folder
@@ -163,11 +225,11 @@ public class GFileSystem
 		columns.add("parentfolder");
 
 		Map<String, ArrayList<String>> results = db.select("files", columns, "parentfolder == " + docIdPrefix + folder.getDocId());
-		
+
 		ArrayList<String> fileIds = results.get("fileid");
 		return fileIds;
 	}
-	
+
 	/**
 	 * Gets a list of folders in the document group
 	 * @param folder
@@ -182,11 +244,11 @@ public class GFileSystem
 		columns.add("parentfolder");
 
 		Map<String, ArrayList<String>> results = db.select("folders", columns, "parentfolder == " + docIdPrefix + folder.getDocId());
-		
+
 		ArrayList<String> fileIds = results.get("fileid");
 		return fileIds;
 	}
-	
+
 	/**
 	 * Gets a list of open files and their positions (fileid, posx, posy)
 	 * @return
@@ -203,7 +265,7 @@ public class GFileSystem
 
 		return results;
 	}
-	
+
 	/**
 	 * Marks a file as open in the workspace
 	 * @param file The document to open

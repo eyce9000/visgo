@@ -39,11 +39,16 @@ public class Login {
 	public static String username;
 	private static boolean credentialsLoaded = false;
 	
+	public static void main(String[] args){
+		getCredentials();
+		System.out.println(username+" "+password);
+	}
+	
 	public static synchronized void getCredentials(){
 		boolean successfulLogIn = false;
 		DocsService service = new DocsService("VISGO-TEST-LOGIN");
 		while(!successfulLogIn){
-			if(!new Login().getCredentialsInput())
+			if(!(new Login().getCredentialsInput()))
 				System.exit(0);
 			try {
 				service.setUserCredentials(Login.username, Login.password);
@@ -58,36 +63,36 @@ public class Login {
 		credentialsLoaded = false;
 		final Login login = this;
 		final LoginDialog loginDialog = new LoginDialog();
-		loginDialog.addWindowListener(new WindowListener(){
-			@Override
-			public void windowActivated(WindowEvent arg0) {}
-
-			@Override
-			public void windowClosed(WindowEvent arg0) {
-			}
-
-			@Override
-			public void windowClosing(WindowEvent arg0) {
-				arg0.getWindow().setVisible(false);
-				synchronized(login){
-					login.notify();
-				}
-			}
-			@Override
-			public void windowDeactivated(WindowEvent arg0) {}
-
-			@Override
-			public void windowDeiconified(WindowEvent arg0) {}
-
-			@Override
-			public void windowIconified(WindowEvent arg0) {}
-
-			@Override
-			public void windowOpened(WindowEvent arg0) {}
-		});
+		
 		boolean finished = false; 
 		while(!finished){
-			
+			loginDialog.addWindowListener(new WindowListener(){
+				@Override
+				public void windowActivated(WindowEvent arg0) {}
+
+				@Override
+				public void windowClosed(WindowEvent arg0) {
+				}
+
+				@Override
+				public void windowClosing(WindowEvent arg0) {
+					arg0.getWindow().setVisible(false);
+					synchronized(login){
+						login.notify();
+					}
+				}
+				@Override
+				public void windowDeactivated(WindowEvent arg0) {}
+
+				@Override
+				public void windowDeiconified(WindowEvent arg0) {}
+
+				@Override
+				public void windowIconified(WindowEvent arg0) {}
+
+				@Override
+				public void windowOpened(WindowEvent arg0) {}
+			});
 			loginDialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 			loginDialog.setAlwaysOnTop(true);
 			loginDialog.pack();
