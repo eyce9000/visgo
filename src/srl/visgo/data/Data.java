@@ -4,12 +4,14 @@ import java.awt.Color;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
@@ -36,7 +38,7 @@ public class Data {
 	private GDatabase mDatabase;
 	private Document workspaceDoc;
 	private ChatManager chatManager;
-	private HashMap<String,Collaborator> collaborators;
+	private HashMap<String,Collaborator> mCollaborators;
 	private DocsService docsService;
 	private LinkedList<DataListener> listeners;
 	private MessageProcessor messageProcessor;
@@ -44,9 +46,9 @@ public class Data {
 
 	public Data(){
 		mDatabase = new GDatabase();
-		
+
 		listeners = new LinkedList<DataListener>();
-		collaborators = new HashMap<String,Collaborator>();
+		mCollaborators = new HashMap<String,Collaborator>();
 		docsService = new DocsService("VISGO-V1");
 		try {
 			docsService.setUserCredentials(Login.username, Login.password);
@@ -54,13 +56,12 @@ public class Data {
 			mDocumentList = new DocumentList(docsService);
 			selectDatabase();
 			workspace = new Workspace(mDocumentList,mDatabase);
-			//updateCollaborators();
-			loadCollaborators();
+			updateCollaborators();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void loginToChat(){
 		chatManager = new ChatManager(Login.username, Login.password);
 		try
@@ -69,48 +70,66 @@ public class Data {
 			chatManager.connect();		
 		}
 		catch (XMPPException xe){
-			
+
 			System.out.println("Cannot Connect to the gtalk server :");
 		}
 		catch (IllegalStateException ie){
-			
+
 			System.out.println("Cannot Connect to the gtalk server :");
 		}
 		messageProcessor = chatManager.getMessageInterpreter();
 	}
-	
-	private void loadCollaborators(){
-		collaborators = new HashMap<String, Collaborator>();
-		Collaborator collab = new Collaborator("hpi.test.1@gmail.com",Color.BLUE);
-		collaborators.put(collab.getUsername(),collab);
-		chatManager.createChat(collab.getUsername(), "1", null);	
-	}
-	
+
 	private void updateCollaborators() throws MalformedURLException, IOException, ServiceException,Exception{
 		AclFeed aclFeed = docsService.getFeed(new URL(workspaceDoc.getListEntry().getAclFeedLink().getHref()), AclFeed.class);
-		HashSet<String> collaborators = new HashSet<String>();
+		HashSet<String> tempCollaborators = new HashSet<String>();
 		for (AclEntry entry : aclFeed.getEntries()) {
 			String email = entry.getScope().getValue();
 			String rolename = entry.getRole().getValue();
-			collaborators.add(email);
+			tempCollaborators.add(email.split("@")[0]);
 		}
-		List<String>columns = Arrays.asList(new String[]{"userid","gid","realname"});
-		
-		int currentUserId = mDatabase.select("collaborators", columns, null).size();
-		
-		for(String collaborator:collaborators){
+		List<String>columns = Arrays.asList(new String[]{"userid","gid","realname","color"});
+
+		Map<String,ArrayList<String>> results= mDatabase.select("collaborators", columns, null);
+		for(String gid : results.get("gid")){
+			tempCollaborators.remove(gid);
+		}
+
+
+		int currentUserId = results.get("gid").size();
+		boolean reloadResults = false;
+		for(String collaborator:tempCollaborators){
 			List<String> values = Arrays.asList(new String[]{
 					currentUserId+"",
 					collaborator,
-					collaborator.split("@")[0]});
-			if(mDatabase.select("collaborators", columns, "gid = "+collaborator).isEmpty()){
-				mDatabase.insert("collaborators",columns,values);
+					collaborator,"#ffffff"});
+			System.out.println("Adding collaborator "+collaborator);
+			mDatabase.insert("collaborators",columns,values);
+			currentUserId ++;
+			reloadResults = true;
+		}
+		if(reloadResults)
+			results = mDatabase.select("collaborators", columns, null);
+		List<String>gids = results.get("gid");
+		List<String>colors = results.get("color");
+
+
+
+		mCollaborators = new HashMap<String, Collaborator>();
+		for(int i=0; i<gids.size(); i++){
+			String gid = gids.get(i)+"@gmail.com";
+			String colorStr = colors.get(i);
+			System.out.println(colorStr);
+			Color color = Color.decode(colorStr);
+			Collaborator collab = new Collaborator(gid,color);
+			mCollaborators.put(collab.getUsername(),collab);
+			if(!gid.equals(Login.username)){
+				chatManager.createChat(collab.getUsername(), i+"", null);
 			}
 		}
-		
-		
+
 	}
-	
+
 	private void selectDatabase(){
 		mDatabase = new GDatabase();
 		Collection<Document> databases = mDocumentList.getVisgoDatabases();
@@ -134,14 +153,14 @@ public class Data {
 			System.out.println("More than one database found");
 			System.exit(0);
 		}
-		
+
 	}
-	
+
 	public Collaborator getCollaborator(String username){
-		return collaborators.get(username);
+		return mCollaborators.get(username);
 	}
 	public Collection<Collaborator> getAllCollaborators(){
-		return collaborators.values();
+		return mCollaborators.values();
 	}
 	public synchronized void fireDataChange(DataEventType type){
 		for(DataListener listener:listeners){
@@ -151,7 +170,7 @@ public class Data {
 	public void addDataListener(DataListener listener){
 		listeners.add(listener);
 	}
-	
+
 	public void addIndividualMessageListener(IndividualMessageListener listener){
 		messageProcessor.addIndividualMessageListener(listener);
 	}
@@ -161,7 +180,7 @@ public class Data {
 	public void addCommandMessageListener(CommandMessageListener listener){
 		messageProcessor.addCommandMessageListener(listener);
 	}
-	
+
 	public GroupMessage sendGroupMessage(String text){
 		GroupMessage message = new GroupMessage(new Message(),text);
 		return chatManager.sendGroupMessage(message);

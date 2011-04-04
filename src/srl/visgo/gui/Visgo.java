@@ -78,7 +78,7 @@ public class Visgo extends JFrame {
 	Visgo(){
 		super("Visgo");
 
-		Visgo.data = new Data();
+		//Visgo.data = new Data();
 		Container contentPane = this.getContentPane();
 
 		chatPanel = new ChatPanel();
