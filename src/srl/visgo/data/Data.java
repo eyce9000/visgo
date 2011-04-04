@@ -58,15 +58,6 @@ public class Data {
 			workspace = new Workspace(mDocumentList,mDatabase);
 			updateCollaborators();
 
-			ArrayList<ArrayList<String>> rootStructure = workspace.mFileSystem.getWorkspaceStructure();
-			for(int i = 0; i < 2; i++)
-			{
-				for(int j = 0; j < rootStructure.get(i).size(); j++)
-				{
-					System.out.println(rootStructure.get(i).get(j));
-				}
-			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

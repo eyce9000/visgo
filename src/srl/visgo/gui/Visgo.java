@@ -20,9 +20,6 @@ import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.DocumentListFeed;
 
-import chrriis.common.UIUtils;
-import chrriis.dj.nativeswing.swtimpl.NativeInterface;
-
 import srl.visgo.data.Data;
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;

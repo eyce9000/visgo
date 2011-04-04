@@ -11,15 +11,18 @@ public class DocumentGroup implements Entry{
 	HashMap<String,Document> mDocuments;
 	HashMap<String,DocumentGroup> mSubGroups;
 	String mName;
-	DocumentListEntry mEntry;
+	String mId;
 	DocumentGroup mParent;
-	PDocumentGroup mPDGroup;
 	
 	
-	public DocumentGroup(DocumentListEntry entry) {
-		setListEntry(entry);
+	public DocumentGroup(String name) {
+		mName = name;
 		mSubGroups = new HashMap<String,DocumentGroup>();
 		mDocuments = new HashMap<String,Document>();
+	}
+	public DocumentGroup(String name,String id){
+		this(name);
+		mId = id;
 	}
 	public void addDocument(Document document){
 		mDocuments.put(document.getName(),document);
@@ -51,31 +54,13 @@ public class DocumentGroup implements Entry{
 		}
 	}
 	public String getName(){
-		return mEntry.getTitle().getPlainText();
+		return mName;
 	}
 	
 	public void removeDocument(Document document){
 		mDocuments.remove(document.getName());
 	}
 	
-
-	public void setPDocGroup(PDocumentGroup pDocGroup) {
-		mPDGroup = pDocGroup;
-		
-	}
-	
-	public PDocumentGroup getPDocGroup(){
-		return mPDGroup;
-	}
-	
-	@Override
-	public DocumentListEntry getListEntry() {
-		return mEntry;
-	}
-	@Override
-	public String getHref() {
-		return mEntry.getDocumentLink().getHref();
-	}
 	@Override
 	public void setParent(DocumentGroup parent) {
 		mParent = parent;
@@ -115,13 +100,8 @@ public class DocumentGroup implements Entry{
 		}
 	}
 	@Override
-	public String getDocId() {
-		return mEntry.getDocId();
-	}
-	@Override
-	public void setListEntry(DocumentListEntry entry) {
-		mEntry = new DocumentListEntry(entry);
-		mParent = null;
+	public String getId() {
+		return mId;
 	}
 	
 }

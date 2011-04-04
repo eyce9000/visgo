@@ -1,21 +1,9 @@
 package srl.visgo.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-
-import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
-import chrriis.common.UIUtils;
-import chrriis.dj.nativeswing.NSOption;
-import chrriis.dj.nativeswing.swtimpl.NativeInterface;
-import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
-import edu.umd.cs.piccolo.PNode;
 
 public class DocPanel extends JPanel {
+	/*
 	JWebBrowser browser;
 	public static void main(String[] args){
 
@@ -38,4 +26,5 @@ public class DocPanel extends JPanel {
 		this.add(browser,BorderLayout.CENTER);
 		browser.navigate("http://docs.google.com");
 	}
+	*/
 }

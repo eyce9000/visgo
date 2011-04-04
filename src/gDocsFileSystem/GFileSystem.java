@@ -1,7 +1,11 @@
 package gDocsFileSystem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+
+import com.google.gdata.util.common.base.Pair;
 
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
@@ -29,10 +33,10 @@ public class GFileSystem
 	 * @param isFile Whether it's a file or not (document group)
 	 * @return Update success or failure
 	 */
-	public boolean setParent(Entry file, DocumentGroup parent, boolean isFile)
+	public boolean setParent(Document file, DocumentGroup parent, boolean isFile)
 	{
-		String fileId = docIdPrefix + file.getDocId();
-		String parentId = docIdPrefix + parent.getDocId();
+		String fileId = docIdPrefix + file.getId();
+		String parentId = docIdPrefix + parent.getId();
 		String idColumn;
 		String table;
 
@@ -43,6 +47,7 @@ public class GFileSystem
 		}
 		else
 		{
+			parentId = parent.getId();
 			idColumn = "folderid";
 			table = "folders";
 		}
@@ -79,7 +84,7 @@ public class GFileSystem
 	 * @return
 	 */
 	public boolean containsEntry(Entry file){
-		String fileId = docIdPrefix + file.getDocId();
+		String fileId = docIdPrefix + file.getId();
 		String parentId;
 		String idColumn;
 		String table;
@@ -90,7 +95,7 @@ public class GFileSystem
 
 		if(file.hasParent())
 		{
-			parentId = docIdPrefix + file.getParent().getDocId();
+			parentId = docIdPrefix + file.getParent().getId();
 		}
 		else
 		{
@@ -145,7 +150,7 @@ public class GFileSystem
 	 */
 	public boolean insertEntry(Entry file)
 	{
-		String fileId = docIdPrefix + file.getDocId();
+		String fileId = docIdPrefix + file.getId();
 		String parentId;
 		String idColumn;
 		String table;
@@ -156,7 +161,7 @@ public class GFileSystem
 
 		if(file.hasParent())
 		{
-			parentId = docIdPrefix + file.getParent().getDocId();
+			parentId = docIdPrefix + file.getParent().getId();
 		}
 		else
 		{
@@ -217,17 +222,27 @@ public class GFileSystem
 	 * @return
 	 * @throws Exception
 	 */
-	public ArrayList<String> getChildrenFiles(DocumentGroup folder) throws Exception
+	public List<Pair<String,String>> getChildrenFiles(DocumentGroup folder) throws Exception
 	{
 		ArrayList<String> columns = new ArrayList<String>();
-		columns.add("fileid");
+		columns.add("gfid");
 		columns.add("filename");
 		columns.add("parentfolder");
 
-		Map<String, ArrayList<String>> results = db.select("files", columns, "parentfolder == " + docIdPrefix + folder.getDocId());
+		Map<String, ArrayList<String>> results = db.select("files", columns, "parentfolder == " + folder.getId());
 
-		ArrayList<String> fileIds = results.get("fileid");
-		return fileIds;
+		ArrayList<String> fileIds = results.get("gfid");
+		ArrayList<String> fileNames = results.get("filename");
+		
+		List<Pair<String,String>> resultPairs = new ArrayList<Pair<String,String>>();
+		
+		for(int i=0; i<fileIds.size(); i++){
+			String id = fileIds.get(i);
+			String name = fileNames.get(i);
+			resultPairs.add(new Pair<String,String>(id,name));
+		}
+		
+		return resultPairs;
 	}
 
 	/**
@@ -236,17 +251,27 @@ public class GFileSystem
 	 * @return
 	 * @throws Exception
 	 */
-	public ArrayList<String> getChildrenFolders(DocumentGroup folder) throws Exception
+	public List<Pair<String,String>> getChildrenFolders(DocumentGroup folder) throws Exception
 	{
 		ArrayList<String> columns = new ArrayList<String>();
 		columns.add("folderid");
 		columns.add("foldername");
 		columns.add("parentfolder");
 
-		Map<String, ArrayList<String>> results = db.select("folders", columns, "parentfolder == " + docIdPrefix + folder.getDocId());
+		Map<String, ArrayList<String>> results = db.select("folders", columns, "parentfolder == " + folder.getId());
 
-		ArrayList<String> fileIds = results.get("fileid");
-		return fileIds;
+		ArrayList<String> folderIds = results.get("folderid");
+		List<String> folderNames = results.get("foldername");
+		
+		List<Pair<String,String>> resultPairs = new ArrayList<Pair<String,String>>();
+		
+		for(int i=0; i<folderIds.size(); i++){
+			String id = folderIds.get(i);
+			String name = folderNames.get(i);
+			resultPairs.add(new Pair<String,String>(id,name));
+		}
+		
+		return resultPairs;
 	}
 
 	/**
@@ -274,7 +299,7 @@ public class GFileSystem
 	 */
 	public void setFileOpen(Document file, Integer posX, Integer posY)
 	{
-		String fileId = docIdPrefix + file.getDocId();
+		String fileId = docIdPrefix + file.getId();
 		ArrayList<String> columns = new ArrayList<String>();
 		ArrayList<String> values = new ArrayList<String>();
 
@@ -306,73 +331,40 @@ public class GFileSystem
 		}
 	}
 	
-	/**
-	 * Returns a list of root level folders [0] and the root level files [1]
-	 * @return
-	 * @throws Exception
-	 */
-	public ArrayList<ArrayList<String>> getWorkspaceStructure() throws Exception
-	{
-		ArrayList<String> columns = new ArrayList<String>();
-		columns.add("fileid");
-		columns.add("gfid");
-		columns.add("parentfolder");
-		columns.add("filename");
+	public List<Pair<String,String>> getRootFiles() throws Exception{
+		List<Pair<String,String>> results = new ArrayList<Pair<String,String>>();
 		
-		Map<String, ArrayList<String>> files = db.select("files", columns, null);
-		
-		columns.clear();
-		columns.add("folderid");
-		columns.add("parentfolder");
-		columns.add("foldername");
-		
-		Map<String, ArrayList<String>> folders = db.select("folders", columns, null);
-
-		ArrayList<String> rootFolders = new ArrayList<String>();
-		ArrayList<String> rootFiles = new ArrayList<String>();
-
-		//Get the root folders
-		ArrayList<Integer> rootFolderIds = new ArrayList<Integer>();
-		int i = 0;
-		for(String folderId : folders.get("parentfolder"))
-		{
-			if(Integer.parseInt(folderId) == 0)
-			{
-				rootFolderIds.add(i);
-			}
-			i++;
+		List<String> columns = Arrays.asList(new String[]{
+				"fileid",
+				"gfid",
+				"parentfolder",
+				"filename"
+		});
+		Map<String, ArrayList<String>> files = db.select("files", columns, "parentfolder = 0");
+		ArrayList<String> fileIds = files.get("gfid");
+		ArrayList<String> fileNames = files.get("filename");
+		for(int i=0; i<fileIds.size(); i++){
+			String id = fileIds.get(i);
+			id = id.substring(docIdPrefix.length());
+			results.add(new Pair<String,String>(fileIds.get(i),fileNames.get(i)));
 		}
+		return results;
+	}
+	
+	public List<Pair<String,String>> getRootFolders() throws Exception{
+		List<Pair<String,String>> results = new ArrayList<Pair<String,String>>();
 		
-		//Pull out their names
-		for(int j = 0; j < rootFolderIds.size(); j++)
-		{
-			int id = rootFolderIds.get(j).intValue();
-			rootFolders.add(folders.get("foldername").get(id));
+		List<String> columns = Arrays.asList(new String[]{
+				"folderid",
+				"parentfolder",
+				"foldername"
+		});
+		Map<String, ArrayList<String>> folders = db.select("folders", columns, "parentfolder = 0");
+		ArrayList<String> folderIds = folders.get("folderid");
+		ArrayList<String> folderNames = folders.get("foldername");
+		for(int i=0; i<folderIds.size(); i++){
+			results.add(new Pair<String,String>(folderIds.get(i),folderNames.get(i)));
 		}
-		
-		//Get the root files
-		ArrayList<Integer> rootFileIds = new ArrayList<Integer>();
-		int ii = 0;
-		for(String fileId : files.get("parentfolder"))
-		{
-			if(Integer.parseInt(fileId) == 0)
-			{
-				rootFileIds.add(ii);
-			}
-			ii++;
-		}
-		
-		//Pull out their names
-		for(Integer j = 0; j < rootFileIds.size(); j++)
-		{
-			int id = rootFileIds.get(j).intValue();
-			rootFiles.add(files.get("filename").get(id));
-		}
-		
-		ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
-		results.add(rootFolders);
-		results.add(rootFiles);
-		
 		return results;
 	}
 }

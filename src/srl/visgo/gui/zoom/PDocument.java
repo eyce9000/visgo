@@ -141,7 +141,8 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 		PDocumentGroup group;
 		PDocument doc;
 		DocumentGroup oldGroup = mDocument.getDocument().getParent();
-		PDocumentGroup oldPGroup = mDocument.getDocument().getParent().getPDocGroup();
+		//PDocumentGroup oldPGroup = mDocument.getDocument().getParent().getPDocGroup();
+		PDocumentGroup oldPGroup = null;
 		
 		for(int i = 0; i < layer.getChildrenCount(); i++)
 		{

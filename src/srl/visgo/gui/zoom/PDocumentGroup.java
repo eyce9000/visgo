@@ -25,7 +25,7 @@ public class PDocumentGroup extends PNode{
 	public PDocumentGroup(DocumentGroup group){
 		super();
 		mGroup = group;
-		mGroup.setPDocGroup(this);
+		//mGroup.setPDocGroup(this);
 			
 		docNodes = new ArrayList<PDocument>();
 		this.setPaint(Color.LIGHT_GRAY);

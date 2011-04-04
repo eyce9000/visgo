@@ -14,12 +14,12 @@ public class Document implements Entry {
 		return mEntry.getTitle().getPlainText();
 	}
 
-	@Override
+	
 	public DocumentListEntry getListEntry() {
 		return mEntry;
 	}
 
-	@Override
+	
 	public String getHref() {
 		return mEntry.getDocumentLink().getHref();
 	}
@@ -38,13 +38,12 @@ public class Document implements Entry {
 	public boolean hasParent() {
 		return mParent!=null;
 	}
-
 	@Override
-	public String getDocId() {
+	public String getId(){
 		return mEntry.getDocId();
 	}
 
-	@Override
+	
 	public void setListEntry(DocumentListEntry entry) {
 		this.mEntry = new DocumentListEntry(entry);
 		this.mParent = null;
