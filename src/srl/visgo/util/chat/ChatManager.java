@@ -1,11 +1,18 @@
 package srl.visgo.util.chat;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 
-import org.jivesoftware.smack.*;
+import javax.swing.event.EventListenerList;
 
-public class ChatManager implements ChatManagerListener {
+import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.packet.Presence;
+
+import srl.visgo.util.chat.listeners.CommandMessageListener;
+import srl.visgo.util.chat.listeners.StatusChangeListener;
+
+public class ChatManager implements ChatManagerListener, RosterListener {
 
 	private static String SERVERNAME = "gmail.com"; // Name of the server to connect
 	
@@ -21,6 +28,8 @@ public class ChatManager implements ChatManagerListener {
 	
 	private MessageProcessor messageInterpreter = null;
 	
+	private EventListenerList statusChangeListeners = null;
+	
 	public XMPPConnection getServerConnection() {
 		return serverConnection;
 	}
@@ -29,6 +38,20 @@ public class ChatManager implements ChatManagerListener {
 		return friendsList;
 	}
 
+	/**
+	 * Function to return the name of the friend corresponding to the gmail id
+	 * @param userID - gmail id of your friend
+	 * @return -  name of your friend
+	 */
+	public String getNameoftheFriend(String userID){
+		
+		if(friendsList.getEntry(userID)!=null){
+			
+			return friendsList.getEntry(userID).getName();
+		}
+		return null;
+	}
+	
 	public MessageProcessor getMessageInterpreter() {
 		return messageInterpreter;
 	}
@@ -47,6 +70,7 @@ public class ChatManager implements ChatManagerListener {
 		messageInterpreter = new MessageProcessor();
 		
 		chatInstanceMap = new HashMap<String, Chat>();
+		
 	}
 	
 	/***
@@ -61,6 +85,12 @@ public class ChatManager implements ChatManagerListener {
 		serverConnection.connect();
 				
 		serverConnection.login(this.loginName, this.password, "VISGO");
+		
+		friendsList = serverConnection.getRoster();
+		
+		friendsList.addRosterListener(this);
+		
+		statusChangeListeners = new EventListenerList();
 	}
 	
 	/**
@@ -68,13 +98,6 @@ public class ChatManager implements ChatManagerListener {
 	 * @return
 	 */
 	public Roster getListofFriends(){
-		
-		if(friendsList == null && serverConnection.isConnected())
-			
-			friendsList = serverConnection.getRoster();
-		else
-			
-			friendsList = null;
 		
 		return friendsList;
 	}
@@ -142,7 +165,9 @@ public class ChatManager implements ChatManagerListener {
 	 */
 	public void sendMessage(String userID, String message){
 		
-		if(chatInstanceMap.containsKey(userID)){
+		// Checking if the user is available before sending the message.
+		if(chatInstanceMap.containsKey(userID)
+				&& friendsList.getPresence(userID).getType() == Presence.Type.available){
 			
 			try {
 				chatInstanceMap.get(userID).sendMessage(message);
@@ -190,5 +215,61 @@ public class ChatManager implements ChatManagerListener {
 		
 		}
 	}
+
+	@Override
+	public void entriesAdded(Collection<String> arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void entriesDeleted(Collection<String> arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void entriesUpdated(Collection<String> arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void presenceChanged(Presence arg0) {
+		// TODO Auto-generated method stub
+		
+		String  userID = arg0.getFrom();
+		if(chatInstanceMap.containsKey(userID)){
+			
+			this.fireStatusChangeEvent(userID, arg0.getType());
+		}
+	}
 	
+	/**
+	 * listen to changes in the status of the users involved in the group
+	 * @param listener
+	 */
+	public void addStatusChangeListener(StatusChangeListener listener){
+		
+		statusChangeListeners.add(StatusChangeListener.class, listener);
+	}
+	
+	/** stop listening to changes in the status of the users in the group
+	 * 
+	 * @param listener
+	 */
+	public void removeStatusChangeListener(StatusChangeListener listener){
+		
+		statusChangeListeners.remove(StatusChangeListener.class, listener);
+	}
+	
+	public void fireStatusChangeEvent(String userID, Presence.Type status){
+		
+		Object[] listenerList = statusChangeListeners.getListenerList();
+		
+		for(int i = 0; i < listenerList.length - 1; i++){
+			
+			((StatusChangeListener)listenerList[i+1]).StatusChanged(userID, status);
+		}
+	}
 }
