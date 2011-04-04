@@ -2,9 +2,14 @@ package srl.visgo.data;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
@@ -18,6 +23,9 @@ import srl.visgo.util.chat.listeners.GroupMessageListener;
 import srl.visgo.util.chat.listeners.IndividualMessageListener;
 
 import com.google.gdata.client.docs.DocsService;
+import com.google.gdata.data.Person;
+import com.google.gdata.data.acl.AclEntry;
+import com.google.gdata.data.acl.AclFeed;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
 
@@ -26,6 +34,7 @@ import gDocsFileSystem.GDatabase;
 public class Data {
 	public Workspace workspace;
 	private GDatabase mDatabase;
+	private Document workspaceDoc;
 	private ChatManager chatManager;
 	private HashMap<String,Collaborator> collaborators;
 	private DocsService docsService;
@@ -45,6 +54,7 @@ public class Data {
 			mDocumentList = new DocumentList(docsService);
 			selectDatabase();
 			workspace = new Workspace(mDocumentList,mDatabase);
+			//updateCollaborators();
 			loadCollaborators();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -74,6 +84,30 @@ public class Data {
 		Collaborator collab = new Collaborator("hpi.test.1@gmail.com",Color.BLUE);
 		collaborators.put(collab.getUsername(),collab);
 		chatManager.createChat(collab.getUsername(), "1", null);	
+	}
+	
+	private void updateCollaborators() throws MalformedURLException, IOException, ServiceException,Exception{
+		AclFeed aclFeed = docsService.getFeed(new URL(workspaceDoc.getListEntry().getAclFeedLink().getHref()), AclFeed.class);
+		HashSet<String> collaborators = new HashSet<String>();
+		for (AclEntry entry : aclFeed.getEntries()) {
+			String email = entry.getScope().getValue();
+			String rolename = entry.getRole().getValue();
+			collaborators.add(email);
+		}
+		List<String>columns = Arrays.asList(new String[]{"userid","gid","realname"});
+		
+		int currentUserId = mDatabase.select("collaborators", columns, null).size();
+		
+		for(String collaborator:collaborators){
+			List<String> values = Arrays.asList(new String[]{
+					currentUserId+"",
+					collaborator,
+					collaborator.split("@")[0]});
+			if(mDatabase.select("collaborators", columns, "gid = "+collaborator).isEmpty()){
+				mDatabase.insert("collaborators",columns,values);
+			}
+		}
+		
 		
 	}
 	
@@ -86,9 +120,9 @@ public class Data {
 			System.exit(0);
 		}
 		else if(databases.size() == 1){
-			Document databaseDoc = (Document)databases.toArray()[0];
+			workspaceDoc = (Document)databases.toArray()[0];
 			try{
-				mDatabase.setDatabase(databaseDoc.getName());
+				mDatabase.setDatabase(workspaceDoc.getName());
 			}
 			catch(Exception e){
 				e.printStackTrace();

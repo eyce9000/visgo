@@ -1,6 +1,7 @@
 package gDocsFileSystem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +147,7 @@ public class GDatabase
 	 * @return a map of column values, mapped by column name
 	 * @throws Exception if error in retrieving the spreadsheet information
 	 */
-	public Map<String, ArrayList<String>> select(String table, ArrayList<String> columns, String conditions) throws Exception
+	public Map<String, ArrayList<String>> select(String table, List<String> columns, String conditions) throws Exception
 	{
 		WorksheetEntry worksheet = getTable(table);
 		HashMap<String, Integer> headers = getColumnHeaders(worksheet);
@@ -203,7 +204,7 @@ public class GDatabase
 	 * @return a map of column values, mapped by column name
 	 * @throws Exception if error in retrieving the spreadsheet information
 	 */
-	public void insert(String table, ArrayList<String> columns, ArrayList<String> values) throws Exception
+	public void insert(String table, List<String> columns, List<String> values) throws Exception
 	{
 		if(columns.size() != values.size())
 		{
@@ -231,7 +232,7 @@ public class GDatabase
 	 * @return The number of affected rows
 	 * @throws Exception if error in retrieving the spreadsheet information
 	 */
-	public Integer update(String table, ArrayList<String> columns, ArrayList<String> values, String conditions) throws Exception
+	public Integer update(String table, List<String> columns, List<String> values, String conditions) throws Exception
 	{
 		if(columns.size() != values.size())
 		{
