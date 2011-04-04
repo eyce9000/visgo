@@ -10,7 +10,7 @@ import srl.visgo.data.Entry;
 public class GFileSystem
 {
 	private GDatabase db;
-	private static final String docIdPrefix = "GDFS_"; //Because Google hates queries starting with a digit but uses doc IDs thst start with digits
+	private static final String docIdPrefix = "GDFS_"; //Because Google hates queries starting with a digit but uses doc IDs that start with digits
 
 	/**
 	 * File System abstraction on top of GDatabase
@@ -304,5 +304,75 @@ public class GFileSystem
 			//TODO: Do something with this?
 			return;
 		}
+	}
+	
+	/**
+	 * Returns a list of root level folders [0] and the root level files [1]
+	 * @return
+	 * @throws Exception
+	 */
+	public ArrayList<ArrayList<String>> getWorkspaceStructure() throws Exception
+	{
+		ArrayList<String> columns = new ArrayList<String>();
+		columns.add("fileid");
+		columns.add("gfid");
+		columns.add("parentfolder");
+		columns.add("filename");
+		
+		Map<String, ArrayList<String>> files = db.select("files", columns, null);
+		
+		columns.clear();
+		columns.add("folderid");
+		columns.add("parentfolder");
+		columns.add("foldername");
+		
+		Map<String, ArrayList<String>> folders = db.select("folders", columns, null);
+
+		ArrayList<String> rootFolders = new ArrayList<String>();
+		ArrayList<String> rootFiles = new ArrayList<String>();
+
+		//Get the root folders
+		ArrayList<Integer> rootFolderIds = new ArrayList<Integer>();
+		int i = 0;
+		for(String folderId : folders.get("parentfolder"))
+		{
+			if(Integer.parseInt(folderId) == 0)
+			{
+				rootFolderIds.add(i);
+			}
+			i++;
+		}
+		
+		//Pull out their names
+		for(int j = 0; j < rootFolderIds.size(); j++)
+		{
+			int id = rootFolderIds.get(j).intValue();
+			rootFolders.add(folders.get("foldername").get(id));
+		}
+		
+		//Get the root files
+		ArrayList<Integer> rootFileIds = new ArrayList<Integer>();
+		int ii = 0;
+		for(String fileId : files.get("parentfolder"))
+		{
+			if(Integer.parseInt(fileId) == 0)
+			{
+				rootFileIds.add(ii);
+			}
+			ii++;
+		}
+		
+		//Pull out their names
+		for(Integer j = 0; j < rootFileIds.size(); j++)
+		{
+			int id = rootFileIds.get(j).intValue();
+			rootFiles.add(files.get("filename").get(id));
+		}
+		
+		ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
+		results.add(rootFolders);
+		results.add(rootFiles);
+		
+		return results;
 	}
 }

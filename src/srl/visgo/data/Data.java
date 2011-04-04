@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,6 +57,14 @@ public class Data {
 			workspace = new Workspace(mDocumentList,mDatabase);
 			//updateCollaborators();
 			loadCollaborators();
+			ArrayList<ArrayList<String>> rootStructure = workspace.mFileSystem.getWorkspaceStructure();
+			for(int i = 0; i < 2; i++)
+			{
+				for(int j = 0; j < rootStructure.get(i).size(); j++)
+				{
+					System.out.println(rootStructure.get(i).get(j));
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
