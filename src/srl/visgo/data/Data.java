@@ -122,7 +122,10 @@ public class Data {
 			String colorStr = colors.get(i);
 			System.out.println(colorStr);
 			Color color = Color.decode(colorStr);
+			//if(!gid.equals("eyce9000@gmail.com"))
+			//	continue;
 			Collaborator collab = new Collaborator(gid,color);
+			
 			mCollaborators.put(collab.getUsername(),collab);
 			if(!gid.equals(Login.username)){
 				chatManager.createChat(collab.getUsername(), i+"", null);
