@@ -1,5 +1,6 @@
 package srl.visgo.data;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -33,12 +34,29 @@ public class DocumentGroup implements Entry{
 			addDocument(doc);
 		}
 	}
+	public Collection<Entry> getRootEntries(){
+		ArrayList<Entry> rootEntries = new ArrayList<Entry>();
+		rootEntries.addAll(mDocuments.values());
+		rootEntries.addAll(mSubGroups.values());
+		return rootEntries;
+	}
 	public Collection<Document> getDocuments(){
 		return mDocuments.values();
 	}
 	
 	public Collection<DocumentGroup> getSubGroups(){
 		return mSubGroups.values();
+	}
+	public int size(){
+		int size = 0;
+		size += topSize();
+		for(DocumentGroup group:mSubGroups.values()){
+			size += group.size();
+		}
+		return size;
+	}
+	public int topSize(){
+		return mDocuments.size();
 	}
 	
 	public void addSubGroup(DocumentGroup group){

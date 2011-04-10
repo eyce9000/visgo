@@ -15,6 +15,7 @@ import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
+import srl.visgo.data.Entry;
 
 public class PDocumentGroup extends PNode{
 	DocumentGroup mGroup;
@@ -41,22 +42,13 @@ public class PDocumentGroup extends PNode{
 	//add docs, set dragging to docs, set size of area, etc.
 	public void invalidate(){
 		this.removeAllChildren();
-		Collection<Document> docs = mGroup.getDocuments();
-		int i=0;
-		for(Document doc: docs){
-			PDocument docNode = new PDocument(doc);
-
-			docNodes.add(docNode);
-			this.addChild(docNode);
-			int col = i % mColCount;
-			int row = i / mColCount;
-			docNode.setOffset(new Point2D.Double(col*50,row*50));
-			docNode.setScale(.5);
-			i++;
-		}
+		Collection<Entry> docs = mGroup.getRootEntries();
+		PDocumentGrid grid = new PDocumentGrid(docs);
+		this.addChild(grid);
+		grid.invalidate();
+		grid.setOffset(0,40);
 		PText nameNode = new PText(mGroup.getName());
 		this.addChild(nameNode);
-		nameNode.setOffset(0,-40);
 	}
 	
 	int INDENT = 10;
