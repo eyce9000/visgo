@@ -1,11 +1,13 @@
 package srl.visgo.gui;
 import java.awt.BorderLayout;
+import java.awt.Dialog.ModalExclusionType;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
@@ -16,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.StringReader;
 
+import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -25,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import com.google.gdata.client.GoogleAuthTokenFactory.UserToken;
@@ -38,12 +42,13 @@ public class Login {
 	public static String password;
 	public static String username;
 	private static boolean credentialsLoaded = false;
-	
+
 	public static void main(String[] args){
 		getCredentials();
 		System.out.println(username+" "+password);
 	}
-	
+
+
 	public static synchronized void getCredentials(){
 		boolean successfulLogIn = false;
 		DocsService service = new DocsService("VISGO-TEST-LOGIN");
@@ -61,9 +66,9 @@ public class Login {
 	}
 	public synchronized boolean getCredentialsInput(){
 		credentialsLoaded = false;
-		final Login login = this;
 		final LoginDialog loginDialog = new LoginDialog();
-		
+		loginDialog.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
+		final Login login = this;
 		boolean finished = false; 
 		while(!finished){
 			loginDialog.addWindowListener(new WindowListener(){
@@ -99,7 +104,9 @@ public class Login {
 			loginDialog.setVisible(true);
 
 			try {
-				login.wait();
+				synchronized (login){
+					login.wait();
+				}
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -122,7 +129,7 @@ public class Login {
 		File tokenFile = getTokenFile(service);
 		boolean success = false;
 		new Login().getCredentialsInput();
-		
+
 		if(tokenFile.exists()){
 			try{
 				BufferedReader reader = new BufferedReader(new FileReader(tokenFile));
@@ -149,13 +156,13 @@ public class Login {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static File getTokenFile(GoogleService service){
 		String name = service.getClass().getCanonicalName();
 		File authToken = new File("."+name+".authToken");
 		return authToken;
 	}
-	
+
 }
 class LoginDialog extends JFrame implements ActionListener{
 	private static final long serialVersionUID = 1L;
@@ -172,7 +179,7 @@ class LoginDialog extends JFrame implements ActionListener{
 	/**
 	 * This is the default constructor
 	 */
-	
+
 	public LoginDialog() {
 		super();
 		initialize();
@@ -261,6 +268,8 @@ class LoginDialog extends JFrame implements ActionListener{
 			okButton = new JButton();
 			okButton.setName("Ok");
 			okButton.setText("Ok");
+			okButton.setMnemonic(KeyEvent.VK_ENTER);
+			okButton.setFocusPainted(true);
 			okButton.addActionListener(this);
 		}
 		return okButton;
@@ -275,6 +284,13 @@ class LoginDialog extends JFrame implements ActionListener{
 		if (usernameField == null) {
 			usernameField = new JTextField();
 			usernameField.setColumns(15);
+			usernameField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), new AbstractAction(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					System.out.println("Enter pressed");
+					getOkButton().doClick();
+				}
+			});
 		}
 		return usernameField;
 	}
@@ -288,6 +304,12 @@ class LoginDialog extends JFrame implements ActionListener{
 		if (passwordField == null) {
 			passwordField = new JPasswordField();
 			passwordField.setColumns(15);
+			passwordField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), new AbstractAction(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					getOkButton().doClick();
+				}
+			});
 		}
 		return passwordField;
 	}

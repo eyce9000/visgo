@@ -3,47 +3,39 @@ package srl.visgo.gui.chat;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Insets;
-import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Presence.Type;
 
 import srl.visgo.data.Collaborator;
-import srl.visgo.data.Data;
-import srl.visgo.data.DataEventType;
-import srl.visgo.data.DataListener;
 import srl.visgo.gui.Login;
 import srl.visgo.gui.Visgo;
 import srl.visgo.util.chat.listeners.GroupMessage;
 import srl.visgo.util.chat.listeners.GroupMessageListener;
+import srl.visgo.util.chat.listeners.StatusChangeListener;
 
+@SuppressWarnings("serial")
 public class ChatPanel extends JPanel implements GroupMessageListener,ActionListener{
 
 	JScrollPane mScroll;
 	JPanel mMessagesPanel;
 	TextInputPanel mTextInputPanel;
+	CollaboratorListPanel mCollaboratorListPanel;
 	public ChatPanel(){
 		super(new BorderLayout());
 		mMessagesPanel = new JPanel();
@@ -55,9 +47,11 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		mTextInputPanel = new TextInputPanel();
 		mTextInputPanel.mSendButton.addActionListener(this);
 
+		mCollaboratorListPanel = new CollaboratorListPanel();
+		
 		this.add(mScroll,BorderLayout.CENTER);
 		this.add(mTextInputPanel,BorderLayout.SOUTH);
-		this.add(new CollaboratorListPanel(), BorderLayout.NORTH);
+		this.add(mCollaboratorListPanel, BorderLayout.NORTH);
 		Visgo.data.addGroupMessageListener(this);
 	}
 
@@ -101,23 +95,36 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 
 }
 
-class CollaboratorListPanel extends JPanel implements DataListener{
+@SuppressWarnings("serial")
+class CollaboratorListPanel extends JPanel implements StatusChangeListener{
 	CollaboratorListPanel(){
 		super();
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		//this.setPreferredSize(new Dimension(200,200));
-		onDataUpdate(DataEventType.COLLABORATOR_ADDED);
+		Visgo.data.addStatusChangeListener(this);
+		this.resetList();
 	}
-	@Override
-	public void onDataUpdate(DataEventType type) {
-		if(type == DataEventType.COLLABORATOR_ADDED){
-			Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();
-			for(Collaborator collaborator: collaborators){
-				this.add(new CollaboratorPanel(collaborator));
-			}
+	
+	private void resetList(){
+		this.removeAll();
+		Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();
+		for(Collaborator collaborator: collaborators){
+			this.add(new CollaboratorPanel(collaborator));
 		}
+		this.revalidate();
+	}
+	
+	@Override
+	public void StatusChanged(String userID, Type status) {
+		System.out.println("Status changed:"+userID+" "+status);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				resetList();
+			}
+		});
 	}
 }
+@SuppressWarnings("serial")
 class CollaboratorPanel extends JPanel{
 	Collaborator mCollaborator;
 	CollaboratorPanel(Collaborator collaborator){
@@ -131,10 +138,15 @@ class CollaboratorPanel extends JPanel{
 		};
 		colorSwatch.setBackground(collaborator.getColor());
 		this.add(colorSwatch,BorderLayout.WEST);
-		this.add(new JLabel(collaborator.getName()),BorderLayout.CENTER);
+		JLabel name = new JLabel(collaborator.getName());
+		if(collaborator.getStatus() != Presence.Type.available){
+			name.setForeground(Color.GRAY);
+		}
+		this.add(name,BorderLayout.CENTER);
 	}
 }
 
+@SuppressWarnings("serial")
 class MessagePanel extends JPanel{
 	JTextArea mMessageArea;
 	MessagePanel(String body, String from){
@@ -179,6 +191,7 @@ class MessagePanel extends JPanel{
 	}
 }
 
+@SuppressWarnings("serial")
 class TextInputPanel extends JPanel{
 	JButton mSendButton;
 	JTextArea mMessageField;

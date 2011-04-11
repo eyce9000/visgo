@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence.Type;
 
 import srl.visgo.gui.Login;
 import srl.visgo.util.chat.ChatManager;
@@ -23,6 +24,7 @@ import srl.visgo.util.chat.listeners.CommandMessageListener;
 import srl.visgo.util.chat.listeners.GroupMessage;
 import srl.visgo.util.chat.listeners.GroupMessageListener;
 import srl.visgo.util.chat.listeners.IndividualMessageListener;
+import srl.visgo.util.chat.listeners.StatusChangeListener;
 
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.Person;
@@ -33,7 +35,7 @@ import com.google.gdata.util.ServiceException;
 
 import gDocsFileSystem.GDatabase;
 
-public class Data {
+public class Data implements StatusChangeListener{
 	public Workspace workspace;
 	private GDatabase mDatabase;
 	private Document workspaceDoc;
@@ -79,6 +81,7 @@ public class Data {
 			System.out.println("Cannot Connect to the gtalk server :");
 		}
 		messageProcessor = chatManager.getMessageInterpreter();
+		chatManager.addStatusChangeListener(this);
 	}
 
 	private void updateCollaborators() throws MalformedURLException, IOException, ServiceException,Exception{
@@ -124,8 +127,8 @@ public class Data {
 			Color color = Color.decode(colorStr);
 			//if(!gid.equals("eyce9000@gmail.com"))
 			//	continue;
-			Collaborator collab = new Collaborator(gid,color);
-			
+			Collaborator collab = new Collaborator(gid,chatManager.getNameoftheFriend(gid),color);
+			collab.setStatus(chatManager.getFriendsList().getPresence(gid).getType());
 			mCollaborators.put(collab.getUsername(),collab);
 			if(!gid.equals(Login.username)){
 				chatManager.createChat(collab.getUsername(), i+"", null);
@@ -184,9 +187,17 @@ public class Data {
 	public void addCommandMessageListener(CommandMessageListener listener){
 		messageProcessor.addCommandMessageListener(listener);
 	}
+	public void addStatusChangeListener(StatusChangeListener listener){
+		chatManager.addStatusChangeListener(listener);
+	}
 
 	public GroupMessage sendGroupMessage(String text){
 		GroupMessage message = new GroupMessage(new Message(),text);
 		return chatManager.sendGroupMessage(message);
+	}
+
+	@Override
+	public void StatusChanged(String userID, Type status) {
+		mCollaborators.get(userID).setStatus(status);
 	}
 }

@@ -2,10 +2,13 @@ package srl.visgo.data;
 
 import java.awt.Color;
 
+import org.jivesoftware.smack.packet.Presence;
+
 public class Collaborator {
 	private String mUsername;
 	private String mName;
 	private Color mColor;
+	private Presence.Type mStatus;
 	public Collaborator(String username){
 		mUsername = username;
 	}
@@ -13,9 +16,20 @@ public class Collaborator {
 		this(username);
 		mColor = color;
 	}
+	public Collaborator(String username,String name,Color color){
+		this(username,color);
+		mName = name;
+	}
 	
 	public Color getColor(){
-		return mColor;
+		
+		if(mStatus == Presence.Type.available){
+			return mColor;
+		}
+		else{
+			Color temp = mColor.brighter();
+			return temp;
+		}
 	}
 	public String getUsername(){
 		return mUsername;
@@ -25,5 +39,11 @@ public class Collaborator {
 			return mUsername.split("@")[0];
 		}
 		return mName;
+	}
+	public void setStatus(Presence.Type status){
+		mStatus = status;
+	}
+	public Presence.Type getStatus(){
+		return mStatus;
 	}
 }
