@@ -10,10 +10,7 @@
 	<classpathentry kind="lib" path="lib/gdata-client-meta-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-core-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-media-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-docs-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-docs-meta-3.0.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-calendar-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-calendar-meta-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/google-collect-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/mail.jar"/>
 	<classpathentry kind="lib" path="lib/piccolo2d-extras-1.3.jar"/>
@@ -21,5 +18,6 @@
 	<classpathentry kind="lib" path="lib/smack.jar"/>
 	<classpathentry kind="lib" path="lib/smackx.jar"/>
 	<classpathentry kind="lib" path="lib/piccolo2d-swt-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/gdata-docs-3.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

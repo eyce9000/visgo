@@ -3,14 +3,8 @@ package srl.visgo.gui;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTError;
-import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-
 public class DocPanel extends JPanel {
-
+	/*
 	public static void main(String[] args){
 
 		JFrame frame = new JFrame("Doc Panel Test");
@@ -39,5 +33,5 @@ public class DocPanel extends JPanel {
 		}
 		display.dispose();
 	}
-
+	*/
 }

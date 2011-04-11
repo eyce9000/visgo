@@ -52,9 +52,9 @@ public class Visgo extends JFrame {
 		//NativeInterface.open();
 		//SwingUtilities.invokeLater(new Runnable() {
 			//public void run() {
-				//Login.getCredentials();
-				Login.username = "hpi.test.2@gmail.com";
-				Login.password = "Visgo2011";
+				Login.getCredentials();
+				//Login.username = "hpi.test.2@gmail.com";
+				//Login.password = "Visgo2011";
 				Visgo.data = new Data();
 
 				Visgo visgo = new Visgo();
@@ -73,7 +73,7 @@ public class Visgo extends JFrame {
 	ChatPanel chatPanel;
 
 	Visgo(){
-		super("Visgo");
+		super("Visgo - "+Login.username);
 
 		//Visgo.data = new Data();
 		Container contentPane = this.getContentPane();

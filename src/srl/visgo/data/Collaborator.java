@@ -8,7 +8,7 @@ public class Collaborator {
 	private String mUsername;
 	private String mName;
 	private Color mColor;
-	private Presence.Type mStatus;
+	private Presence.Type mStatus = Presence.Type.unavailable;
 	public Collaborator(String username){
 		mUsername = username;
 	}

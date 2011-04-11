@@ -2,6 +2,7 @@ package srl.visgo.util.chat;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.event.EventListenerList;
 
@@ -18,6 +19,8 @@ import srl.visgo.util.chat.listeners.StatusChangeListener;
 public class ChatManager implements ChatManagerListener, RosterListener {
 
 	private static String SERVERNAME = "gmail.com"; // Name of the server to connect
+
+	public static String CLIENT_ID = "Visgo";
 
 	private String loginName; /// login user name for the gtalk server
 
@@ -59,6 +62,21 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 	}
 
 
+
+	public boolean isLoggedInWithVisgo(String username){
+		Iterator<Presence> presences = friendsList.getPresences(username);
+		while(presences.hasNext()){
+			Presence presence = presences.next();
+			if(usingVisgo(presence) & presence.getType() == Presence.Type.available){
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	
+
 	/***
 	 * Constructor for the Chat Manager
 	 * @param loginName - user name for the IM account
@@ -86,7 +104,7 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 
 		serverConnection.connect();
 
-		serverConnection.login(this.loginName, this.password, "VISGO");
+		serverConnection.login(this.loginName, this.password, CLIENT_ID+".");
 
 		friendsList = serverConnection.getRoster();
 
@@ -168,8 +186,10 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 	public void sendMessage(String userID, String message){
 
 		// Checking if the user is available before sending the message.
+
+
 		if(chatInstanceMap.containsKey(userID)
-				&& friendsList.getPresence(userID).getType() == Presence.Type.available){
+				&& isLoggedInWithVisgo(userID)){
 
 			try {
 				chatInstanceMap.get(userID).sendMessage(message);
@@ -288,11 +308,17 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 
 	@Override
 	public void presenceChanged(Presence arg0) {
+		String[] slashsplit = arg0.getFrom().split("\\/");
+		String  userID = slashsplit[0];
+		String  clientID = extractClientID(arg0);
 
-		String  userID = arg0.getFrom().split("gmail\\.com\\/")[0]+"gmail.com";
+
 		System.out.println("Presence changed:"+userID+" "+arg0.getType());
-		if(chatInstanceMap.containsKey(userID)){
+		System.out.println("Entry User:"+friendsList.getEntry(userID).getUser());
 
+		System.out.println("Client ID:"+clientID);
+
+		if(usingVisgo(arg0)){
 			this.fireStatusChangeEvent(userID, arg0.getType());
 		}
 	}
@@ -325,5 +351,17 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 				((StatusChangeListener)listenerList[i+1]).StatusChanged(userID, status);
 			}
 		}
+	}
+
+
+	public static String extractClientID(Presence presence){
+		String slashSplit[] = presence.getFrom().split("\\/");
+		if(slashSplit.length > 1){
+			return slashSplit[1].split("\\.")[0];
+		}
+		return "";
+	}
+	public static boolean usingVisgo(Presence presence){
+		return extractClientID(presence).equals(CLIENT_ID);
 	}
 }

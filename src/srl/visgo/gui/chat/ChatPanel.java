@@ -53,6 +53,7 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		this.add(mTextInputPanel,BorderLayout.SOUTH);
 		this.add(mCollaboratorListPanel, BorderLayout.NORTH);
 		Visgo.data.addGroupMessageListener(this);
+		mScroll.setAutoscrolls(true);
 	}
 
 	@Override
@@ -79,6 +80,7 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		*/
 		mMessagesPanel.add(new MessagePanel(body,from));
 		mMessagesPanel.revalidate();
+		mScroll.revalidate();
 	}
 
 	@Override

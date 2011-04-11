@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Presence.Type;
 
 import srl.visgo.gui.Login;
@@ -128,7 +129,9 @@ public class Data implements StatusChangeListener{
 			//if(!gid.equals("eyce9000@gmail.com"))
 			//	continue;
 			Collaborator collab = new Collaborator(gid,chatManager.getNameoftheFriend(gid),color);
-			collab.setStatus(chatManager.getFriendsList().getPresence(gid).getType());
+			if(chatManager.isLoggedInWithVisgo(gid)){
+				collab.setStatus(Presence.Type.available);
+			}
 			mCollaborators.put(collab.getUsername(),collab);
 			if(!gid.equals(Login.username)){
 				chatManager.createChat(collab.getUsername(), i+"", null);
