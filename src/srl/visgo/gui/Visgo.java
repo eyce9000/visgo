@@ -88,17 +88,6 @@ public class Visgo extends JFrame {
 		//			e.printStackTrace();
 		//		}
 
-
-		//an additional layer i am testing drag/drop with - Chris
-		//		PRoot root = canvas.getRoot();             
-		//		PCamera camera = canvas.getCamera();             
-		//		PLayer mainLayer =  canvas.getLayer();
-		//		PLayer pathLayer = new PLayer();             
-		//		root.addChild(pathLayer);             
-		//		camera.addLayer(0, pathLayer); 
-		//		
-		//		PSelectionEventHandler myselectionEventHandler = new PSelectionEventHandler(mainLayer, mainLayer);
-
 		canvas.removeInputEventListener(canvas.getZoomEventHandler());
 		canvas.removeInputEventListener(canvas.getPanEventHandler());
 
