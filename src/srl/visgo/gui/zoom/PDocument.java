@@ -66,7 +66,7 @@ public class PDocument extends PNode {
 		
 		backgroundNode.addChild(imageNode);
 		backgroundNode.addChild(textNode);
-		backgroundNode.addInputEventListener(new PDragEventHandler());
+//		backgroundNode.addInputEventListener(new PDragEventHandler());
 
 		//prevents dragging off names/images from the overall node
 		for(int i = 0; i < backgroundNode.getChildrenCount(); i++)
@@ -126,11 +126,11 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mousePressed(PInputEvent event){
 		//Is doc in a group?
-		if(mDocument.getParent().getParent().getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
+		if(mDocument.getParent().getParent().getParent().getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
 		{
 			//Remove from group
 			PLayer layer = Visgo.canvas.getLayer();
-			PDocumentGroup oldGroup = (PDocumentGroup) mDocument.getParent().getParent();
+			PDocumentGroup oldGroup = (PDocumentGroup) mDocument.getParent().getParent().getParent();
 			
 			
 			final Point2D spot = mDocument.getGlobalFullBounds().getCenter2D();
@@ -175,6 +175,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 					layer.removeChild(mDocument);
 					layer.removeChild(i);
 					layer.addChild(newGroup);
+					//TODO: Correctly place newly created group
 					System.out.println("New group created");
 					break;
 				}

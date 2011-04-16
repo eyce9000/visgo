@@ -10,6 +10,7 @@ import java.util.List;
 
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
+import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
@@ -19,6 +20,7 @@ import srl.visgo.data.Entry;
 
 public class PDocumentGroup extends PNode{
 	DocumentGroup mGroup;
+	PPath backgroundNode;
 	List<PDocument> docNodes;
 	int mColCount = 1;
 	public static PBounds currentBounds;
@@ -26,10 +28,14 @@ public class PDocumentGroup extends PNode{
 	public PDocumentGroup(DocumentGroup group){
 		super();
 		mGroup = group;
-		//mGroup.setPDocGroup(this);
+		
 			
 		docNodes = new ArrayList<PDocument>();
-		this.setPaint(Color.LIGHT_GRAY);
+
+		backgroundNode = PPath.createRoundRectangle(0f, 0f, 50, 50, 5f, 5f);
+		backgroundNode.addInputEventListener(new PDragEventHandler());
+		backgroundNode.setPaint(Color.LIGHT_GRAY);
+		this.addChild(backgroundNode);
 		invalidate();
 	}
 	public void setColumnCount(int count){
@@ -41,14 +47,15 @@ public class PDocumentGroup extends PNode{
 	
 	//add docs, set dragging to docs, set size of area, etc.
 	public void invalidate(){
-		this.removeAllChildren();
+		backgroundNode.removeAllChildren();
 		Collection<Entry> docs = mGroup.getRootEntries();
 		PDocumentGrid grid = new PDocumentGrid(docs);
-		this.addChild(grid);
+		backgroundNode.addChild(grid);
 		grid.invalidate();
 		grid.setOffset(0,40);
 		PText nameNode = new PText(mGroup.getName());
-		this.addChild(nameNode);
+		backgroundNode.addChild(nameNode);
+		nameNode.setPickable(false);
 	}
 	
 	int INDENT = 10;
