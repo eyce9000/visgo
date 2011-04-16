@@ -3,6 +3,7 @@ package srl.visgo.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 import srl.visgo.gui.zoom.PDocumentGroup;
 
@@ -140,4 +141,10 @@ public class DocumentGroup implements Entry{
 		return mId;
 	}
 	
+	public static DocumentGroup deserializeShallow(Map m){
+		DocumentGroup group = new DocumentGroup((String)m.get("foldername"),(String)m.get("folderid"));
+		group.setOffsetX(Double.parseDouble(m.get("offsetX").toString()));
+		group.setOffsetY(Double.parseDouble(m.get("offsetY").toString()));
+		return group;
+	}
 }

@@ -3,6 +3,9 @@ package mongo;
 import java.net.UnknownHostException;
 import java.util.regex.Pattern;
 
+import srl.visgo.data.Document;
+
+import com.google.gdata.data.introspection.Collection;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -54,9 +57,12 @@ public class DBVisgo {
 		mongo = new Mongo(url);
 		database = mongo.getDB("visgo");
 		database.authenticate(username, password);
-		
 	}
-	public static void install(DBVisgo dbVisgo){
+	
+	public Document getDocumentByGoogleId(String gid){
+		DBCollection collection = database.getCollection("documents");
+		collection.find(new BasicDBObject("mGoogleId",gid));
 		
+		return null;
 	}
 }

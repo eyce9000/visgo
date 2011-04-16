@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import srl.visgo.gui.Login;
 
@@ -41,7 +42,7 @@ public class GDatabase
 	private FeedURLFactory factory;
 	private SpreadsheetEntry database;
 	private boolean isAuthed = false;
-	
+
 	/**
 	 * Constructor
 	 * Checks to see if the user is authenticated through the Google services
@@ -60,7 +61,7 @@ public class GDatabase
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Sets the database to be used
 	 * 
@@ -73,13 +74,13 @@ public class GDatabase
 		{
 			throw new Exception("User is not authenticated. Cannot connect to spreadsheet services.");
 		}
-		
+
 		if(name.length() == 0)
 		{
 			throw new Exception("No database specified.");
 		}
 		databaseName = name;
-		
+
 		SpreadsheetQuery spreadsheetQuery = new SpreadsheetQuery(factory.getSpreadsheetsFeedUrl());
 		spreadsheetQuery.setTitleQuery(databaseName);
 		SpreadsheetFeed spreadsheetFeed = service.query(spreadsheetQuery, SpreadsheetFeed.class);
@@ -88,25 +89,25 @@ public class GDatabase
 		{
 			throw new Exception("No databases with that name");
 		}
-		
+
 		database = spreadsheets.get(0);
 	}
-	
+
 	private WorksheetEntry getTable(String table) throws Exception
 	{
 		WorksheetQuery worksheetQuery = new WorksheetQuery(database.getWorksheetFeedUrl());
 
-	    worksheetQuery.setTitleQuery(table);
-	    WorksheetFeed worksheetFeed = service.query(worksheetQuery, WorksheetFeed.class);
-	    List<WorksheetEntry> worksheets = worksheetFeed.getEntries();
-	    if (worksheets.isEmpty())
-	    {
-    		throw new Exception("No tables with that name");
-	    }
+		worksheetQuery.setTitleQuery(table);
+		WorksheetFeed worksheetFeed = service.query(worksheetQuery, WorksheetFeed.class);
+		List<WorksheetEntry> worksheets = worksheetFeed.getEntries();
+		if (worksheets.isEmpty())
+		{
+			throw new Exception("No tables with that name");
+		}
 
-	    return worksheets.get(0);
+		return worksheets.get(0);
 	}
-	
+
 	/**
 	 * Retrieves the columns headers from the cell feed of the worksheet
 	 * entry.
@@ -137,7 +138,7 @@ public class GDatabase
 
 		return headers;
 	}
-	
+
 	/**
 	 * Retrieves the contents of the given column(s)
 	 * 
@@ -147,11 +148,11 @@ public class GDatabase
 	 * @return a map of column values, mapped by column name
 	 * @throws Exception if error in retrieving the spreadsheet information
 	 */
-	public Map<String, ArrayList<String>> select(String table, List<String> columns, String conditions) throws Exception
+	public List<Map<String,String>> select(String table, List<String> columns, String conditions) throws Exception
 	{
 		WorksheetEntry worksheet = getTable(table);
 		HashMap<String, Integer> headers = getColumnHeaders(worksheet);
-		HashMap<String, ArrayList<String>> results = new HashMap<String, ArrayList<String>>();
+		List<Map<String, String>> results = new ArrayList<Map<String,String>>();
 
 		if(conditions == null || conditions.length() == 0)
 		{
@@ -161,17 +162,22 @@ public class GDatabase
 				cellQuery.setMinimumRow(2);	//Start of data rows
 				cellQuery.setMinimumCol(headers.get(column));
 				cellQuery.setMaximumCol(headers.get(column));
-	
+
 				CellFeed cellFeed = service.query(cellQuery, CellFeed.class);
 				List<CellEntry> cellEntries = cellFeed.getEntries();
 				ArrayList<String> values = new ArrayList<String>();
-				for (CellEntry entry : cellEntries)
-				{
-					// Get the cell element from the entry
-					Cell cell = entry.getCell();
-					values.add(cell.getValue());
+				for(int i=0; i<cellEntries.size(); i++){
+					Map<String,String> resultRow;
+					if(results.size()<=i){
+						resultRow = new HashMap<String,String>();
+						results.add(resultRow);
+					}
+					else{
+						resultRow = results.get(i);
+					}
+					CellEntry entry = cellEntries.get(i);
+					resultRow.put(column,entry.getCell().getValue());
 				}
-				results.put(column, values);
 			}
 		}
 		else
@@ -182,19 +188,29 @@ public class GDatabase
 
 			//Get the requested columns
 			for(String column : columns)
-			{
+			{	
 				ArrayList<String> values = new ArrayList<String>();
-				for (ListEntry entry : listFeed.getEntries())
+				List<ListEntry> entries = listFeed.getEntries();
+				for (int i=0; i<entries.size(); i++)
 				{
-					values.add(entry.getCustomElements().getValue(column));
+					ListEntry entry = entries.get(i);
+					Map<String,String> resultRow;
+					if(results.size()<=i){
+						resultRow = new HashMap<String,String>();
+						results.add(resultRow);
+					}
+					else{
+						resultRow = results.get(i);
+					}
+					resultRow.put(column,entry.getCustomElements().getValue(column));
+					
 				}
-				results.put(column, values);
 			}
 		}
 		return results;
-		
+
 	}
-	
+
 	/**
 	 * Inserts a new row into the table
 	 * 
@@ -216,12 +232,24 @@ public class GDatabase
 
 		for (int i = 0; i < columns.size(); i++)
 		{
-		  newEntry.getCustomElements().setValueLocal(columns.get(i), values.get(i));
+			newEntry.getCustomElements().setValueLocal(columns.get(i), values.get(i));
 		}
-		
+
 		service.insert(worksheet.getListFeedUrl(), newEntry);
 	}
 	
+	public void insert(String table, Map<String,String> row) throws Exception{
+		WorksheetEntry worksheet = getTable(table);
+		ListEntry newEntry = new ListEntry();
+
+		for (Entry<String,String> entry:row.entrySet())
+		{
+			newEntry.getCustomElements().setValueLocal(entry.getKey(),entry.getValue());
+		}
+
+		service.insert(worksheet.getListFeedUrl(), newEntry);
+	}
+
 	/**
 	 * Updates a row in the table
 	 * 
@@ -238,7 +266,7 @@ public class GDatabase
 		{
 			throw new Exception("Incorrect column count.");
 		}
-		
+
 		if(conditions.length() == 0)
 		{
 			throw new Exception("No update conditions specified.");
@@ -260,10 +288,10 @@ public class GDatabase
 			entry.update();
 			affected++;
 		}
-		
+
 		return affected;
 	}
-	
+
 	/**
 	 * Gets the next available primary key
 	 * @param table The desired table
@@ -274,10 +302,10 @@ public class GDatabase
 	{
 		final String column = key;
 
-		Map<String, ArrayList<String>> results = select(table, new ArrayList<String>() {{ add(column); }}, "orderby=column:" + key + "&reverse=true");
+		List<Map<String,String>> results = select(table, new ArrayList<String>() {{ add(column); }}, "orderby=column:" + key + "&reverse=true");
 		if(results.size() > 0)
 		{
-			return Integer.parseInt(results.get(key).get(0));
+			return Integer.parseInt(results.get(0).get(key));
 		}
 		else
 		{
@@ -285,7 +313,7 @@ public class GDatabase
 			return 1;
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @return authors of this database

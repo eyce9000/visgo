@@ -95,13 +95,13 @@ public class Data implements StatusChangeListener{
 		}
 		List<String>columns = Arrays.asList(new String[]{"userid","gid","realname","color"});
 
-		Map<String,ArrayList<String>> results= mDatabase.select("collaborators", columns, null);
-		for(String gid : results.get("gid")){
-			tempCollaborators.remove(gid);
+		List<Map<String,String>> results= mDatabase.select("collaborators", columns, null);
+		for(Map<String,String> m : results){
+			tempCollaborators.remove(m.get("gid"));
 		}
 
 
-		int currentUserId = results.get("gid").size();
+		int currentUserId = results.size();
 		boolean reloadResults = false;
 		for(String collaborator:tempCollaborators){
 			List<String> values = Arrays.asList(new String[]{
@@ -115,15 +115,12 @@ public class Data implements StatusChangeListener{
 		}
 		if(reloadResults)
 			results = mDatabase.select("collaborators", columns, null);
-		List<String>gids = results.get("gid");
-		List<String>colors = results.get("color");
-
-
 
 		mCollaborators = new HashMap<String, Collaborator>();
-		for(int i=0; i<gids.size(); i++){
-			String gid = gids.get(i)+"@gmail.com";
-			String colorStr = colors.get(i);
+		for(Map<String,String> m:results){
+			
+			String gid = m.get("gid")+"@gmail.com";
+			String colorStr = m.get("color");
 			System.out.println(colorStr);
 			Color color = Color.decode(colorStr);
 			//if(!gid.equals("eyce9000@gmail.com"))
@@ -134,7 +131,7 @@ public class Data implements StatusChangeListener{
 			}
 			mCollaborators.put(collab.getUsername(),collab);
 			if(!gid.equals(Login.username)){
-				chatManager.createChat(collab.getUsername(), i+"", null);
+				chatManager.createChat(collab.getUsername(), m.get("gid")+"", null);
 			}
 		}
 

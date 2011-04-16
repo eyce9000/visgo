@@ -44,7 +44,7 @@ public class Workspace {
 		}
 
 		for(Document file: files){
-			Document doc = mDocumentList.getDocumentById(file.getGoogleId());
+			Document doc = mDocumentList.getDocumentByGoogleId(file.getGoogleId());
 			rootDocuments.put(doc.getGoogleId(), doc);
 		}
 	}
@@ -55,7 +55,7 @@ public class Workspace {
 		System.out.println("Group: "+group.getName());
 
 		for(Document file: childrenFiles){
-			Document childDoc = mDocumentList.getDocumentById(file.getGoogleId());
+			Document childDoc = mDocumentList.getDocumentByGoogleId(file.getGoogleId());
 			if(childDoc!=null){
 				group.addDocument(childDoc);
 				System.out.println("Doc: "+childDoc.getName());
@@ -74,5 +74,11 @@ public class Workspace {
 	}
 	public Collection<DocumentGroup> getRootDocumentGroups(){
 		return rootGroups.values();
+	}
+	public Document getDocumentById(String id){
+		return mDocumentList.getDocumentById(id);
+	}
+	public DocumentGroup getDocumentGroupById(String id){
+		return allGroups.get(id);
 	}
 }
