@@ -26,6 +26,7 @@ import edu.umd.cs.piccolo.event.PInputEventListener;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
+import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PDimension;
 import edu.umd.cs.piccolo.util.PPaintContext;
 import edu.umd.cs.piccolox.pswing.PSwing;
@@ -114,7 +115,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	public void mouseReleased(PInputEvent event){
 		PNode aNode = event.getPickedNode();
 		aNode.setPaint(Color.GREEN);
-        checkLocation(aNode);
+        checkLocation(mDocument);
 		
 	}
 	@Override
@@ -129,21 +130,14 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 		{
 			//Remove from group
 			PLayer layer = Visgo.canvas.getLayer();
-			PDocumentGrid oldGroup = (PDocumentGrid) mDocument.getParent();
-			for(int i = 0; i < oldGroup.getChildrenCount(); i++)
-			{
-				System.out.println(oldGroup.getChild(i).toString());
-			}
+			PDocumentGroup oldGroup = (PDocumentGroup) mDocument.getParent().getParent();
 			
-			/**
-			 * TODO: Need the actual location of the document so that it can be placed at that point
-			 * outside of its old group once added to the main workspace layer
-			 */
-			final Point2D spot = mDocument.getFullBounds().getCenter2D();
-			mDocument.getParent().removeChild(mDocument);
+			
+			final Point2D spot = mDocument.getGlobalFullBounds().getCenter2D();
+			oldGroup.removeDocument(mDocument);
 			layer.addChild(mDocument);
-			mDocument.setX(spot.getX());
-			mDocument.setY(spot.getY());
+			mDocument.setOffset(spot);
+
 		}
 	}
 	
@@ -152,60 +146,40 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	 * @param aNode
 	 * @throws Exception 
 	 */
-	public void checkLocation(PNode aNode){
+	public void checkLocation(PDocument aNode){
 		PLayer layer = Visgo.canvas.getLayer();
-		PDocumentGroup group;
-		PDocument doc;
-		DocumentGroup oldGroup = mDocument.getDocument().getParent();
-		//PDocumentGroup oldPGroup = mDocument.getDocument().getParent().getPDocGroup();
-		PDocumentGroup oldPGroup = null;
 		
 		for(int i = 0; i < layer.getChildrenCount(); i++)
 		{
 			if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
 			{
-				//The node is a group of documents
-				group = (PDocumentGroup) layer.getChild(i);
-				System.out.println(group.getDocumentGroup().getName());
-
-				/**********************
-				 * TODO: Need a better way to check if dropped into a group! This bounds check is invalid
-				 **********************/
-				if(group.computeFullBounds(null).contains(aNode.getBounds().getCenter2D()))
+				PDocumentGroup test = (PDocumentGroup) layer.getChild(i);
+				final Point2D spot = aNode.getGlobalFullBounds().getCenter2D();
+				if(test.getGlobalFullBounds().contains(spot))
 				{
-					//Dropped into same group
-					if(group.getDocumentGroup().getDocuments().contains(mDocument.getDocument()))
-					{
-							System.out.println(">--< Back into same group");
-					}
-					else 	//Dropped into a new group
-					{
-						//Remove from old drag group
-						System.out.println("<-- " + mDocument.getDocument().getName() + " removed from group: " + oldGroup.getName());
-						oldGroup.removeDocument(mDocument.getDocument());
-						oldPGroup.invalidate();
-
-						//Add to new drop group
-						System.out.println("--> " + mDocument.getDocument().getName() + " added to group: " + group.getDocumentGroup().getName());
-						group.getDocumentGroup().addDocument(mDocument.getDocument());
-						//Visgo.systemTest.insertEntry(mDocument.getDocument(), group.getDocumentGroup(), true);	//TODO: Move to adding files from local to workspace
-						//Visgo.systemTest.setParent(mDocument.getDocument(), group.getDocumentGroup(), true);
-						
-						group.invalidate();
-					}
+					test.addDocument(aNode);
+					layer.removeChild(mDocument);
+					break;
 				}
 			}
 			else if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocument.class))
 			{
-				//The node is a free-floating document
-				doc = (PDocument) layer.getChild(i);
-				if(doc.getDocument().getName().equals(mDocument.getDocument().getName()))
+				PDocument test = (PDocument) layer.getChild(i);
+				if(test.equals(mDocument)) continue;
+				final Point2D spot = aNode.getGlobalFullBounds().getCenter2D();
+				if(test.getGlobalFullBounds().contains(spot))
 				{
-					System.out.println(doc.getDocument().getName());
+					PDocumentGroup newGroup = new PDocumentGroup(new DocumentGroup("New group!"));
+					newGroup.addDocument(test);
+					newGroup.addDocument(mDocument);
+					layer.removeChild(mDocument);
+					layer.removeChild(i);
+					layer.addChild(newGroup);
+					System.out.println("New group created");
+					break;
 				}
 			}
 		}
-
 		System.out.println();
 	}
 	

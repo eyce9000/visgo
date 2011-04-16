@@ -111,4 +111,14 @@ public class PDocumentGroup extends PNode{
     public PBounds getCachedBounds(){
     	return cachedChildBounds;
     }
+    
+    public void removeDocument(PDocument pDoc){
+    	mGroup.removeDocument(pDoc.getDocument());
+    	invalidate();
+    }
+    
+    public void addDocument(PDocument pDoc){
+    	mGroup.addDocument(pDoc.getDocument());
+    	invalidate();
+    }
 }
