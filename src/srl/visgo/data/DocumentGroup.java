@@ -141,6 +141,15 @@ public class DocumentGroup implements Entry{
 		return mId;
 	}
 	
+	public static Map serialize(DocumentGroup group){
+		Map m = new HashMap();
+		m.put("foldername", group.mName);
+		m.put("folderid", group.mId);
+		m.put("offsetX", group.mOffsetX);
+		m.put("offsetY", group.mOffsetY);
+		return m;
+	}
+	
 	public static DocumentGroup deserializeShallow(Map m){
 		DocumentGroup group = new DocumentGroup((String)m.get("foldername"),(String)m.get("folderid"));
 		group.setOffsetX(Double.parseDouble(m.get("offsetX").toString()));
