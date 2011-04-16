@@ -5,23 +5,48 @@ import com.google.gdata.data.docs.DocumentListEntry;
 public class Document implements Entry {
 	DocumentListEntry mEntry;
 	DocumentGroup mParent = null;
+	private String mName;
+	private String mGoogleId;
+	private String mId;
+	private double mOffsetX;
+	private double mOffsetY;
+
+	public Document(String name,String id,String googleId){
+		mName = name;
+		mId = id;
+		mGoogleId = googleId;
+	}
 
 	public Document(DocumentListEntry entry){
 		setListEntry(entry);
 	}
-	
-	public String getName(){
-		return mEntry.getTitle().getPlainText();
-	}
 
-	
+	public String getName(){
+		if(mEntry != null)
+			return mEntry.getTitle().getPlainText();
+		else
+			return mName;
+	}
 	public DocumentListEntry getListEntry() {
 		return mEntry;
 	}
-
-	
 	public String getHref() {
-		return mEntry.getDocumentLink().getHref();
+		if(mEntry!=null)
+			return mEntry.getDocumentLink().getHref();
+		else
+			return "";
+	}
+	public double getOffsetX(){
+		return mOffsetX;
+	}
+	public void setOffsetX(double offsetX){
+		mOffsetX = offsetX;
+	}
+	public double getOffsetY(){
+		return mOffsetY;
+	}
+	public void setOffsetY(double offsetY){
+		mOffsetY = offsetY;
 	}
 
 	@Override
@@ -40,10 +65,14 @@ public class Document implements Entry {
 	}
 	@Override
 	public String getId(){
-		return mEntry.getDocId();
+		return mId;
 	}
-
-	
+	public String getGoogleId(){
+		if(mEntry!=null)
+			return mEntry.getDocId();
+		else
+			return mGoogleId;
+	}
 	public void setListEntry(DocumentListEntry entry) {
 		this.mEntry = new DocumentListEntry(entry);
 		this.mParent = null;

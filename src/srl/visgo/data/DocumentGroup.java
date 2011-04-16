@@ -14,6 +14,7 @@ public class DocumentGroup implements Entry{
 	String mName;
 	String mId;
 	DocumentGroup mParent;
+	double mOffsetX,mOffsetY;
 	
 	
 	public DocumentGroup(String name) {
@@ -25,6 +26,26 @@ public class DocumentGroup implements Entry{
 		this(name);
 		mId = id;
 	}
+
+	public String getName(){
+		return mName;
+	}
+	public double getOffsetX(){
+		return mOffsetX;
+	}
+	public void setOffsetX(double offsetX){
+		mOffsetX = offsetX;
+	}
+	public double getOffsetY(){
+		return mOffsetY;
+	}
+	public void setOffsetY(double offsetY){
+		mOffsetY = offsetY;
+	}
+	
+	
+	
+	
 	public void addDocument(Document document){
 		mDocuments.put(document.getName(),document);
 		document.mParent = this;
@@ -70,9 +91,6 @@ public class DocumentGroup implements Entry{
 		else if(entry instanceof DocumentGroup){
 			addSubGroup((DocumentGroup) entry);
 		}
-	}
-	public String getName(){
-		return mName;
 	}
 	
 	public void removeDocument(Document document){

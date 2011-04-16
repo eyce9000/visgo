@@ -34,39 +34,36 @@ public class Workspace {
 		mDatabase = database;
 		mFileSystem = new GFileSystem(database);
 
+		List<DocumentGroup> folders = mFileSystem.getRootFolders();
+		List<Document> files = mFileSystem.getRootFiles();
 
-		Pair<String,String> pair;
-
-		List<Pair<String,String>> folders = mFileSystem.getRootFolders();
-		List<Pair<String,String>> files = mFileSystem.getRootFiles();
-
-		for(Pair<String,String> folder : folders){
-			DocumentGroup group = new DocumentGroup(folder.second,folder.first);
+		for(DocumentGroup folder : folders){
+			DocumentGroup group = folder;
 			lookupChildren(group);
 			rootGroups.put(group.getId(), group);
 		}
 
-		for(Pair<String,String> file: files){
-			Document doc = mDocumentList.getDocumentById(file.first);
-			rootDocuments.put(doc.getId(), doc);
+		for(Document file: files){
+			Document doc = mDocumentList.getDocumentById(file.getGoogleId());
+			rootDocuments.put(doc.getGoogleId(), doc);
 		}
 	}
 
 	private void lookupChildren(DocumentGroup group) throws Exception{
-		List<Pair<String,String>> childrenFiles = mFileSystem.getChildrenFiles(group);
-		List<Pair<String,String>> childrenFolders = mFileSystem.getChildrenFolders(group);
+		List<Document> childrenFiles = mFileSystem.getChildrenFiles(group);
+		List<DocumentGroup> childrenFolders = mFileSystem.getChildrenFolders(group);
 		System.out.println("Group: "+group.getName());
 
-		for(Pair<String,String> file: childrenFiles){
-			Document childDoc = mDocumentList.getDocumentById(file.first);
+		for(Document file: childrenFiles){
+			Document childDoc = mDocumentList.getDocumentById(file.getGoogleId());
 			if(childDoc!=null){
 				group.addDocument(childDoc);
 				System.out.println("Doc: "+childDoc.getName());
 			}
 		}
 
-		for(Pair<String,String> folder: childrenFolders){
-			DocumentGroup childGroup = new DocumentGroup(folder.second,folder.first);
+		for(DocumentGroup folder: childrenFolders){
+			DocumentGroup childGroup = folder;
 			lookupChildren(childGroup);
 		}
 		allGroups.put(group.getId(),group);

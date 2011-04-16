@@ -30,14 +30,14 @@ public class DocumentList {
 			if(doc == null){
 				doc = new Document(listEntry);
 				if(doc.getName().endsWith(".workspace")){
-					if(!mVisgoDatabases.containsKey(doc.getId())){
-						mVisgoDatabases.put(doc.getId(), doc);
+					if(!mVisgoDatabases.containsKey(doc.getGoogleId())){
+						mVisgoDatabases.put(doc.getGoogleId(), doc);
 					}
 				}
 				else{
-					mDocuments.put(doc.getId(), doc);
-					System.out.println(doc.getName());
-					System.out.println("\t"+doc.getId());
+					mDocuments.put(doc.getGoogleId(), doc);
+					//System.out.println(doc.getName());
+					System.out.println(doc.getGoogleId());
 				}
 			}
 			else{

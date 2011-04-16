@@ -148,16 +148,17 @@ public class GFileSystem
 	 * @param isFile Whether it's a file or not (document group)
 	 * @return Insertion success/failure
 	 */
-	public boolean insertEntry(Entry file)
+	public boolean insertEntry(Entry file){
+		return insertEntry(file,false);
+	}
+	private boolean insertEntry(Entry file, boolean overwrite)
 	{
 		String fileId = docIdPrefix + file.getId();
 		String parentId;
 		String idColumn;
 		String table;
-		ArrayList<String> columns = new ArrayList<String>();
-		ArrayList<String> values = new ArrayList<String>();
-
-
+		List<String> columns = new ArrayList<String>();
+		List<String> values = new ArrayList<String>();
 
 		if(file.hasParent())
 		{
@@ -170,25 +171,41 @@ public class GFileSystem
 
 		if(file instanceof Document)
 		{
-			idColumn = "gfid";
+			idColumn = "fileid";
 			table = "files";
-			columns.add("fileid");
-			columns.add("gfid");
-			columns.add("parentfolder");
-			columns.add("filename");
-			values.add(fileId);
-			values.add(parentId);
-			values.add(file.getName());
+
+			columns = Arrays.asList(new String[]{
+					"fileid",
+					"gfid",
+					"parentfolder",
+					"filename",
+					"offsetX",
+					"offsetY"
+			});
+			values = Arrays.asList(new String[]{
+					file.getId(),
+					parentId,
+					file.getName(),
+					file.getOffsetX()+"",
+					file.getOffsetY()+"",
+			});
 		}
 		else
 		{
 			idColumn = "folderid";
 			table = "folders";
-			columns.add("parentid");
-			columns.add("parentfolder");
-			columns.add("foldername");
-			values.add(parentId);
-			values.add(file.getName());
+			columns = Arrays.asList(new String[]{
+					"parentfolder",
+					"foldername",
+					"offsetX",
+					"offsetY"
+			});
+			values = Arrays.asList(new String[]{
+					parentId,
+					file.getName(),
+					file.getOffsetX()+"",
+					file.getOffsetY()+"",
+			});
 		}
 
 
@@ -196,18 +213,26 @@ public class GFileSystem
 		{
 			//See if it exists first
 			Map<String, ArrayList<String>> results = db.select(table, columns, idColumn + " = " + fileId);
-			if(results.size() > 0)
-			{
-				//Already exists
-				return false;
+			if(overwrite){
+				if(results.size() > 0){
+					db.update(table, columns, values, idColumn + " = "+fileId);
+					return true;
+				}
+			}
+			else{
+				if(results.size() > 0){
+					return false;
+				}
 			}
 
-			//Now get the next available id
+			//DOES NOT EXIST, INSERT
 			Integer id = db.getNextId(table, idColumn);
 			columns.add(0, id.toString());
 
 			db.insert(table, columns, values);
 			return true;
+
+
 		}
 		catch (Exception e)
 		{
@@ -222,27 +247,39 @@ public class GFileSystem
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Pair<String,String>> getChildrenFiles(DocumentGroup folder) throws Exception
+	public List<Document> getChildrenFiles(DocumentGroup folder) throws Exception
 	{
-		ArrayList<String> columns = new ArrayList<String>();
-		columns.add("gfid");
-		columns.add("filename");
-		columns.add("parentfolder");
+		List<String> columns = Arrays.asList(new String[]{
+				"fileid",
+				"gfid",
+				"filename",
+				"parentfolder",
+				"offsetX",
+				"offsetY",
+				"offsetScale"
+		});
 
 		Map<String, ArrayList<String>> results = db.select("files", columns, "parentfolder == " + folder.getId());
 
-		ArrayList<String> fileIds = results.get("gfid");
+		ArrayList<String> fileIds = results.get("fileid");
+		ArrayList<String> gfids = results.get("gfid");
 		ArrayList<String> fileNames = results.get("filename");
-		
-		List<Pair<String,String>> resultPairs = new ArrayList<Pair<String,String>>();
-		
+		ArrayList<String> fileOffsetXs = results.get("offsetX");
+		ArrayList<String> fileOffsetYs = results.get("offsetY");
+
+		List<Document> resultDocs = new ArrayList<Document>();
+
 		for(int i=0; i<fileIds.size(); i++){
 			String id = fileIds.get(i);
+			String gid = gfids.get(i);
 			String name = fileNames.get(i);
-			resultPairs.add(new Pair<String,String>(id,name));
+			Document doc = new Document(name,id,gid);
+			doc.setOffsetX(Double.parseDouble(fileOffsetXs.get(i)));
+			doc.setOffsetY(Double.parseDouble(fileOffsetYs.get(i)));
+			resultDocs.add(doc);
 		}
-		
-		return resultPairs;
+
+		return resultDocs;
 	}
 
 	/**
@@ -251,27 +288,35 @@ public class GFileSystem
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Pair<String,String>> getChildrenFolders(DocumentGroup folder) throws Exception
+	public List<DocumentGroup> getChildrenFolders(DocumentGroup folder) throws Exception
 	{
-		ArrayList<String> columns = new ArrayList<String>();
-		columns.add("folderid");
-		columns.add("foldername");
-		columns.add("parentfolder");
+		List<String> columns = Arrays.asList(new String[]{
+				"folderid",
+				"foldername",
+				"parentfolder",
+				"offsetX",
+				"offsetY"
+		});
 
 		Map<String, ArrayList<String>> results = db.select("folders", columns, "parentfolder == " + folder.getId());
 
 		ArrayList<String> folderIds = results.get("folderid");
 		List<String> folderNames = results.get("foldername");
-		
-		List<Pair<String,String>> resultPairs = new ArrayList<Pair<String,String>>();
-		
+		ArrayList<String> fileOffsetXs = results.get("offsetX");
+		ArrayList<String> fileOffsetYs = results.get("offsetY");
+
+		List<DocumentGroup> resultGroups = new ArrayList<DocumentGroup>();
+
 		for(int i=0; i<folderIds.size(); i++){
 			String id = folderIds.get(i);
 			String name = folderNames.get(i);
-			resultPairs.add(new Pair<String,String>(id,name));
+			DocumentGroup group = new DocumentGroup(name,id);
+			group.setOffsetX(Double.parseDouble(fileOffsetXs.get(i)));
+			group.setOffsetY(Double.parseDouble(fileOffsetYs.get(i)));
+			resultGroups.add(group);
 		}
-		
-		return resultPairs;
+
+		return resultGroups;
 	}
 
 	/**
@@ -330,41 +375,60 @@ public class GFileSystem
 			return;
 		}
 	}
-	
-	public List<Pair<String,String>> getRootFiles() throws Exception{
-		List<Pair<String,String>> results = new ArrayList<Pair<String,String>>();
-		
+
+	public List<Document> getRootFiles() throws Exception{
+		List<Document> results = new ArrayList<Document>();
 		List<String> columns = Arrays.asList(new String[]{
 				"fileid",
 				"gfid",
 				"parentfolder",
-				"filename"
+				"filename",
+				"offsetX",
+				"offsetY"
 		});
 		Map<String, ArrayList<String>> files = db.select("files", columns, "parentfolder = 0");
-		ArrayList<String> fileIds = files.get("gfid");
+		ArrayList<String> fileIds = files.get("fileid");
+		ArrayList<String> gfids = files.get("gfid");
 		ArrayList<String> fileNames = files.get("filename");
+		ArrayList<String> fileOffsetXs = files.get("offsetX");
+		ArrayList<String> fileOffsetYs = files.get("offsetY");
 		for(int i=0; i<fileIds.size(); i++){
+			String name = fileNames.get(i);
 			String id = fileIds.get(i);
-			id = id.substring(docIdPrefix.length());
-			results.add(new Pair<String,String>(fileIds.get(i),fileNames.get(i)));
+			String gfid = gfids.get(i);
+			Document doc = new Document(name,id,gfid);
+			doc.setOffsetX(Double.parseDouble(fileOffsetXs.get(i)));
+			doc.setOffsetY(Double.parseDouble(fileOffsetYs.get(i)));
+			results.add(doc);
 		}
 		return results;
 	}
-	
-	public List<Pair<String,String>> getRootFolders() throws Exception{
-		List<Pair<String,String>> results = new ArrayList<Pair<String,String>>();
-		
+
+	public List<DocumentGroup> getRootFolders() throws Exception{
+		List<DocumentGroup> results = new ArrayList<DocumentGroup>();
+
 		List<String> columns = Arrays.asList(new String[]{
 				"folderid",
 				"parentfolder",
-				"foldername"
+				"foldername",
+				"offsetX",
+				"offsetY"
 		});
 		Map<String, ArrayList<String>> folders = db.select("folders", columns, "parentfolder = 0");
 		ArrayList<String> folderIds = folders.get("folderid");
 		ArrayList<String> folderNames = folders.get("foldername");
+		ArrayList<String> fileOffsetXs = folders.get("offsetX");
+		ArrayList<String> fileOffsetYs = folders.get("offsetY");
 		for(int i=0; i<folderIds.size(); i++){
-			results.add(new Pair<String,String>(folderIds.get(i),folderNames.get(i)));
+			DocumentGroup group = new DocumentGroup(folderNames.get(i),folderIds.get(i));
+			group.setOffsetX(Double.parseDouble(fileOffsetXs.get(i)));
+			group.setOffsetY(Double.parseDouble(fileOffsetYs.get(i)));
+			results.add(group);
 		}
 		return results;
+	}
+
+	public void store(Entry entry){
+
 	}
 }
