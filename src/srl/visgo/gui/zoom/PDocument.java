@@ -105,11 +105,8 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	}
 	@Override
 	public void mouseDragged(PInputEvent event){
-		
-	}
-	
-	@Override
-	public void mousePressed(PInputEvent event){
+		if(event.getClickCount() > 1)
+			return;
 		//Is doc in a group or free?
 		if(mDocument.getParent().equals(Visgo.canvas.getLayer()))
 		{
@@ -127,6 +124,11 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			mDocument.setOffset(spot);
 			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
 		}
+	}
+	
+	@Override
+	public void mousePressed(PInputEvent event){
+
 	}
 	
 	/**
@@ -167,8 +169,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 					layer.removeChild(i);
 					layer.removeChild(mDocument);
 					layer.addChild(newGroup);
-					//TODO: Correctly place newly created group
-					System.out.println("New group created");
+					newGroup.setOffset(spot);
 					break;
 				}
 			}
