@@ -43,7 +43,7 @@ public class PDocument extends PNode {
 	VisgoDragEventHandler dragger;
 	
 	
-	//TODO: Have title and image be grouped together as a single, movable node
+	//Have title and image be grouped together as a single, movable node
 	public PDocument(Document document){
 		super();
 		mDocument = document;
@@ -65,6 +65,7 @@ public class PDocument extends PNode {
 		
 		backgroundNode.addChild(imageNode);
 		backgroundNode.addChild(textNode);
+		backgroundNode.addInputEventListener(new PDragEventHandler());
 
 		//prevents dragging off names/images from the overall node
 		for(int i = 0; i < backgroundNode.getChildrenCount(); i++)
@@ -118,17 +119,32 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	}
 	@Override
 	public void mouseDragged(PInputEvent event){
-		PNode aNode = event.getPickedNode();
-		double scale = aNode.getGlobalScale();
-		double x = aNode.getX();
-		double y = aNode.getY();
-		aNode.getParent().removeChild(aNode);
-		Visgo.canvas.getLayer().addChild(aNode);
-		aNode.setX(x);
-		aNode.setY(y);
-		aNode.setScale(scale);
-        PDimension delta = event.getDeltaRelativeTo(aNode);
-        aNode.translate(delta.width, delta.height);
+		
+	}
+	
+	@Override
+	public void mousePressed(PInputEvent event){
+		//Is doc in a group?
+		if(mDocument.getParent().getParent().getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
+		{
+			//Remove from group
+			PLayer layer = Visgo.canvas.getLayer();
+			PDocumentGrid oldGroup = (PDocumentGrid) mDocument.getParent();
+			for(int i = 0; i < oldGroup.getChildrenCount(); i++)
+			{
+				System.out.println(oldGroup.getChild(i).toString());
+			}
+			
+			/**
+			 * TODO: Need the actual location of the document so that it can be placed at that point
+			 * outside of its old group once added to the main workspace layer
+			 */
+			final Point2D spot = mDocument.getFullBounds().getCenter2D();
+			mDocument.getParent().removeChild(mDocument);
+			layer.addChild(mDocument);
+			mDocument.setX(spot.getX());
+			mDocument.setY(spot.getY());
+		}
 	}
 	
 	/**
@@ -189,29 +205,6 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				}
 			}
 		}
-		System.out.println();
-		//TESTING PATRICK'S STUFF
-//		try {
-//			for(String s : Visgo.systemTest.getChildrenFiles(oldGroup))
-//				System.out.println("File in " + oldGroup.getName() + ": " + s);
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		//TODO: Remove the newly group document from the canvas layer's children!
-//		ArrayList<PDocument> toRemove = new ArrayList<PDocument>();
-//		for(int i = 0; i < layer.getChildrenCount(); i++)
-//		{
-//			if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocument.class))
-//			{
-//				doc = (PDocument) layer.getChild(i);
-//				System.out.println(doc.getDocument().getName() + " is in: " + doc.getDocument().getParent().getName());
-//				if(doc.getDocument().getParent() != null)
-//					toRemove.add(doc);
-//			}
-//		}
-//		layer.removeChildren(toRemove);
-//		layer.invalidatePaint();
 
 		System.out.println();
 	}
