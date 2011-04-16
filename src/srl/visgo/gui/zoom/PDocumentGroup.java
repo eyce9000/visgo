@@ -3,7 +3,6 @@ package srl.visgo.gui.zoom;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -14,7 +13,6 @@ import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
-import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.data.Entry;
 
@@ -32,8 +30,9 @@ public class PDocumentGroup extends PNode{
 			
 		docNodes = new ArrayList<PDocument>();
 
-		backgroundNode = PPath.createRoundRectangle(0f, 0f, 50, 50, 5f, 5f);
+		backgroundNode = PPath.createRectangle(0f, 0f, 50, 50);
 		backgroundNode.addInputEventListener(new PDragEventHandler());
+		this.setPaint(Color.LIGHT_GRAY);
 		backgroundNode.setPaint(Color.LIGHT_GRAY);
 		this.addChild(backgroundNode);
 		invalidate();
@@ -45,7 +44,7 @@ public class PDocumentGroup extends PNode{
 		return mColCount;
 	}
 	
-	//add docs, set dragging to docs, set size of area, etc.
+	//Group -> backgroundNode -> Grid -> Docs
 	public void invalidate(){
 		backgroundNode.removeAllChildren();
 		Collection<Entry> docs = mGroup.getRootEntries();

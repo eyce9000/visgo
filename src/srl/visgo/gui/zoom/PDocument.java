@@ -1,18 +1,10 @@
 package srl.visgo.gui.zoom;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Paint;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-
-import com.google.gdata.util.InvalidEntryException;
 
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
-import srl.visgo.gui.DocPanel;
 import srl.visgo.gui.Resources;
 import srl.visgo.gui.Visgo;
 import srl.visgo.gui.interaction.VisgoDragEventHandler;
@@ -21,16 +13,9 @@ import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
-import edu.umd.cs.piccolo.event.PInputEventFilter;
-import edu.umd.cs.piccolo.event.PInputEventListener;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
-import edu.umd.cs.piccolo.util.PBounds;
-import edu.umd.cs.piccolo.util.PDimension;
-import edu.umd.cs.piccolo.util.PPaintContext;
-import edu.umd.cs.piccolox.pswing.PSwing;
-import gDocsFileSystem.GFileSystem;
 
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.GRAY;
@@ -125,24 +110,28 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	
 	@Override
 	public void mousePressed(PInputEvent event){
-		//Is doc in a group?
-		if(mDocument.getParent().getParent().getParent().getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
+		//Is doc in a group or free?
+		if(mDocument.getParent().equals(Visgo.canvas.getLayer()))
+		{
+			
+		}
+		else if(mDocument.getParent().getParent().getParent().getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
 		{
 			//Remove from group
 			PLayer layer = Visgo.canvas.getLayer();
 			PDocumentGroup oldGroup = (PDocumentGroup) mDocument.getParent().getParent().getParent();
 			
-			
 			final Point2D spot = mDocument.getGlobalFullBounds().getCenter2D();
 			oldGroup.removeDocument(mDocument);
 			layer.addChild(mDocument);
 			mDocument.setOffset(spot);
-
+			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
 		}
 	}
 	
 	/**
-	 * check if the new location of the node is within a group 
+	 * Handles the dropping of a PDocument. PDocs can be dropped onto the main canvas, into
+	 * existing groups, or onto another canvas PDoc for form a new group.
 	 * @param aNode
 	 * @throws Exception 
 	 */
@@ -155,6 +144,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			{
 				PDocumentGroup test = (PDocumentGroup) layer.getChild(i);
 				final Point2D spot = aNode.getGlobalFullBounds().getCenter2D();
+				//Was the doc dropped into a group?
 				if(test.getGlobalFullBounds().contains(spot))
 				{
 					test.addDocument(aNode);
@@ -167,13 +157,15 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				PDocument test = (PDocument) layer.getChild(i);
 				if(test.equals(mDocument)) continue;
 				final Point2D spot = aNode.getGlobalFullBounds().getCenter2D();
+				//Was the doc dropped onto another doc?
 				if(test.getGlobalFullBounds().contains(spot))
 				{
+					//TODO: Add prompt for new group name
 					PDocumentGroup newGroup = new PDocumentGroup(new DocumentGroup("New group!"));
 					newGroup.addDocument(test);
 					newGroup.addDocument(mDocument);
-					layer.removeChild(mDocument);
 					layer.removeChild(i);
+					layer.removeChild(mDocument);
 					layer.addChild(newGroup);
 					//TODO: Correctly place newly created group
 					System.out.println("New group created");
@@ -181,7 +173,6 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				}
 			}
 		}
-		System.out.println();
 	}
 	
 }
