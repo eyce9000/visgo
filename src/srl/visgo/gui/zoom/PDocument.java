@@ -177,7 +177,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				{
 					//Prompt for new group name
 					String name = null;
-					ImageIcon icon = new ImageIcon("");
+					ImageIcon icon = new ImageIcon("image/newgroup.png");
 					name = (String) JOptionPane.showInputDialog(
 							null, "Enter group name:",
 							"Create a new group", JOptionPane.PLAIN_MESSAGE, 
