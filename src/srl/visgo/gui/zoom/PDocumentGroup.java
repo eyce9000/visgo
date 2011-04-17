@@ -30,7 +30,7 @@ public class PDocumentGroup extends PNode{
 			
 		docNodes = new ArrayList<PDocument>();
 
-		backgroundNode = PPath.createRectangle(0f, 0f, 50, 50);
+		backgroundNode = PPath.createRectangle(00, 00, 00, 00);
 		backgroundNode.addInputEventListener(new PDragEventHandler());
 		this.setPaint(Color.LIGHT_GRAY);
 		backgroundNode.setPaint(Color.LIGHT_GRAY);
@@ -55,6 +55,9 @@ public class PDocumentGroup extends PNode{
 		PText nameNode = new PText(mGroup.getName());
 		backgroundNode.addChild(nameNode);
 		nameNode.setPickable(false);
+		PBounds nameBounds = nameNode.getGlobalFullBounds();
+		backgroundNode.setPathToRectangle((float)nameBounds.getX(), 
+				(float)nameBounds.getY(), (float)nameBounds.width, (float)nameBounds.height);
 	}
 	
 	int INDENT = 10;

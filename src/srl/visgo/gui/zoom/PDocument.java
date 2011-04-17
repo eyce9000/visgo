@@ -1,7 +1,16 @@
 package srl.visgo.gui.zoom;
 
 import java.awt.Color;
+import java.awt.TrayIcon.MessageType;
 import java.awt.geom.Point2D;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+
+import com.google.gdata.model.gd.CreateId;
+
+import chrriis.dj.nativeswing.swtimpl.Message;
 
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
@@ -133,7 +142,10 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	
 	/**
 	 * Handles the dropping of a PDocument. PDocs can be dropped onto the main canvas, into
-	 * existing groups, or onto another canvas PDoc for form a new group.
+	 * existing groups, or onto another canvas PDoc for form a new group. 
+	 * 
+	 * Prompts for new group name if a doc is dropped on another. Canceling the resulting 
+	 * dialog prevents new group's formation.
 	 * @param aNode
 	 * @throws Exception 
 	 */
@@ -142,6 +154,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 		
 		for(int i = 0; i < layer.getChildrenCount(); i++)
 		{
+			//Checks for groups and documents
 			if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
 			{
 				PDocumentGroup test = (PDocumentGroup) layer.getChild(i);
@@ -162,14 +175,24 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				//Was the doc dropped onto another doc?
 				if(test.getGlobalFullBounds().contains(spot))
 				{
-					//TODO: Add prompt for new group name
-					PDocumentGroup newGroup = new PDocumentGroup(new DocumentGroup("New group!"));
-					newGroup.addDocument(test);
-					newGroup.addDocument(mDocument);
-					layer.removeChild(i);
-					layer.removeChild(mDocument);
-					layer.addChild(newGroup);
-					newGroup.setOffset(spot);
+					//Prompt for new group name
+					String name = null;
+					ImageIcon icon = new ImageIcon("");
+					name = (String) JOptionPane.showInputDialog(
+							null, "Enter group name:",
+							"Create a new group", JOptionPane.PLAIN_MESSAGE, 
+							icon, null, 
+							"new group");
+					if(name != null){
+						//New group desired
+						PDocumentGroup newGroup = new PDocumentGroup(new DocumentGroup(name));
+						newGroup.addDocument(test);
+						newGroup.addDocument(mDocument);
+						layer.removeChild(i);
+						layer.removeChild(mDocument);
+						layer.addChild(newGroup);
+						newGroup.setOffset(spot);
+					}
 					break;
 				}
 			}
