@@ -114,8 +114,6 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	}
 	@Override
 	public void mouseDragged(PInputEvent event){
-		if(event.getClickCount() > 1)
-			return;
 		//Is doc in a group or free?
 		if(mDocument.getParent().equals(Visgo.canvas.getLayer()))
 		{
@@ -137,7 +135,8 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	
 	@Override
 	public void mousePressed(PInputEvent event){
-
+		if(event.getClickCount() > 1)
+			return;
 	}
 	
 	/**
@@ -177,7 +176,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				{
 					//Prompt for new group name
 					String name = null;
-					ImageIcon icon = new ImageIcon("image/newgroup.png");
+					ImageIcon icon = new ImageIcon("image/newgroup2.png");
 					name = (String) JOptionPane.showInputDialog(
 							null, "Enter group name:",
 							"Create a new group", JOptionPane.PLAIN_MESSAGE, 
