@@ -13,6 +13,7 @@ import com.google.gdata.util.ServiceException;
 
 public class DocumentList {
 	HashMap<String,Document> mDocuments = new HashMap<String,Document>();
+	HashMap<String,Document> mDocsById = new HashMap<String,Document>();
 	HashMap<String,Document> mVisgoDatabases = new HashMap<String,Document>();
 	DocsService docsService;
 	public DocumentList(DocsService service) throws IOException, ServiceException{
@@ -36,6 +37,7 @@ public class DocumentList {
 				}
 				else{
 					mDocuments.put(doc.getGoogleId(), doc);
+					mDocsById.put(doc.getId(), doc);
 					//System.out.println(doc.getName());
 					System.out.println(doc.getGoogleId());
 				}
@@ -52,7 +54,10 @@ public class DocumentList {
 	public Collection<Document> getVisgoDatabases(){
 		return mVisgoDatabases.values();
 	}
-	public Document getDocumentById(String id){
+	public Document getDocumentByGoogleId(String id){
 		return mDocuments.get(id);
+	}
+	public Document getDocumentById(String id){
+		return mDocsById.get(id);
 	}
 }

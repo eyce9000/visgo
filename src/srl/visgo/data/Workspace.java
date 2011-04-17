@@ -3,6 +3,7 @@ package srl.visgo.data;
 import gDocsFileSystem.GDatabase;
 import gDocsFileSystem.GFileSystem;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -11,6 +12,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import srl.visgo.util.chat.listeners.CommandMessage;
+import srl.visgo.util.chat.listeners.CommandMessageListener;
 
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.Link;
@@ -19,8 +28,8 @@ import com.google.gdata.data.docs.DocumentListFeed;
 import com.google.gdata.util.ServiceException;
 import com.google.gdata.util.common.base.Pair;
 
-public class Workspace {
-
+public class Workspace implements CommandMessageListener{
+	ObjectMapper mapper = new ObjectMapper();
 	DocumentList mDocumentList;
 	GDatabase mDatabase;
 	GFileSystem mFileSystem;
@@ -44,7 +53,7 @@ public class Workspace {
 		}
 
 		for(Document file: files){
-			Document doc = mDocumentList.getDocumentById(file.getGoogleId());
+			Document doc = mDocumentList.getDocumentByGoogleId(file.getGoogleId());
 			rootDocuments.put(doc.getGoogleId(), doc);
 		}
 	}
@@ -55,7 +64,7 @@ public class Workspace {
 		System.out.println("Group: "+group.getName());
 
 		for(Document file: childrenFiles){
-			Document childDoc = mDocumentList.getDocumentById(file.getGoogleId());
+			Document childDoc = mDocumentList.getDocumentByGoogleId(file.getGoogleId());
 			if(childDoc!=null){
 				group.addDocument(childDoc);
 				System.out.println("Doc: "+childDoc.getName());
@@ -74,5 +83,31 @@ public class Workspace {
 	}
 	public Collection<DocumentGroup> getRootDocumentGroups(){
 		return rootGroups.values();
+	}
+	public Document getDocumentById(String id){
+		return mDocumentList.getDocumentById(id);
+	}
+	public DocumentGroup getDocumentGroupById(String id){
+		return allGroups.get(id);
+	}
+
+	@Override
+	public void CommandReceived(CommandMessage notification) {
+		String name = notification.getCommandName();
+		String body = notification.getArguments();
+		if(name.equals("documentMoved")){
+			try {
+				Map<String,Object> userData = mapper.readValue(body, Map.class);
+			} catch (JsonParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }
