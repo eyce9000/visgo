@@ -1,6 +1,7 @@
 package srl.visgo.gui.zoom;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.TrayIcon.MessageType;
 import java.awt.geom.Point2D;
 
@@ -119,7 +120,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 		{
 			
 		}
-		else if(mDocument.getParent().getParent().getParent().getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
+		else if(mDocument.getParent().getParent().getParent() instanceof srl.visgo.gui.zoom.PDocumentGroup)
 		{
 			//Remove from group
 			PLayer layer = Visgo.canvas.getLayer();
@@ -135,8 +136,10 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	
 	@Override
 	public void mousePressed(PInputEvent event){
-		if(event.getClickCount() > 1)
-			return;
+//		if(event.getClickCount() > 1)
+//			return;
+//		Rectangle bounds = Visgo.canvas.getBounds();
+//		Visgo.canvas.getCamera().setViewBounds(bounds);
 	}
 	
 	/**
@@ -154,7 +157,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 		for(int i = 0; i < layer.getChildrenCount(); i++)
 		{
 			//Checks for groups and documents
-			if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
+			if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocumentGroup)
 			{
 				PDocumentGroup test = (PDocumentGroup) layer.getChild(i);
 				final Point2D spot = aNode.getGlobalFullBounds().getCenter2D();
@@ -166,7 +169,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 					break;
 				}
 			}
-			else if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocument.class))
+			else if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocument)
 			{
 				PDocument test = (PDocument) layer.getChild(i);
 				if(test.equals(mDocument)) continue;

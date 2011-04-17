@@ -44,6 +44,10 @@ public class PDocumentGroup extends PNode{
 		return mColCount;
 	}
 	
+	/**
+	 * Use to initialize the group. Sets the draggable background node's size to that of 
+	 * the group's title.
+	 */
 	private void initialize(){
 		backgroundNode.removeAllChildren();
 		Collection<Entry> docs = mGroup.getRootEntries();

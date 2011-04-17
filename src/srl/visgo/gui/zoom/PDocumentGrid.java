@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import srl.visgo.data.Document;
+import srl.visgo.data.DocumentGroup;
 import srl.visgo.data.Entry;
 
 import edu.umd.cs.piccolo.PNode;
@@ -40,6 +41,15 @@ public class PDocumentGrid extends PNode {
 				docNode.setOffset(new Point2D.Double(col*50,row*50));
 				docNode.setScale(.5);
 			}
+//			else if(entry instanceof DocumentGroup){
+//				PDocumentGroup groupNode = new PDocumentGroup((DocumentGroup)entry);
+//				//TODO: Increment i to accommodate contents of group
+//				this.addChild(groupNode);
+//				int col = i % mColCount;
+//				int row = i / mColCount;
+//				groupNode.setOffset(new Point2D.Double(col*50,row*50));
+//				groupNode.setScale(.5);
+//			}
 			i++;
 		}
 	}
