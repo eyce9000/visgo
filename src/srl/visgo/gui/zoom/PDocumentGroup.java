@@ -3,22 +3,22 @@ package srl.visgo.gui.zoom;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
+import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
-import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.data.Entry;
 
 public class PDocumentGroup extends PNode{
 	DocumentGroup mGroup;
+	PPath backgroundNode;
 	List<PDocument> docNodes;
 	int mColCount = 1;
 	public static PBounds currentBounds;
@@ -26,11 +26,16 @@ public class PDocumentGroup extends PNode{
 	public PDocumentGroup(DocumentGroup group){
 		super();
 		mGroup = group;
-		//mGroup.setPDocGroup(this);
+		
 			
 		docNodes = new ArrayList<PDocument>();
+
+		backgroundNode = PPath.createRectangle(0f, 0f, 50, 50);
+		backgroundNode.addInputEventListener(new PDragEventHandler());
 		this.setPaint(Color.LIGHT_GRAY);
-		invalidate();
+		backgroundNode.setPaint(Color.LIGHT_GRAY);
+		this.addChild(backgroundNode);
+		initialize();
 	}
 	public void setColumnCount(int count){
 		mColCount = count;
@@ -39,16 +44,36 @@ public class PDocumentGroup extends PNode{
 		return mColCount;
 	}
 	
-	//add docs, set dragging to docs, set size of area, etc.
-	public void invalidate(){
-		this.removeAllChildren();
+	/**
+	 * Use to initialize the group. Sets the draggable background node's size to that of 
+	 * the group's title.
+	 */
+	private void initialize(){
+		backgroundNode.removeAllChildren();
 		Collection<Entry> docs = mGroup.getRootEntries();
 		PDocumentGrid grid = new PDocumentGrid(docs);
-		this.addChild(grid);
+		backgroundNode.addChild(grid);
 		grid.invalidate();
 		grid.setOffset(0,40);
 		PText nameNode = new PText(mGroup.getName());
-		this.addChild(nameNode);
+		backgroundNode.addChild(nameNode);
+		nameNode.setPickable(false);
+		PBounds nameBounds = nameNode.getGlobalFullBounds();
+		backgroundNode.setPathToRectangle((float)nameBounds.getX(), 
+				(float)nameBounds.getY(), (float)nameBounds.width, (float)nameBounds.height);
+	}
+	
+	//Group -> backgroundNode -> Grid -> Docs
+	public void invalidate(){
+		backgroundNode.removeAllChildren();
+		Collection<Entry> docs = mGroup.getRootEntries();
+		PDocumentGrid grid = new PDocumentGrid(docs);
+		backgroundNode.addChild(grid);
+		grid.invalidate();
+		grid.setOffset(0,40);
+		PText nameNode = new PText(mGroup.getName());
+		backgroundNode.addChild(nameNode);
+		nameNode.setPickable(false);
 	}
 	
 	int INDENT = 10;
@@ -110,5 +135,15 @@ public class PDocumentGroup extends PNode{
     
     public PBounds getCachedBounds(){
     	return cachedChildBounds;
+    }
+    
+    public void removeDocument(PDocument pDoc){
+    	mGroup.removeDocument(pDoc.getDocument());
+    	invalidate();
+    }
+    
+    public void addDocument(PDocument pDoc){
+    	mGroup.addDocument(pDoc.getDocument());
+    	invalidate();
     }
 }

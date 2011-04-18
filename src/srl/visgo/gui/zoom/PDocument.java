@@ -1,18 +1,20 @@
 package srl.visgo.gui.zoom;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.TrayIcon.MessageType;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 
-import com.google.gdata.util.InvalidEntryException;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+
+import com.google.gdata.model.gd.CreateId;
+
+import chrriis.dj.nativeswing.swtimpl.Message;
 
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
-import srl.visgo.gui.DocPanel;
 import srl.visgo.gui.Resources;
 import srl.visgo.gui.Visgo;
 import srl.visgo.gui.interaction.VisgoDragEventHandler;
@@ -21,15 +23,9 @@ import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
-import edu.umd.cs.piccolo.event.PInputEventFilter;
-import edu.umd.cs.piccolo.event.PInputEventListener;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
-import edu.umd.cs.piccolo.util.PDimension;
-import edu.umd.cs.piccolo.util.PPaintContext;
-import edu.umd.cs.piccolox.pswing.PSwing;
-import gDocsFileSystem.GFileSystem;
 
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.GRAY;
@@ -65,7 +61,7 @@ public class PDocument extends PNode {
 		
 		backgroundNode.addChild(imageNode);
 		backgroundNode.addChild(textNode);
-		backgroundNode.addInputEventListener(new PDragEventHandler());
+//		backgroundNode.addInputEventListener(new PDragEventHandler());
 
 		//prevents dragging off names/images from the overall node
 		for(int i = 0; i < backgroundNode.getChildrenCount(); i++)
@@ -114,99 +110,95 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	public void mouseReleased(PInputEvent event){
 		PNode aNode = event.getPickedNode();
 		aNode.setPaint(Color.GREEN);
-        checkLocation(aNode);
+        checkLocation(mDocument);
 		
 	}
 	@Override
 	public void mouseDragged(PInputEvent event){
-		
+		//Is doc in a group or free?
+		if(mDocument.getParent().equals(Visgo.canvas.getLayer()))
+		{
+			
+		}
+		else if(mDocument.getParent().getParent().getParent() instanceof srl.visgo.gui.zoom.PDocumentGroup)
+		{
+			//Remove from group
+			PLayer layer = Visgo.canvas.getLayer();
+			PDocumentGroup oldGroup = (PDocumentGroup) mDocument.getParent().getParent().getParent();
+			
+			final Point2D spot = mDocument.getGlobalFullBounds().getCenter2D();
+			oldGroup.removeDocument(mDocument);
+			layer.addChild(mDocument);
+			mDocument.setOffset(spot);
+			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
+		}
 	}
 	
 	@Override
 	public void mousePressed(PInputEvent event){
-		//Is doc in a group?
-		if(mDocument.getParent().getParent().getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
-		{
-			//Remove from group
-			PLayer layer = Visgo.canvas.getLayer();
-			PDocumentGrid oldGroup = (PDocumentGrid) mDocument.getParent();
-			for(int i = 0; i < oldGroup.getChildrenCount(); i++)
-			{
-				System.out.println(oldGroup.getChild(i).toString());
-			}
-			
-			/**
-			 * TODO: Need the actual location of the document so that it can be placed at that point
-			 * outside of its old group once added to the main workspace layer
-			 */
-			final Point2D spot = mDocument.getFullBounds().getCenter2D();
-			mDocument.getParent().removeChild(mDocument);
-			layer.addChild(mDocument);
-			mDocument.setX(spot.getX());
-			mDocument.setY(spot.getY());
-		}
+//		if(event.getClickCount() > 1)
+//			return;
+//		Rectangle bounds = Visgo.canvas.getBounds();
+//		Visgo.canvas.getCamera().setViewBounds(bounds);
 	}
 	
 	/**
-	 * check if the new location of the node is within a group 
+	 * Handles the dropping of a PDocument. PDocs can be dropped onto the main canvas, into
+	 * existing groups, or onto another canvas PDoc for form a new group. 
+	 * 
+	 * Prompts for new group name if a doc is dropped on another. Canceling the resulting 
+	 * dialog prevents new group's formation.
 	 * @param aNode
 	 * @throws Exception 
 	 */
-	public void checkLocation(PNode aNode){
+	public void checkLocation(PDocument aNode){
 		PLayer layer = Visgo.canvas.getLayer();
-		PDocumentGroup group;
-		PDocument doc;
-		DocumentGroup oldGroup = mDocument.getDocument().getParent();
-		//PDocumentGroup oldPGroup = mDocument.getDocument().getParent().getPDocGroup();
-		PDocumentGroup oldPGroup = null;
 		
 		for(int i = 0; i < layer.getChildrenCount(); i++)
 		{
-			if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocumentGroup.class))
+			//Checks for groups and documents
+			if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocumentGroup)
 			{
-				//The node is a group of documents
-				group = (PDocumentGroup) layer.getChild(i);
-				System.out.println(group.getDocumentGroup().getName());
-
-				/**********************
-				 * TODO: Need a better way to check if dropped into a group! This bounds check is invalid
-				 **********************/
-				if(group.computeFullBounds(null).contains(aNode.getBounds().getCenter2D()))
+				PDocumentGroup test = (PDocumentGroup) layer.getChild(i);
+				final Point2D spot = aNode.getGlobalFullBounds().getCenter2D();
+				//Was the doc dropped into a group?
+				if(test.getGlobalFullBounds().contains(spot))
 				{
-					//Dropped into same group
-					if(group.getDocumentGroup().getDocuments().contains(mDocument.getDocument()))
-					{
-							System.out.println(">--< Back into same group");
-					}
-					else 	//Dropped into a new group
-					{
-						//Remove from old drag group
-						System.out.println("<-- " + mDocument.getDocument().getName() + " removed from group: " + oldGroup.getName());
-						oldGroup.removeDocument(mDocument.getDocument());
-						oldPGroup.invalidate();
-
-						//Add to new drop group
-						System.out.println("--> " + mDocument.getDocument().getName() + " added to group: " + group.getDocumentGroup().getName());
-						group.getDocumentGroup().addDocument(mDocument.getDocument());
-						//Visgo.systemTest.insertEntry(mDocument.getDocument(), group.getDocumentGroup(), true);	//TODO: Move to adding files from local to workspace
-						//Visgo.systemTest.setParent(mDocument.getDocument(), group.getDocumentGroup(), true);
-						
-						group.invalidate();
-					}
+					test.addDocument(aNode);
+					layer.removeChild(mDocument);
+					break;
 				}
 			}
-			else if(layer.getChild(i).getClass().equals(srl.visgo.gui.zoom.PDocument.class))
+			else if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocument)
 			{
-				//The node is a free-floating document
-				doc = (PDocument) layer.getChild(i);
-				if(doc.getDocument().getName().equals(mDocument.getDocument().getName()))
+				PDocument test = (PDocument) layer.getChild(i);
+				if(test.equals(mDocument)) continue;
+				final Point2D spot = aNode.getGlobalFullBounds().getCenter2D();
+				//Was the doc dropped onto another doc?
+				if(test.getGlobalFullBounds().contains(spot))
 				{
-					System.out.println(doc.getDocument().getName());
+					//Prompt for new group name
+					String name = null;
+					ImageIcon icon = new ImageIcon("image/newgroup2.png");
+					name = (String) JOptionPane.showInputDialog(
+							null, "Enter group name:",
+							"Create a new group", JOptionPane.PLAIN_MESSAGE, 
+							icon, null, 
+							"new group");
+					if(name != null){
+						//New group desired
+						PDocumentGroup newGroup = new PDocumentGroup(new DocumentGroup(name));
+						newGroup.addDocument(test);
+						newGroup.addDocument(mDocument);
+						layer.removeChild(i);
+						layer.removeChild(mDocument);
+						layer.addChild(newGroup);
+						newGroup.setOffset(spot);
+					}
+					break;
 				}
 			}
 		}
-
-		System.out.println();
 	}
 	
 }
