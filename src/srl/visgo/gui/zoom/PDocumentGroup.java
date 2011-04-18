@@ -13,6 +13,8 @@ import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
+import gDocsFileSystem.GFileSystem;
+import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.data.Entry;
 
@@ -137,13 +139,38 @@ public class PDocumentGroup extends PNode{
     	return cachedChildBounds;
     }
     
+    public void greyDocument(PDocument pDoc){
+//    	for(Document d : mGroup.getDocuments() )
+//    	{
+//    		if(d.getId().equals(pDoc.getDocument().getId()))
+//    		{
+//    			pDoc.backgroundNode.setPaint(Color.BLUE);
+//    		}
+//    	}
+    	invalidate();
+    }
+    
+    /**
+     * Remove a document from this group. Updates the group visually
+     * @param pDoc
+     */
     public void removeDocument(PDocument pDoc){
     	mGroup.removeDocument(pDoc.getDocument());
     	invalidate();
     }
     
+    /**
+     * Add a document to a group, if it is not already in it.
+     * @param pDoc
+     */
     public void addDocument(PDocument pDoc){
-    	mGroup.addDocument(pDoc.getDocument());
-    	invalidate();
+    	if(!mGroup.getDocuments().contains(pDoc.getDocument()))
+    	{
+    		mGroup.addDocument(pDoc.getDocument());
+    		//TODO: Add File/Folder update here
+    		invalidate();
+    		
+    	}
+    	pDoc.backgroundNode.setPaint(Color.GRAY);
     }
 }
