@@ -6,6 +6,7 @@ public interface Entry {
 	public DocumentGroup getParent();
 	public boolean hasParent();
 	public String getId();
+	public String getParentId();
 	public double getOffsetX();
 	public double getOffsetY();
 }

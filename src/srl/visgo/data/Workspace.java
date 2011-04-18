@@ -97,7 +97,20 @@ public class Workspace implements CommandMessageListener{
 		String body = notification.getArguments();
 		if(name.equals("documentMoved")){
 			try {
-				Map<String,Object> userData = mapper.readValue(body, Map.class);
+				Map<String,Object> map = mapper.readValue(body, Map.class);
+				Document tempDoc = Document.deserializeShallow(map);
+				Document ourDoc = getDocumentById(tempDoc.getId());
+				if(ourDoc.hasParent()){
+					ourDoc.getParent().removeDocument(ourDoc);
+				}
+				
+				ourDoc.copyValues(tempDoc);
+				
+				DocumentGroup newParent = allGroups.get(tempDoc.getParentId());
+				if(newParent!=null){
+					newParent.addDocument(ourDoc);
+				}
+				
 			} catch (JsonParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

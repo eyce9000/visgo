@@ -14,6 +14,7 @@ public class DocumentGroup implements Entry{
 	HashMap<String,DocumentGroup> mSubGroups;
 	String mName;
 	String mId;
+	String mParentId;
 	DocumentGroup mParent;
 	double mOffsetX,mOffsetY;
 	
@@ -140,6 +141,16 @@ public class DocumentGroup implements Entry{
 	public String getId() {
 		return mId;
 	}
+	@Override
+	public String getParentId(){
+		if(mParent!=null)
+		{
+			return mParent.getId();
+		}
+		else{
+			return mParentId;
+		}
+	}
 	
 	public static Map serialize(DocumentGroup group){
 		Map m = new HashMap();
@@ -147,6 +158,7 @@ public class DocumentGroup implements Entry{
 		m.put("folderid", group.mId);
 		m.put("offsetX", group.mOffsetX);
 		m.put("offsetY", group.mOffsetY);
+		m.put("offsetY", group.getParentId());
 		return m;
 	}
 	
@@ -154,6 +166,7 @@ public class DocumentGroup implements Entry{
 		DocumentGroup group = new DocumentGroup((String)m.get("foldername"),(String)m.get("folderid"));
 		group.setOffsetX(Double.parseDouble(m.get("offsetX").toString()));
 		group.setOffsetY(Double.parseDouble(m.get("offsetY").toString()));
+		group.mParentId =(String) m.get("parentid");
 		return group;
 	}
 }

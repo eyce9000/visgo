@@ -72,9 +72,19 @@ public class Document implements Entry {
 	public boolean hasParent() {
 		return mParent!=null;
 	}
+	
 	@Override
 	public String getId(){
 		return mId;
+	}
+	@Override
+	public String getParentId(){
+		if(hasParent()){
+			return mParent.getId();
+		}
+		else{
+			return mParentId;
+		}
 	}
 	public String getGoogleId(){
 		if(mEntry!=null)
@@ -85,6 +95,14 @@ public class Document implements Entry {
 	public void setListEntry(DocumentListEntry entry) {
 		this.mEntry = new DocumentListEntry(entry);
 		this.mParent = null;
+	}
+	public void copyValues(Document doc){
+		this.mId = doc.mId;
+		this.mGoogleId = doc.mGoogleId;
+		this.mName = doc.mName;
+		this.mParentId = doc.mParentId;
+		this.mOffsetX = doc.mOffsetX;
+		this.mOffsetY = doc.mOffsetY;
 	}
 	
 	public static Map serialize(Document doc){
