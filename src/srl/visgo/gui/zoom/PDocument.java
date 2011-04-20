@@ -37,6 +37,7 @@ public class PDocument extends PNode {
 	PPath backgroundNode;
 	PDocumentEventHandler eventHandler;
 	VisgoDragEventHandler dragger;
+	PDocumentGroup currentGroup;
 	
 	
 	//Have title and image be grouped together as a single, movable node
@@ -101,6 +102,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	public void mouseExited(PInputEvent event){
 		mDocument.backgroundNode.setPaint(PDocument.BACK_COLOR);
 	}
+	
 	@Override
 	public void mouseEntered(PInputEvent event){
 		mDocument.backgroundNode.setPaint(PDocument.SELECT_COLOR);
@@ -109,16 +111,18 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseReleased(PInputEvent event){
 		PNode aNode = event.getPickedNode();
+		//TODO: Time off for this paint
 		aNode.setPaint(Color.GREEN);
         checkLocation(mDocument);
 		
 	}
+	
 	@Override
 	public void mouseDragged(PInputEvent event){
 		//Is doc in a group or free?
 		if(mDocument.getParent().equals(Visgo.canvas.getLayer()))
 		{
-			
+
 		}
 		else if(mDocument.getParent().getParent().getParent() instanceof srl.visgo.gui.zoom.PDocumentGroup)
 		{
@@ -127,7 +131,8 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			PDocumentGroup oldGroup = (PDocumentGroup) mDocument.getParent().getParent().getParent();
 			
 			final Point2D spot = mDocument.getGlobalFullBounds().getCenter2D();
-			oldGroup.removeDocument(mDocument);
+			oldGroup.greyDocument(mDocument);
+			mDocument.currentGroup = oldGroup;
 			layer.addChild(mDocument);
 			mDocument.setOffset(spot);
 			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
@@ -153,6 +158,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	 */
 	public void checkLocation(PDocument aNode){
 		PLayer layer = Visgo.canvas.getLayer();
+		boolean onWorkspace = true;
 		
 		for(int i = 0; i < layer.getChildrenCount(); i++)
 		{
@@ -166,6 +172,12 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				{
 					test.addDocument(aNode);
 					layer.removeChild(mDocument);
+					//Remove from old group if it's not the same drop location
+					if(mDocument.currentGroup != null && !mDocument.currentGroup.equals(test))
+						mDocument.currentGroup.removeDocument(mDocument);
+					mDocument.currentGroup = test;
+					
+					onWorkspace = false;
 					break;
 				}
 			}
@@ -194,10 +206,23 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 						layer.removeChild(mDocument);
 						layer.addChild(newGroup);
 						newGroup.setOffset(spot);
+						mDocument.currentGroup.removeDocument(mDocument);
+						mDocument.currentGroup = newGroup;
+						onWorkspace = false;
 					}
 					break;
 				}
 			}
+			else
+			{
+				mDocument.currentGroup.removeDocument(mDocument);
+				mDocument.currentGroup = new PDocumentGroup(new DocumentGroup("empty"));
+			}
+		}
+		if(onWorkspace)
+		{
+			mDocument.currentGroup.removeDocument(mDocument);
+			mDocument.currentGroup = new PDocumentGroup(new DocumentGroup("empty"));
 		}
 	}
 	

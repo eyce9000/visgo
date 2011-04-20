@@ -3,6 +3,7 @@ package srl.visgo.gui;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -196,8 +197,11 @@ class VisgoMouseListener implements MouseListener, MouseMotionListener, MouseWhe
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-
+		if (e.getClickCount() == 2)
+		{
+			Rectangle bounds = mCanvas.getBounds();
+			mCanvas.getCamera().setViewBounds(bounds);
+		}
 	}
 
 	@Override
