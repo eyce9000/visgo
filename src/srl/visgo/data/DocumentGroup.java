@@ -1,10 +1,15 @@
 package srl.visgo.data;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
+import srl.visgo.gui.Login;
+import srl.visgo.gui.Visgo;
 import srl.visgo.gui.zoom.PDocumentGroup;
 
 import com.google.gdata.data.docs.DocumentListEntry;
@@ -17,8 +22,12 @@ public class DocumentGroup implements Entry{
 	String mParentId;
 	DocumentGroup mParent;
 	double mOffsetX,mOffsetY;
-	
-	
+	private Calendar mLastModified;
+	private String mLastModifiedBy;
+
+	private DocumentGroup(DocumentGroup group){
+		this.copyValues(group);
+	}
 	public DocumentGroup(String name) {
 		mName = name;
 		mSubGroups = new HashMap<String,DocumentGroup>();
@@ -44,18 +53,20 @@ public class DocumentGroup implements Entry{
 	public void setOffsetY(double offsetY){
 		mOffsetY = offsetY;
 	}
-	
-	
-	
-	
+
+
+
+
 	public void addDocument(Document document){
 		mDocuments.put(document.getName(),document);
-		document.mParent = this;
+		document.setParent(this);
+		modified();
 	}
 	public void addDocuments(Document[] documents){
 		for(Document doc : documents){
 			addDocument(doc);
 		}
+		modified();
 	}
 	public Collection<Entry> getRootEntries(){
 		ArrayList<Entry> rootEntries = new ArrayList<Entry>();
@@ -66,7 +77,7 @@ public class DocumentGroup implements Entry{
 	public Collection<Document> getDocuments(){
 		return mDocuments.values();
 	}
-	
+
 	public Collection<DocumentGroup> getSubGroups(){
 		return mSubGroups.values();
 	}
@@ -81,9 +92,10 @@ public class DocumentGroup implements Entry{
 	public int topSize(){
 		return mDocuments.size();
 	}
-	
+
 	public void addSubGroup(DocumentGroup group){
 		mSubGroups.put(group.getName(),group);
+		modified();
 	}
 	public void addEntry(Entry entry){
 		entry.setParent(this);
@@ -93,15 +105,18 @@ public class DocumentGroup implements Entry{
 		else if(entry instanceof DocumentGroup){
 			addSubGroup((DocumentGroup) entry);
 		}
+		modified();
 	}
-	
+
 	public void removeDocument(Document document){
 		mDocuments.remove(document.getName());
+		modified();
 	}
-	
+
 	@Override
 	public void setParent(DocumentGroup parent) {
 		mParent = parent;
+		modified();
 	}
 	@Override
 	public DocumentGroup getParent() {
@@ -111,7 +126,17 @@ public class DocumentGroup implements Entry{
 	public boolean hasParent() {
 		return mParent != null;
 	}
-	
+
+	public void copyValues(DocumentGroup group){
+		this.mDocuments = group.mDocuments;
+		this.mId = group.getId();
+		this.mName = group.getName();
+		this.mOffsetX = group.getOffsetX();
+		this.mOffsetY = group.getOffsetY();
+		this.mParentId = group.getParentId();
+		this.mParent = group.getParent();
+		this.mSubGroups = group.mSubGroups;
+	}
 
 	public Document getDocument(String path){
 		String[] split = path.split("/");
@@ -151,22 +176,33 @@ public class DocumentGroup implements Entry{
 			return mParentId;
 		}
 	}
-	
+	@Override
+	public Entry clone(){
+		return new DocumentGroup(this);
+	}
+
+	private void modified(){
+		mLastModified = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT-0"));
+		mLastModifiedBy = Login.username;
+		if(Visgo.data!=null)
+			Visgo.data.entryUpdated(this);
+	}
+
 	public static Map serialize(DocumentGroup group){
 		Map m = new HashMap();
 		m.put("foldername", group.mName);
 		m.put("folderid", group.mId);
 		m.put("offsetX", group.mOffsetX);
 		m.put("offsetY", group.mOffsetY);
-		m.put("offsetY", group.getParentId());
+		m.put("parentfolder", group.getParentId());
 		return m;
 	}
-	
+
 	public static DocumentGroup deserializeShallow(Map m){
 		DocumentGroup group = new DocumentGroup((String)m.get("foldername"),(String)m.get("folderid"));
 		group.setOffsetX(Double.parseDouble(m.get("offsetX").toString()));
 		group.setOffsetY(Double.parseDouble(m.get("offsetY").toString()));
-		group.mParentId =(String) m.get("parentid");
+		group.mParentId =(String) m.get("parentfolder");
 		return group;
 	}
 }

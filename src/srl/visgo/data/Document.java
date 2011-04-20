@@ -1,10 +1,16 @@
 package srl.visgo.data;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
+
+import srl.visgo.gui.Login;
+import srl.visgo.gui.Visgo;
 
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.mongodb.BasicDBObject;
@@ -19,8 +25,15 @@ public class Document implements Entry {
 	private String mParentId;
 	private double mOffsetX;
 	private double mOffsetY;
+	private Calendar mLastModified;
+	private String mLastModifiedBy;
+
+	private Document(Document doc){
+		this.copyValues(doc);
+	}
 
 	public Document(String name,String id,String googleId){
+		modified();
 		mName = name;
 		mId = id;
 		mGoogleId = googleId;
@@ -50,17 +63,20 @@ public class Document implements Entry {
 	}
 	public void setOffsetX(double offsetX){
 		mOffsetX = offsetX;
+		modified();
 	}
 	public double getOffsetY(){
 		return mOffsetY;
 	}
 	public void setOffsetY(double offsetY){
 		mOffsetY = offsetY;
+		modified();
 	}
 
 	@Override
 	public void setParent(DocumentGroup parent) {
 		mParent = parent;
+		modified();
 	}
 
 	@Override
@@ -72,7 +88,7 @@ public class Document implements Entry {
 	public boolean hasParent() {
 		return mParent!=null;
 	}
-	
+
 	@Override
 	public String getId(){
 		return mId;
@@ -94,17 +110,28 @@ public class Document implements Entry {
 	}
 	public void setListEntry(DocumentListEntry entry) {
 		this.mEntry = new DocumentListEntry(entry);
-		this.mParent = null;
+		modified();
 	}
 	public void copyValues(Document doc){
-		this.mId = doc.mId;
-		this.mGoogleId = doc.mGoogleId;
-		this.mName = doc.mName;
-		this.mParentId = doc.mParentId;
-		this.mOffsetX = doc.mOffsetX;
-		this.mOffsetY = doc.mOffsetY;
+		this.mId = doc.getId();
+		this.mGoogleId = doc.getGoogleId();
+		this.mName = doc.getName();
+		this.mParentId = doc.getParentId();
+		this.mParent = doc.getParent();
+		this.mOffsetX = doc.getOffsetX();
+		this.mOffsetY = doc.getOffsetY();
 	}
-	
+	private void modified(){
+		mLastModified = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT-0"));
+		mLastModifiedBy = Login.username;
+		if(Visgo.data != null)
+			Visgo.data.entryUpdated(this);
+	}
+
+	public Document clone(){
+		return new Document(this);
+	}
+
 	public static Map serialize(Document doc){
 		Map m = new HashMap();
 		m.put("name", doc.mName);
@@ -112,8 +139,10 @@ public class Document implements Entry {
 		m.put("gid",doc.getGoogleId());
 		m.put("offsetX", doc.mOffsetX);
 		m.put("offsetY", doc.mOffsetY);
+		m.put("modifiedTime", doc.mLastModified.getTimeInMillis());
+		m.put("modifiedBy", doc.mLastModifiedBy);
 		if(doc.hasParent()){
-			m.put("parentid",doc.getParent().getId());
+			m.put("parentfolder",doc.getParent().getId());
 		}
 		return m;
 	}
@@ -121,20 +150,11 @@ public class Document implements Entry {
 		Document doc = new Document((String)m.get("name"),(String)m.get("fileid"),(String)m.get("gfid"));
 		doc.setOffsetX(Double.parseDouble(m.get("offsetX").toString()));
 		doc.setOffsetY(Double.parseDouble(m.get("offsetY").toString()));
-		doc.mParentId = (String)m.get("parentid");
+		doc.mParentId = (String)m.get("parentfolder");
+		doc.mLastModified = new GregorianCalendar(TimeZone.getTimeZone("GMT-0"));
+		doc.mLastModified.setTimeInMillis(Long.parseLong(m.get("modifiedTime").toString()));
+		doc.mLastModifiedBy = (String) m.get("modifiedBy");
 		return doc;
 	}
-	public static Document deserialize(Map m, Workspace w){
-		Document doc = w.getDocumentById((String)m.get("fildid"));
-		if(doc==null){
-			doc = new Document((String)m.get("name"),(String)m.get("fileid"),(String)m.get("gfid"));
-		}
-		doc.setOffsetX(Double.parseDouble(m.get("offsetX").toString()));
-		doc.setOffsetY(Double.parseDouble(m.get("offsetY").toString()));
-		String parentid = (String)m.get("parentid");
-		if(doc.mParentId!=null){
-			doc.setParent(w.getDocumentGroupById(doc.mParentId));
-		}
-		return doc;
-	}
+
 }

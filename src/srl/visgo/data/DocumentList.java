@@ -25,7 +25,6 @@ public class DocumentList {
 		DocumentListFeed feed = docsService.getFeed(feedUri, DocumentListFeed.class);
 		for (DocumentListEntry listEntry : feed.getEntries()) {
 			//System.out.println(listEntry.getTitle().getPlainText());
-
 			//This is a document
 			Document doc = mDocuments.get(listEntry.getDocId());
 			if(doc == null){

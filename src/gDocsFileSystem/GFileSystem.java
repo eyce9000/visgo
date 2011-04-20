@@ -180,7 +180,9 @@ public class GFileSystem
 					"parentfolder",
 					"filename",
 					"offsetX",
-					"offsetY"
+					"offsetY",
+					"modifiedTime",
+					"modifiedBy"
 			});
 			values = Arrays.asList(new String[]{
 					file.getId(),
@@ -198,7 +200,9 @@ public class GFileSystem
 					"parentfolder",
 					"foldername",
 					"offsetX",
-					"offsetY"
+					"offsetY",
+					"modifiedTime",
+					"modifiedBy"
 			});
 			values = Arrays.asList(new String[]{
 					parentId,
@@ -256,7 +260,8 @@ public class GFileSystem
 				"parentfolder",
 				"offsetX",
 				"offsetY",
-				"offsetScale"
+				"modifiedTime",
+				"modifiedBy"
 		});
 
 		List<Map<String,String>> results = db.select("files", columns, "parentfolder == " + folder.getId());
@@ -284,7 +289,9 @@ public class GFileSystem
 				"foldername",
 				"parentfolder",
 				"offsetX",
-				"offsetY"
+				"offsetY",
+				"modifiedTime",
+				"modifiedBy"
 		});
 
 		List<Map<String,String>> results = db.select("folders", columns, "parentfolder == " + folder.getId());
@@ -367,7 +374,9 @@ public class GFileSystem
 				"parentfolder",
 				"filename",
 				"offsetX",
-				"offsetY"
+				"offsetY",
+				"modifiedTime",
+				"modifiedBy"
 		});
 		List<Map<String,String>> files = db.select("files", columns, "parentfolder = 0");
 		for(Map<String,String> row:files){
@@ -385,7 +394,9 @@ public class GFileSystem
 				"parentfolder",
 				"foldername",
 				"offsetX",
-				"offsetY"
+				"offsetY",
+				"modifiedTime",
+				"modifiedBy"
 		});
 		List<Map<String,String>> folders = db.select("folders", columns, "parentfolder = 0");
 		

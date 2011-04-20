@@ -33,6 +33,7 @@ public class Workspace implements CommandMessageListener{
 	DocumentList mDocumentList;
 	GDatabase mDatabase;
 	GFileSystem mFileSystem;
+	DataSaver saver;
 
 	HashMap<String,Document> rootDocuments = new HashMap<String,Document>();
 	HashMap<String,DocumentGroup> rootGroups = new HashMap<String,DocumentGroup>();
@@ -42,6 +43,9 @@ public class Workspace implements CommandMessageListener{
 		mDocumentList = docList;
 		mDatabase = database;
 		mFileSystem = new GFileSystem(database);
+		
+		saver = new DataSaver(mFileSystem);
+		new Thread(saver).start();
 
 		List<DocumentGroup> folders = mFileSystem.getRootFolders();
 		List<Document> files = mFileSystem.getRootFiles();
@@ -89,6 +93,9 @@ public class Workspace implements CommandMessageListener{
 	}
 	public DocumentGroup getDocumentGroupById(String id){
 		return allGroups.get(id);
+	}
+	public void saveEntry(Entry e){
+		saver.saveEntry(e);
 	}
 
 	@Override

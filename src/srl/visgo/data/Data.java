@@ -46,6 +46,7 @@ public class Data implements StatusChangeListener{
 	private LinkedList<DataListener> listeners;
 	private MessageProcessor messageProcessor;
 	private DocumentList mDocumentList;
+	private Collaborator mCurrentCollaborator;
 
 	public Data(){
 		mDatabase = new GDatabase();
@@ -133,6 +134,9 @@ public class Data implements StatusChangeListener{
 			if(!gid.equals(Login.username)){
 				chatManager.createChat(collab.getUsername(), m.get("gid")+"", null);
 			}
+			else{
+				mCurrentCollaborator = collab;
+			}
 		}
 
 	}
@@ -162,7 +166,14 @@ public class Data implements StatusChangeListener{
 		}
 
 	}
+	public void entryUpdated(Entry e){
+		
+		workspace.saveEntry(e);
+	}
 
+	public Collaborator getCurrentCollaborator(){
+		return mCurrentCollaborator;
+	}
 	public Collaborator getCollaborator(String username){
 		return mCollaborators.get(username);
 	}
