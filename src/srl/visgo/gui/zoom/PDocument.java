@@ -199,7 +199,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 							"new group");
 					if(name != null){
 						//New group desired
-						PDocumentGroup newGroup = new PDocumentGroup(new DocumentGroup(name));
+						PDocumentGroup newGroup = new PDocumentGroup(DocumentGroup.createGroup(name));
 						newGroup.addDocument(test);
 						newGroup.addDocument(mDocument);
 						layer.removeChild(i);
@@ -216,13 +216,13 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			else
 			{
 				mDocument.currentGroup.removeDocument(mDocument);
-				mDocument.currentGroup = new PDocumentGroup(new DocumentGroup("empty"));
+				//mDocument.currentGroup = new PDocumentGroup(DocumentGroup.createGroup("empty"));
 			}
 		}
 		if(onWorkspace)
 		{
 			mDocument.currentGroup.removeDocument(mDocument);
-			mDocument.currentGroup = new PDocumentGroup(new DocumentGroup("empty"));
+			//mDocument.currentGroup = new PDocumentGroup(DocumentGroup.createGroup("empty"));
 		}
 	}
 	

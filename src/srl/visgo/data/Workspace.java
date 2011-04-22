@@ -58,6 +58,7 @@ public class Workspace implements CommandMessageListener{
 
 		for(Document file: files){
 			Document doc = mDocumentList.getDocumentByGoogleId(file.getGoogleId());
+			doc.copyValues(file);
 			rootDocuments.put(doc.getGoogleId(), doc);
 		}
 	}
@@ -70,6 +71,7 @@ public class Workspace implements CommandMessageListener{
 		for(Document file: childrenFiles){
 			Document childDoc = mDocumentList.getDocumentByGoogleId(file.getGoogleId());
 			if(childDoc!=null){
+				childDoc.copyValues(file);
 				group.addDocument(childDoc);
 				System.out.println("Doc: "+childDoc.getName());
 			}

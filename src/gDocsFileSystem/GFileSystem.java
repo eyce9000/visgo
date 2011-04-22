@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gdata.client.Query;
+import com.google.gdata.client.spreadsheet.ListQuery;
 import com.google.gdata.util.common.base.Pair;
 
 import srl.visgo.data.Document;
@@ -84,7 +86,7 @@ public class GFileSystem
 	 * @return
 	 */
 	public boolean containsEntry(Entry file){
-		String fileId = docIdPrefix + file.getId();
+		String fileId = docIdPrefix+file.getId();
 		String parentId;
 		String idColumn;
 		String table;
@@ -95,7 +97,7 @@ public class GFileSystem
 
 		if(file.hasParent())
 		{
-			parentId = docIdPrefix + file.getParent().getId();
+			parentId = file.getParent().getId();
 		}
 		else
 		{
@@ -104,15 +106,9 @@ public class GFileSystem
 
 		if(file instanceof Document)
 		{
-			idColumn = "gfid";
+			idColumn = "fileid";
 			table = "files";
 			columns.add("fileid");
-			columns.add("gfid");
-			columns.add("parentfolder");
-			columns.add("filename");
-			values.add(fileId);
-			values.add(parentId);
-			values.add(file.getName());
 		}
 		else
 		{
@@ -121,8 +117,6 @@ public class GFileSystem
 			columns.add("parentid");
 			columns.add("parentfolder");
 			columns.add("foldername");
-			values.add(parentId);
-			values.add(file.getName());
 		}
 		try{
 			List<Map<String,String>> results = db.select(table, columns, idColumn + " = " + fileId);
@@ -153,16 +147,17 @@ public class GFileSystem
 	}
 	private boolean insertEntry(Entry file, boolean overwrite)
 	{
-		String fileId = docIdPrefix + file.getId();
+		String fileId = file.getId();
 		String parentId;
 		String idColumn;
 		String table;
 		List<String> columns = new ArrayList<String>();
 		List<String> values = new ArrayList<String>();
+		Map valueMap;
 
 		if(file.hasParent())
 		{
-			parentId = docIdPrefix + file.getParent().getId();
+			parentId = file.getParent().getId();
 		}
 		else
 		{
@@ -191,12 +186,14 @@ public class GFileSystem
 					file.getOffsetX()+"",
 					file.getOffsetY()+"",
 			});
+			valueMap = Document.serialize((Document)file);
 		}
 		else
 		{
 			idColumn = "folderid";
 			table = "folders";
 			columns = Arrays.asList(new String[]{
+					"folderid",
 					"parentfolder",
 					"foldername",
 					"offsetX",
@@ -210,16 +207,18 @@ public class GFileSystem
 					file.getOffsetX()+"",
 					file.getOffsetY()+"",
 			});
+			
+			valueMap = DocumentGroup.serialize((DocumentGroup)file);
 		}
 
 
 		try
 		{
-			//See if it exists first
-			List<Map<String,String>> results = db.select(table, columns, idColumn + " = " + fileId);
+			
+			List<Map<String,String>> results = db.select(table, columns, idColumn + "=" + fileId);
 			if(overwrite){
 				if(results.size() > 0){
-					db.update(table, columns, values, idColumn + " = "+fileId);
+					db.update(table, valueMap, idColumn + "=" + fileId);
 					return true;
 				}
 			}
@@ -231,16 +230,19 @@ public class GFileSystem
 
 			//DOES NOT EXIST, INSERT
 			Integer id = db.getNextId(table, idColumn);
-			columns.add(0, id.toString());
-
-			db.insert(table, columns, values);
+			valueMap.put(idColumn,id.toString());
+			file.setId(id+"");
+			file.save();
+			
+			db.insert(table, valueMap);
+			
 			return true;
 
 
 		}
 		catch (Exception e)
 		{
-			//TODO: Do something with this?
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -408,6 +410,6 @@ public class GFileSystem
 	}
 
 	public void store(Entry entry){
-
+		insertEntry(entry,true);
 	}
 }

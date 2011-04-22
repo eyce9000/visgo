@@ -3,6 +3,7 @@ package srl.visgo.data;
 public interface Entry extends Cloneable {
 	public String getName();
 	public void setParent(DocumentGroup parent);
+	public void setId(String id);
 	public DocumentGroup getParent();
 	public boolean hasParent();
 	public String getId();
@@ -10,4 +11,5 @@ public interface Entry extends Cloneable {
 	public double getOffsetX();
 	public double getOffsetY();
 	public Entry clone();
+	public void save();
 }

@@ -28,12 +28,12 @@ public class DocumentGroup implements Entry{
 	private DocumentGroup(DocumentGroup group){
 		this.copyValues(group);
 	}
-	public DocumentGroup(String name) {
+	private DocumentGroup(String name) {
 		mName = name;
 		mSubGroups = new HashMap<String,DocumentGroup>();
 		mDocuments = new HashMap<String,Document>();
 	}
-	public DocumentGroup(String name,String id){
+	private DocumentGroup(String name,String id){
 		this(name);
 		mId = id;
 	}
@@ -61,6 +61,7 @@ public class DocumentGroup implements Entry{
 		mDocuments.put(document.getName(),document);
 		document.setParent(this);
 		modified();
+		document.save();
 	}
 	public void addDocuments(Document[] documents){
 		for(Document doc : documents){
@@ -166,6 +167,20 @@ public class DocumentGroup implements Entry{
 	public String getId() {
 		return mId;
 	}
+
+	@Override
+	public void setId(String id) {
+		mId = id;
+	}
+	
+	@Override
+	public void save(){
+		modified();
+		for(Document doc: mDocuments.values()){
+			doc.save();
+		}
+	}
+	
 	@Override
 	public String getParentId(){
 		if(mParent!=null)
@@ -187,13 +202,19 @@ public class DocumentGroup implements Entry{
 		if(Visgo.data!=null)
 			Visgo.data.entryUpdated(this);
 	}
+	
+	public static DocumentGroup createGroup(String name){
+		DocumentGroup group = new DocumentGroup(name);
+		group.modified();
+		return group;
+	}
 
 	public static Map serialize(DocumentGroup group){
 		Map m = new HashMap();
 		m.put("foldername", group.mName);
 		m.put("folderid", group.mId);
-		m.put("offsetX", group.mOffsetX);
-		m.put("offsetY", group.mOffsetY);
+		m.put("offsetX", group.mOffsetX+"");
+		m.put("offsetY", group.mOffsetY+"");
 		m.put("parentfolder", group.getParentId());
 		return m;
 	}

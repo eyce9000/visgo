@@ -138,23 +138,12 @@ public class GDatabase
 
 		return headers;
 	}
-
-	/**
-	 * Retrieves the contents of the given column(s)
-	 * 
-	 * @param table The table to query against
-	 * @param columns The desired columns
-	 * @param conditions Optional conditions to be applied
-	 * @return a map of column values, mapped by column name
-	 * @throws Exception if error in retrieving the spreadsheet information
-	 */
-	public List<Map<String,String>> select(String table, List<String> columns, String conditions) throws Exception
-	{
+	public List<Map<String,String>> selectWithQuery(String table, List<String> columns, ListQuery query) throws Exception{
 		WorksheetEntry worksheet = getTable(table);
 		HashMap<String, Integer> headers = getColumnHeaders(worksheet);
 		List<Map<String, String>> results = new ArrayList<Map<String,String>>();
 
-		if(conditions == null || conditions.length() == 0)
+		if(query == null)
 		{
 			CellQuery cellQuery = new CellQuery(worksheet.getCellFeedUrl());
 			for(String column : columns)
@@ -182,8 +171,6 @@ public class GDatabase
 		}
 		else
 		{
-			ListQuery query = new ListQuery(worksheet.getListFeedUrl());
-			query.setSpreadsheetQuery(conditions);
 			ListFeed listFeed = service.query(query, ListFeed.class);
 
 			//Get the requested columns
@@ -203,12 +190,34 @@ public class GDatabase
 						resultRow = results.get(i);
 					}
 					resultRow.put(column,entry.getCustomElements().getValue(column));
-					
+
 				}
 			}
 		}
 		return results;
+	}
+	/**
+	 * Retrieves the contents of the given column(s)
+	 * 
+	 * @param table The table to query against
+	 * @param columns The desired columns
+	 * @param conditions Optional conditions to be applied
+	 * @return a map of column values, mapped by column name
+	 * @throws Exception if error in retrieving the spreadsheet information
+	 */
+	public List<Map<String,String>> select(String table, List<String> columns, String conditions) throws Exception
+	{
+		WorksheetEntry worksheet = getTable(table);
+		ListQuery query= null;
+		if(conditions != null && conditions.length()>0){
+			query = new ListQuery(worksheet.getListFeedUrl());
+			query.setSpreadsheetQuery(conditions);
+		}
+		return selectWithQuery(table,columns,query);
+	}
 
+	public List<Map<String,String>> select(String table,List<String> columns) throws Exception{
+		return selectWithQuery(table,columns,null);
 	}
 
 	/**
@@ -237,14 +246,15 @@ public class GDatabase
 
 		service.insert(worksheet.getListFeedUrl(), newEntry);
 	}
-	
+
 	public void insert(String table, Map<String,String> row) throws Exception{
 		WorksheetEntry worksheet = getTable(table);
 		ListEntry newEntry = new ListEntry();
 
 		for (Entry<String,String> entry:row.entrySet())
 		{
-			newEntry.getCustomElements().setValueLocal(entry.getKey(),entry.getValue());
+			if(entry.getKey()!=null && entry.getValue()!=null)
+				newEntry.getCustomElements().setValueLocal(entry.getKey(),entry.getValue());
 		}
 
 		service.insert(worksheet.getListFeedUrl(), newEntry);
@@ -292,6 +302,35 @@ public class GDatabase
 		return affected;
 	}
 
+	public Integer update(String table, Map<String,String> valueMap,String conditions) throws Exception{
+
+
+		if(conditions.length() == 0)
+		{
+			throw new Exception("No update conditions specified.");
+		}
+
+		WorksheetEntry worksheet = getTable(table);
+		ListQuery query = new ListQuery(worksheet.getListFeedUrl());
+		query.setSpreadsheetQuery(conditions);
+		ListFeed listFeed = service.query(query, ListFeed.class);
+
+		//Update the entries
+		Integer affected = 0;	//The number of rows affected
+		for (ListEntry entry : listFeed.getEntries())
+		{
+			for(java.util.Map.Entry<String, String> values: valueMap.entrySet())
+			{
+				if(values.getKey()!=null && values.getValue()!=null)
+					entry.getCustomElements().setValueLocal(values.getKey(), values.getValue());
+			}
+			entry.update();
+			affected++;
+		}
+
+		return affected;
+	}
+
 	/**
 	 * Gets the next available primary key
 	 * @param table The desired table
@@ -302,10 +341,15 @@ public class GDatabase
 	{
 		final String column = key;
 
-		List<Map<String,String>> results = select(table, new ArrayList<String>() {{ add(column); }}, "orderby=column:" + key + "&reverse=true");
+		WorksheetEntry worksheet = getTable(table);
+		ListQuery query = new ListQuery(worksheet.getListFeedUrl());
+		query.setOrderBy("column:"+key);
+		query.setReverse(true);
+
+		List<Map<String,String>> results = selectWithQuery(table, Arrays.asList(new String[]{column}), query);
 		if(results.size() > 0)
 		{
-			return Integer.parseInt(results.get(0).get(key));
+			return Integer.parseInt(results.get(0).get(key))+1;
 		}
 		else
 		{
@@ -320,5 +364,11 @@ public class GDatabase
 	 */
 	public List<Person> getAuthors(){
 		return database.getAuthors();
+	}
+
+
+	public ListQuery createQuery(String table) throws Exception{
+		WorksheetEntry worksheet = getTable(table);
+		return new ListQuery(worksheet.getListFeedUrl());
 	}
 }

@@ -28,18 +28,24 @@ public class Document implements Entry {
 	private Calendar mLastModified;
 	private String mLastModifiedBy;
 
+	private Document(){
+		mLastModified = GregorianCalendar.getInstance();
+	}
+	
 	private Document(Document doc){
+		this();
 		this.copyValues(doc);
 	}
 
 	public Document(String name,String id,String googleId){
-		modified();
+		this();
 		mName = name;
 		mId = id;
 		mGoogleId = googleId;
 	}
 
 	public Document(DocumentListEntry entry){
+		this();
 		setListEntry(entry);
 	}
 
@@ -76,7 +82,6 @@ public class Document implements Entry {
 	@Override
 	public void setParent(DocumentGroup parent) {
 		mParent = parent;
-		modified();
 	}
 
 	@Override
@@ -92,6 +97,11 @@ public class Document implements Entry {
 	@Override
 	public String getId(){
 		return mId;
+	}
+
+	@Override
+	public void setId(String id) {
+		mId = id;
 	}
 	@Override
 	public String getParentId(){
@@ -110,6 +120,8 @@ public class Document implements Entry {
 	}
 	public void setListEntry(DocumentListEntry entry) {
 		this.mEntry = new DocumentListEntry(entry);
+	}
+	public void save(){
 		modified();
 	}
 	public void copyValues(Document doc){
@@ -134,20 +146,20 @@ public class Document implements Entry {
 
 	public static Map serialize(Document doc){
 		Map m = new HashMap();
-		m.put("name", doc.mName);
+		m.put("filename", doc.mName);
 		m.put("fileid",doc.mId);
-		m.put("gid",doc.getGoogleId());
-		m.put("offsetX", doc.mOffsetX);
-		m.put("offsetY", doc.mOffsetY);
-		m.put("modifiedTime", doc.mLastModified.getTimeInMillis());
+		m.put("gfid",doc.getGoogleId());
+		m.put("offsetX", doc.mOffsetX+"");
+		m.put("offsetY", doc.mOffsetY+"");
+		m.put("modifiedTime", doc.mLastModified.getTimeInMillis()+"");
 		m.put("modifiedBy", doc.mLastModifiedBy);
 		if(doc.hasParent()){
-			m.put("parentfolder",doc.getParent().getId());
+			m.put("parentfolder",doc.getParentId());
 		}
 		return m;
 	}
 	public static Document deserializeShallow(Map m){
-		Document doc = new Document((String)m.get("name"),(String)m.get("fileid"),(String)m.get("gfid"));
+		Document doc = new Document((String)m.get("filename"),(String)m.get("fileid"),(String)m.get("gfid"));
 		doc.setOffsetX(Double.parseDouble(m.get("offsetX").toString()));
 		doc.setOffsetY(Double.parseDouble(m.get("offsetY").toString()));
 		doc.mParentId = (String)m.get("parentfolder");
@@ -156,5 +168,6 @@ public class Document implements Entry {
 		doc.mLastModifiedBy = (String) m.get("modifiedBy");
 		return doc;
 	}
+
 
 }

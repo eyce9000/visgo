@@ -26,21 +26,24 @@ public class DataSaver implements Runnable{
 	@Override
 	public void run() {
 		while(true){
+			Entry e =null;
 			modifyList.acquireUninterruptibly();
 			//stuff?
 			if(!queue.isEmpty()){
-				Entry e = queue.remove();
+				e = queue.remove();
 				String lookup = e.getId()+e.getClass().getCanonicalName()+":"+e.getId();
 				map.remove(lookup);
-				mFileSystem.store(e);
 			}
 			modifyList.release();
+			if(e!=null){
+				mFileSystem.store(e);
+			}
 			while(queue.isEmpty()){
 				try {
 					Thread.sleep(2000);
-				} catch (InterruptedException e) {
+				} catch (InterruptedException ex) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					ex.printStackTrace();
 				}
 			}
 		}
@@ -54,9 +57,9 @@ public class DataSaver implements Runnable{
 				queue.remove(prevEntry);
 			}
 		}
-		Entry clone = e.clone();
-		map.put(lookup, clone);
-		queue.add(clone);
+		//Entry clone = e.clone();
+		map.put(lookup, e);
+		queue.add(e);
 		modifyList.release();
 	}
 }
