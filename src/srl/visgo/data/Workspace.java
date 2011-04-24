@@ -18,6 +18,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import srl.visgo.util.chat.ChatManager;
 import srl.visgo.util.chat.listeners.CommandMessage;
 import srl.visgo.util.chat.listeners.CommandMessageListener;
 
@@ -39,12 +40,12 @@ public class Workspace implements CommandMessageListener{
 	HashMap<String,DocumentGroup> rootGroups = new HashMap<String,DocumentGroup>();
 	HashMap<String,DocumentGroup> allGroups = new HashMap<String,DocumentGroup>();
 
-	public Workspace(DocumentList docList, GDatabase database) throws Exception {
+	public Workspace(DocumentList docList, GDatabase database, ChatManager manager) throws Exception {
 		mDocumentList = docList;
 		mDatabase = database;
 		mFileSystem = new GFileSystem(database);
-		
-		saver = new DataSaver(mFileSystem);
+
+		saver = new DataSaver(mFileSystem,manager);
 		new Thread(saver).start();
 
 		List<DocumentGroup> folders = mFileSystem.getRootFolders();
@@ -61,6 +62,7 @@ public class Workspace implements CommandMessageListener{
 			doc.copyValues(file);
 			rootDocuments.put(doc.getGoogleId(), doc);
 		}
+		manager.getMessageInterpreter().addCommandMessageListener(this);
 	}
 
 	private void lookupChildren(DocumentGroup group) throws Exception{
@@ -104,22 +106,44 @@ public class Workspace implements CommandMessageListener{
 	public void CommandReceived(CommandMessage notification) {
 		String name = notification.getCommandName();
 		String body = notification.getArguments();
-		if(name.equals("documentMoved")){
+		if(name.equals("dataChanged")){
+			//System.out.println(body);
 			try {
 				Map<String,Object> map = mapper.readValue(body, Map.class);
-				Document tempDoc = Document.deserializeShallow(map);
-				Document ourDoc = getDocumentById(tempDoc.getId());
-				if(ourDoc.hasParent()){
-					ourDoc.getParent().removeDocument(ourDoc);
+				String className = (String)map.get("class");
+				if(className.equals("srl.visgo.data.Document")){
+					Document tempDoc = Document.deserializeShallow(map);
+					Document ourDoc = getDocumentById(tempDoc.getId());
+					if(ourDoc==null){
+						try {
+							mDocumentList.load(tempDoc.getName());
+							ourDoc = mDocumentList.getDocumentById(tempDoc.getId());
+						} catch (ServiceException e) {
+							e.printStackTrace();
+						}
+					}
+					if(ourDoc.hasParent()){
+						ourDoc.getParent().removeDocument(ourDoc);
+					}
+					ourDoc.copyValues(tempDoc);
+					DocumentGroup group = getDocumentGroupById(ourDoc.getParentId());
+					if(group!=null){
+						group.addDocument(ourDoc);
+					}
 				}
-				
-				ourDoc.copyValues(tempDoc);
-				
-				DocumentGroup newParent = allGroups.get(tempDoc.getParentId());
-				if(newParent!=null){
-					newParent.addDocument(ourDoc);
+				else if(className.equals("srl.visgo.data.DocumentGroup")){
+					DocumentGroup tempGroup = DocumentGroup.deserializeShallow(map);
+					DocumentGroup ourGroup = getDocumentGroupById(tempGroup.getId());
+					if(ourGroup==null){
+						ourGroup = DocumentGroup.createGroup(tempGroup.getName());
+					}
+					ourGroup.copyValues(tempGroup);
+					allGroups.put(ourGroup.getId(), ourGroup);
+					if(ourGroup.getParentId().equals("0")){
+						rootGroups.put(ourGroup.getId(), ourGroup);
+					}
 				}
-				
+
 			} catch (JsonParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -130,6 +154,7 @@ public class Workspace implements CommandMessageListener{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
 		}
 	}
 }

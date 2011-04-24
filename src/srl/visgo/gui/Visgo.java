@@ -114,10 +114,10 @@ public class Visgo extends JFrame {
 					PBounds bounds = prevNode.computeFullBounds(null);
 					double yOffset =prevNode.getOffset().getY()+bounds.height+10;
 					double xOffset = prevNode.getOffset().getX();
-					projectNode.setOffset(xOffset, yOffset);
+					//projectNode.setOffset(xOffset, yOffset);
 				}
 				else{
-					projectNode.setOffset(i*200, 100);
+					//projectNode.setOffset(i*200, 100);
 				}
 				i++;
 				canvas.getLayer().addChild(projectNode);

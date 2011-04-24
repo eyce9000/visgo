@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 
+import com.google.gdata.client.DocumentQuery;
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.docs.DocumentListEntry;
@@ -37,8 +38,34 @@ public class DocumentList {
 				else{
 					mDocuments.put(doc.getGoogleId(), doc);
 					mDocsById.put(doc.getId(), doc);
-					//System.out.println(doc.getName());
-					System.out.println(doc.getGoogleId());
+				}
+			}
+			else{
+				doc.setListEntry(listEntry);
+			}
+
+		}
+	}
+	public void load(String title) throws IOException, ServiceException{
+		URL feedUri = new URL("https://docs.google.com/feeds/default/private/full/?showfolders=false");
+		DocumentQuery query = new DocumentQuery(feedUri);
+		query.setTitleQuery(title);
+		query.setTitleExact(true);
+		DocumentListFeed feed = docsService.getFeed(query,DocumentListFeed.class);
+		for (DocumentListEntry listEntry : feed.getEntries()) {
+			//System.out.println(listEntry.getTitle().getPlainText());
+			//This is a document
+			Document doc = mDocuments.get(listEntry.getDocId());
+			if(doc == null){
+				doc = new Document(listEntry);
+				if(doc.getName().endsWith(".workspace")){
+					if(!mVisgoDatabases.containsKey(doc.getGoogleId())){
+						mVisgoDatabases.put(doc.getGoogleId(), doc);
+					}
+				}
+				else{
+					mDocuments.put(doc.getGoogleId(), doc);
+					mDocsById.put(doc.getId(), doc);
 				}
 			}
 			else{

@@ -2,25 +2,39 @@ package srl.visgo.data;
 
 import gDocsFileSystem.GFileSystem;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import com.mongodb.GroupCommand;
+
+import srl.visgo.util.chat.ChatManager;
+import srl.visgo.util.chat.listeners.CommandMessage;
+
 public class DataSaver implements Runnable{
+	ObjectMapper mapper = new ObjectMapper();
 	private Queue<Entry> queue;
 	private HashMap<String,Entry> map;
 	private GFileSystem mFileSystem;
+	private ChatManager mChatManager;
 
 	private final Semaphore modifyList = new Semaphore(1,true);
 
-	DataSaver(GFileSystem filesystem){
+	DataSaver(GFileSystem filesystem,ChatManager chatManager){
 		mFileSystem = filesystem;
 		map = new HashMap<String,Entry>();
 		queue = new LinkedList<Entry>();
+		mChatManager = chatManager;
 	}
 
 	@Override
@@ -31,7 +45,22 @@ public class DataSaver implements Runnable{
 			//stuff?
 			if(!queue.isEmpty()){
 				e = queue.remove();
+				Map serialMap;
+				if(e instanceof DocumentGroup){
+					serialMap = DocumentGroup.serialize((DocumentGroup)e);
+				}
+				else{
+					serialMap = Document.serialize((Document) e);
+				}
 				String lookup = e.getId()+e.getClass().getCanonicalName()+":"+e.getId();
+				try {
+					String serialized = mapper.writeValueAsString(serialMap);
+					//System.out.println(serialized);
+					CommandMessage command = new CommandMessage("dataChange", serialized);
+					mChatManager.sendGroupCommand(command);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
 				map.remove(lookup);
 			}
 			modifyList.release();
@@ -40,7 +69,7 @@ public class DataSaver implements Runnable{
 			}
 			while(queue.isEmpty()){
 				try {
-					Thread.sleep(2000);
+					Thread.sleep(500);
 				} catch (InterruptedException ex) {
 					// TODO Auto-generated catch block
 					ex.printStackTrace();

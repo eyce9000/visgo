@@ -25,6 +25,7 @@ public class PDocumentGroup extends PNode{
 	int mColCount = 1;
 	public static PBounds currentBounds;
 	
+	
 	public PDocumentGroup(DocumentGroup group){
 		super();
 		mGroup = group;
@@ -33,7 +34,8 @@ public class PDocumentGroup extends PNode{
 		docNodes = new ArrayList<PDocument>();
 
 		backgroundNode = PPath.createRectangle(0f, 0f, 50, 50);
-		backgroundNode.addInputEventListener(new PDragEventHandler());
+		PDragEventHandler handler = new PDragEventHandler();
+		backgroundNode.addInputEventListener(handler);
 		this.setPaint(Color.LIGHT_GRAY);
 		backgroundNode.setPaint(Color.LIGHT_GRAY);
 		this.addChild(backgroundNode);
@@ -44,6 +46,22 @@ public class PDocumentGroup extends PNode{
 	}
 	public int getColumnCount(){
 		return mColCount;
+	}
+	@Override
+	public boolean setY(double y){
+		boolean set = super.setY(y);
+		System.out.println("move position: y-"+y);
+		return set;
+	}
+	@Override
+	public boolean setX(double x){
+		boolean set = super.setX(x);
+		System.out.println("move position: x-"+x);
+		return set;
+	}
+	@Override
+	public void offset(double x, double y){
+		super.offset(x, y);
 	}
 	
 	/**
@@ -63,6 +81,8 @@ public class PDocumentGroup extends PNode{
 		PBounds nameBounds = nameNode.getGlobalFullBounds();
 		backgroundNode.setPathToRectangle((float)nameBounds.getX(), 
 				(float)nameBounds.getY(), (float)nameBounds.width, (float)nameBounds.height);
+
+		this.setOffset(mGroup.getOffsetX(), mGroup.getOffsetY());
 	}
 	
 	//Group -> backgroundNode -> Grid -> Docs
@@ -115,6 +135,10 @@ public class PDocumentGroup extends PNode{
                 .getHeight()
                 + 2 * INDENT);
         localToParent(result);
+
+		mGroup.setOffsetX(result.getX());
+		mGroup.setOffsetY(result.getY());
+		mGroup.save();
         return result;
     }
 

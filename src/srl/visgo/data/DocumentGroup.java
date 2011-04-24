@@ -19,7 +19,7 @@ public class DocumentGroup implements Entry{
 	HashMap<String,DocumentGroup> mSubGroups;
 	String mName;
 	String mId;
-	String mParentId;
+	String mParentId = "0";
 	DocumentGroup mParent;
 	double mOffsetX,mOffsetY;
 	private Calendar mLastModified;
@@ -60,14 +60,11 @@ public class DocumentGroup implements Entry{
 	public void addDocument(Document document){
 		mDocuments.put(document.getName(),document);
 		document.setParent(this);
-		modified();
-		document.save();
 	}
 	public void addDocuments(Document[] documents){
 		for(Document doc : documents){
 			addDocument(doc);
 		}
-		modified();
 	}
 	public Collection<Entry> getRootEntries(){
 		ArrayList<Entry> rootEntries = new ArrayList<Entry>();
@@ -96,7 +93,6 @@ public class DocumentGroup implements Entry{
 
 	public void addSubGroup(DocumentGroup group){
 		mSubGroups.put(group.getName(),group);
-		modified();
 	}
 	public void addEntry(Entry entry){
 		entry.setParent(this);
@@ -106,18 +102,15 @@ public class DocumentGroup implements Entry{
 		else if(entry instanceof DocumentGroup){
 			addSubGroup((DocumentGroup) entry);
 		}
-		modified();
 	}
 
 	public void removeDocument(Document document){
 		mDocuments.remove(document.getName());
-		modified();
 	}
 
 	@Override
 	public void setParent(DocumentGroup parent) {
 		mParent = parent;
-		modified();
 	}
 	@Override
 	public DocumentGroup getParent() {
@@ -175,7 +168,10 @@ public class DocumentGroup implements Entry{
 	
 	@Override
 	public void save(){
-		modified();
+		mLastModified = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT-0"));
+		mLastModifiedBy = Login.username;
+		if(Visgo.data!=null)
+			Visgo.data.entryUpdated(this);
 		for(Document doc: mDocuments.values()){
 			doc.save();
 		}
@@ -195,17 +191,10 @@ public class DocumentGroup implements Entry{
 	public Entry clone(){
 		return new DocumentGroup(this);
 	}
-
-	private void modified(){
-		mLastModified = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT-0"));
-		mLastModifiedBy = Login.username;
-		if(Visgo.data!=null)
-			Visgo.data.entryUpdated(this);
-	}
 	
 	public static DocumentGroup createGroup(String name){
 		DocumentGroup group = new DocumentGroup(name);
-		group.modified();
+		group.save();
 		return group;
 	}
 
@@ -216,6 +205,9 @@ public class DocumentGroup implements Entry{
 		m.put("offsetX", group.mOffsetX+"");
 		m.put("offsetY", group.mOffsetY+"");
 		m.put("parentfolder", group.getParentId());
+		m.put("modifiedTime",group.mLastModified.getTimeInMillis()+"");
+		m.put("modifiedBy", group.mLastModifiedBy);
+		m.put("class", group.getClass().getName());
 		return m;
 	}
 
@@ -224,6 +216,9 @@ public class DocumentGroup implements Entry{
 		group.setOffsetX(Double.parseDouble(m.get("offsetX").toString()));
 		group.setOffsetY(Double.parseDouble(m.get("offsetY").toString()));
 		group.mParentId =(String) m.get("parentfolder");
+		group.mLastModified = new GregorianCalendar(TimeZone.getTimeZone("GMT-0"));
+		group.mLastModified.setTimeInMillis(Long.parseLong(m.get("modifiedTime").toString()));
+		group.mLastModifiedBy = (String) m.get("modifiedBy");
 		return group;
 	}
 }

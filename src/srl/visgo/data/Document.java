@@ -22,7 +22,7 @@ public class Document implements Entry {
 	private String mName;
 	private String mGoogleId;
 	private String mId;
-	private String mParentId;
+	private String mParentId = "0";
 	private double mOffsetX;
 	private double mOffsetY;
 	private Calendar mLastModified;
@@ -69,14 +69,12 @@ public class Document implements Entry {
 	}
 	public void setOffsetX(double offsetX){
 		mOffsetX = offsetX;
-		modified();
 	}
 	public double getOffsetY(){
 		return mOffsetY;
 	}
 	public void setOffsetY(double offsetY){
 		mOffsetY = offsetY;
-		modified();
 	}
 
 	@Override
@@ -122,7 +120,10 @@ public class Document implements Entry {
 		this.mEntry = new DocumentListEntry(entry);
 	}
 	public void save(){
-		modified();
+		mLastModified = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT-0"));
+		mLastModifiedBy = Login.username;
+		if(Visgo.data != null)
+			Visgo.data.entryUpdated(this);
 	}
 	public void copyValues(Document doc){
 		this.mId = doc.getId();
@@ -132,12 +133,6 @@ public class Document implements Entry {
 		this.mParent = doc.getParent();
 		this.mOffsetX = doc.getOffsetX();
 		this.mOffsetY = doc.getOffsetY();
-	}
-	private void modified(){
-		mLastModified = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT-0"));
-		mLastModifiedBy = Login.username;
-		if(Visgo.data != null)
-			Visgo.data.entryUpdated(this);
 	}
 
 	public Document clone(){
@@ -153,9 +148,8 @@ public class Document implements Entry {
 		m.put("offsetY", doc.mOffsetY+"");
 		m.put("modifiedTime", doc.mLastModified.getTimeInMillis()+"");
 		m.put("modifiedBy", doc.mLastModifiedBy);
-		if(doc.hasParent()){
-			m.put("parentfolder",doc.getParentId());
-		}
+		m.put("parentfolder",doc.getParentId());
+		m.put("class", doc.getClass().getName());
 		return m;
 	}
 	public static Document deserializeShallow(Map m){

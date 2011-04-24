@@ -18,6 +18,8 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Presence.Type;
 
+import srl.visgo.data.listeners.DataEventType;
+import srl.visgo.data.listeners.DataListener;
 import srl.visgo.gui.Login;
 import srl.visgo.util.chat.ChatManager;
 import srl.visgo.util.chat.MessageProcessor;
@@ -59,7 +61,7 @@ public class Data implements StatusChangeListener{
 			loginToChat();
 			mDocumentList = new DocumentList(docsService);
 			selectDatabase();
-			workspace = new Workspace(mDocumentList,mDatabase);
+			workspace = new Workspace(mDocumentList,mDatabase,chatManager);
 			updateCollaborators();
 
 		} catch (Exception e) {

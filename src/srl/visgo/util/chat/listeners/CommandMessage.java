@@ -53,7 +53,7 @@ public class CommandMessage extends EventObject{
 	}
 	
 	public CommandMessage(String commandName, String arguments){
-		super(null);
+		super(new Message());
 		this.commandName = commandName;
 		this.arguments = arguments;
 	}
