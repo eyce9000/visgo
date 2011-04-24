@@ -18,11 +18,14 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import srl.visgo.gui.Visgo;
 import srl.visgo.util.chat.listeners.CommandMessage;
 import srl.visgo.util.chat.listeners.CommandMessageListener;
 
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.Link;
+import com.google.gdata.data.acl.AclRole;
+import com.google.gdata.data.acl.AclScope;
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.DocumentListFeed;
 import com.google.gdata.util.ServiceException;
@@ -130,6 +133,74 @@ public class Workspace implements CommandMessageListener{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public boolean createDocument(String documentType)
+	{
+		try
+		{
+			DocumentListEntry newEntry = mDocumentList.createDocument(documentType);
+			try
+			{
+				addCollaboratorRoles(newEntry);
+			}
+			catch(Exception e)
+			{
+				return false;
+			}
+			
+			// TODO: Add icon to workspace
+			
+			return true;
+		}
+		catch(ServiceException e)
+		{
+			return false;
+		}
+		catch(Exception e1)
+		{
+			return false;
+		}
+	}
+
+	public boolean createDocumentFromExisting(DocumentListEntry entry)
+	{
+		try
+		{
+			DocumentListEntry newEntry = mDocumentList.uploadDocument(entry);
+			try
+			{
+				addCollaboratorRoles(newEntry);
+			}
+			catch(Exception e)
+			{
+				return false;
+			}
+			
+			// TODO: Add icon to workspace
+			
+			return true;
+		}
+		catch(Exception e1)
+		{
+			return false;
+		}
+	}
+	
+	public void addCollaboratorRoles(DocumentListEntry entry) throws MalformedURLException, IOException, ServiceException
+	{
+		Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();
+		Collaborator self = Visgo.data.getCurrentCollaborator();
+		
+		for(Collaborator c : collaborators)
+		{
+			if(c == self)
+				continue;
+
+			AclRole role = new AclRole("writer");
+			AclScope scope = new AclScope(AclScope.Type.USER, c.getUsername());
+			mDocumentList.addAclRole(role, scope, entry);
 		}
 	}
 }
