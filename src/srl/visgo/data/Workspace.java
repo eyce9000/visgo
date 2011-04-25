@@ -95,6 +95,9 @@ public class Workspace implements CommandMessageListener{
 	public Collection<DocumentGroup> getRootDocumentGroups(){
 		return rootGroups.values();
 	}
+	public Collection<Document> getRootDocuments(){
+		return rootDocuments.values();
+	}
 	public Document getDocumentById(String id){
 		return mDocumentList.getDocumentById(id);
 	}
@@ -160,7 +163,12 @@ public class Workspace implements CommandMessageListener{
 
 		}
 	}
-	
+
+	/**
+	 * Creates a blank document of the given type
+	 * @param documentType The type of document created
+	 * @return success
+	 */
 	public boolean createDocument(String documentType)
 	{
 		try
@@ -176,6 +184,9 @@ public class Workspace implements CommandMessageListener{
 			}
 			
 			// TODO: Add icon to workspace
+			Document doc = new Document(newEntry);
+			mFileSystem.insertEntry(doc);
+			Visgo.workspace.invalidate();
 			
 			return true;
 		}
@@ -189,6 +200,12 @@ public class Workspace implements CommandMessageListener{
 		}
 	}
 
+	/**
+	 * Creates a document from an existing DocumentListEntry.
+	 * This is used in uploading documents from the user's computer.
+	 * @param entry A DocumentListEntry to create a new document from
+	 * @return success
+	 */
 	public boolean createDocumentFromExisting(DocumentListEntry entry)
 	{
 		try
@@ -204,6 +221,9 @@ public class Workspace implements CommandMessageListener{
 			}
 			
 			// TODO: Add icon to workspace
+			Document doc = new Document(newEntry);
+			mFileSystem.insertEntry(doc);
+			Visgo.workspace.invalidate();
 			
 			return true;
 		}
@@ -213,6 +233,13 @@ public class Workspace implements CommandMessageListener{
 		}
 	}
 	
+	/**
+	 * Gives all collaborators "writer" status on a given document 
+	 * @param entry The document to add collaborators to
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws ServiceException
+	 */
 	public void addCollaboratorRoles(DocumentListEntry entry) throws MalformedURLException, IOException, ServiceException
 	{
 		Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();

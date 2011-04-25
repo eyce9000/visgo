@@ -105,7 +105,10 @@ public class DocumentGroup implements Entry{
 	}
 
 	public void removeDocument(Document document){
-		mDocuments.remove(document.getName());
+		if(document!=null){
+			mDocuments.remove(document.getName());
+			document.setParent(null);
+		}
 	}
 
 	@Override

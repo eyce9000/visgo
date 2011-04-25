@@ -96,6 +96,15 @@ public class DocumentList {
 	public Document getDocumentById(String id){
 		return mDocsById.get(id);
 	}
+	
+	/**
+	 * Creates a blank document of the given type
+	 * @param documentType The type of document to create
+	 * @return
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws ServiceException
+	 */
 	public DocumentListEntry createDocument(String documentType) throws MalformedURLException, IOException, ServiceException
 	{
 		DocumentListEntry newEntry = null;
@@ -124,10 +133,30 @@ public class DocumentList {
 		newEntry.setTitle(new PlainTextConstruct("New " + documentType));
 		return uploadDocument(newEntry);
 	}
+	
+	/**
+	 * Tells Google to create a document in Google Docs
+	 * @param entry The document to create
+	 * @return A DocumentListEntry containing the new document's information
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws ServiceException
+	 */
 	public DocumentListEntry uploadDocument(DocumentListEntry entry) throws MalformedURLException, IOException, ServiceException
 	{
 		return docsService.insert(new URL("https://docs.google.com/feeds/default/private/full/"), entry);
 	}
+	
+	/**
+	 * Tells Google to add a new Access Control role for the given document
+	 * @param role The role to add
+	 * @param scope The scope of the role (user type and user name)
+	 * @param entry The document to add the role to
+	 * @return The new ACL entry data
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws ServiceException
+	 */
 	public AclEntry addAclRole(AclRole role, AclScope scope, DocumentListEntry entry) throws MalformedURLException, IOException, ServiceException
 	{
 		AclEntry aclEntry = new AclEntry();

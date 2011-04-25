@@ -80,6 +80,9 @@ public class Document implements Entry {
 	@Override
 	public void setParent(DocumentGroup parent) {
 		mParent = parent;
+		if(parent == null){
+			mParentId = "0";
+		}
 	}
 
 	@Override
@@ -141,7 +144,7 @@ public class Document implements Entry {
 
 	public static Map serialize(Document doc){
 		Map m = new HashMap();
-		m.put("filename", doc.mName);
+		m.put("filename", doc.getName());
 		m.put("fileid",doc.mId);
 		m.put("gfid",doc.getGoogleId());
 		m.put("offsetX", doc.mOffsetX+"");

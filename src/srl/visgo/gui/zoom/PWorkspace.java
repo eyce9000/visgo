@@ -3,19 +3,22 @@ package srl.visgo.gui.zoom;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.util.Collection;
 
+import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
+import srl.visgo.data.Entry;
 import srl.visgo.gui.Visgo;
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
+import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
 
 public class PWorkspace extends PNode{
-
-	//PDocs, PDocGroups in HashMaps (DocID, name)
-	//TODO: Find nodes on changes and visually refresh
+	private static final long serialVersionUID = 1L;
+	
 	public static PBounds wBounds;
 	public static PBounds currentBounds;
 	boolean initialPaint = true;
@@ -33,25 +36,23 @@ public class PWorkspace extends PNode{
 		
 	}
 	
+	/**
+	 * Initial load of the workspace
+	 */
 	private void load(){
 		try{
 			int i = 1;
-			PDocumentGroup prevNode = null;
 			for(DocumentGroup group : Visgo.data.workspace.getRootDocumentGroups()){
 
 				PDocumentGroup projectNode = new PDocumentGroup(group);
 				projectNode.setColumnCount(3);
 				projectNode.invalidate();
-				if(prevNode!=null){
-					PBounds bounds = prevNode.computeFullBounds(null);
-					double yOffset =prevNode.getOffset().getY()+bounds.height+10;
-					double xOffset = prevNode.getOffset().getX();
-					//projectNode.setOffset(xOffset, yOffset);
-				}
-				else{
-					//projectNode.setOffset(i*200, 100);
-				}
 				i++;
+				this.addChild(projectNode);
+			}
+			for(Document doc : Visgo.data.workspace.getRootDocuments()){
+
+				PDocument projectNode = new PDocument(doc);
 				this.addChild(projectNode);
 			}
 
@@ -61,9 +62,12 @@ public class PWorkspace extends PNode{
 		}
 	}
 	
-	//General invalidate
+	/**
+	 * Redraw the workspace to reflect changes made by users
+	 */
 	public void invalidate(){
-		
+		this.removeAllChildren();
+		load();
 	}
 	
     /**
@@ -85,7 +89,7 @@ public class PWorkspace extends PNode{
 
             if(initialPaint){
 	            PBounds test = this.getGlobalFullBounds();
-	    		Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 100);
+	    		//Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 100);
 	    		initialPaint = false;
             }
         }
@@ -135,7 +139,7 @@ class PWorkspaceEventHandler extends PBasicInputEventHandler{
 	}
 	
 	@Override
-	public void mousePressed(PInputEvent event){
+	public void mouseClicked(PInputEvent event){
 		if(event.getClickCount() == 2){
 			PBounds test = Visgo.workspace.getGlobalFullBounds();
 			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 2000);
