@@ -30,6 +30,7 @@ import srl.visgo.data.Workspace;
 import srl.visgo.gui.chat.ChatPanel;
 import srl.visgo.gui.zoom.PDocument;
 import srl.visgo.gui.zoom.PDocumentGroup;
+import srl.visgo.gui.zoom.PWorkspace;
 
 import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.PCanvas;
@@ -74,6 +75,7 @@ public class Visgo extends JFrame {
 	public static PCanvas canvas;
 	public static Data data;
 	ChatPanel chatPanel;
+	public static PWorkspace workspace;
 
 	Visgo(){
 		super("Visgo - "+Login.username);
@@ -111,31 +113,8 @@ public class Visgo extends JFrame {
 	}
 
 	private void load(){
-		try{
-			int i = 1;
-			PDocumentGroup prevNode = null;
-			for(DocumentGroup group : data.workspace.getRootDocumentGroups()){
-
-				PDocumentGroup projectNode = new PDocumentGroup(group);
-				projectNode.setColumnCount(3);
-				projectNode.invalidate();
-				if(prevNode!=null){
-					PBounds bounds = prevNode.computeFullBounds(null);
-					double yOffset =prevNode.getOffset().getY()+bounds.height+10;
-					double xOffset = prevNode.getOffset().getX();
-					//projectNode.setOffset(xOffset, yOffset);
-				}
-				else{
-					//projectNode.setOffset(i*200, 100);
-				}
-				i++;
-				canvas.getLayer().addChild(projectNode);
-			}
-
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
+		workspace = new PWorkspace();
+		canvas.getLayer().addChild(workspace);
 	}
 
 	PInputEventListener inputEventListener = new PInputEventListener(){

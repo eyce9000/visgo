@@ -26,6 +26,7 @@ import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
+import edu.umd.cs.piccolo.util.PBounds;
 
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.GRAY;
@@ -120,14 +121,14 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseDragged(PInputEvent event){
 		//Is doc in a group or free?
-		if(mDocument.getParent().equals(Visgo.canvas.getLayer()))
+		if(mDocument.getParent().equals(Visgo.workspace))
 		{
 
 		}
 		else if(mDocument.getParent().getParent().getParent() instanceof srl.visgo.gui.zoom.PDocumentGroup)
 		{
 			//Remove from group
-			PLayer layer = Visgo.canvas.getLayer();
+			PNode layer = Visgo.workspace;
 			PDocumentGroup oldGroup = (PDocumentGroup) mDocument.getParent().getParent().getParent();
 			
 			final Point2D spot = mDocument.getGlobalFullBounds().getCenter2D();
@@ -141,10 +142,10 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	
 	@Override
 	public void mousePressed(PInputEvent event){
-//		if(event.getClickCount() > 1)
-//			return;
-//		Rectangle bounds = Visgo.canvas.getBounds();
-//		Visgo.canvas.getCamera().setViewBounds(bounds);
+		if(event.getClickCount() > 1){
+			PBounds test = Visgo.workspace.getGlobalFullBounds();
+			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 2000);
+		}
 	}
 	
 	/**
@@ -157,7 +158,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	 * @throws Exception 
 	 */
 	public void checkLocation(PDocument aNode){
-		PLayer layer = Visgo.canvas.getLayer();
+		PNode layer = Visgo.workspace;
 		boolean onWorkspace = true;
 		
 		for(int i = 0; i < layer.getChildrenCount(); i++)
