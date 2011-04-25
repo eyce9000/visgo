@@ -1,15 +1,25 @@
 package srl.visgo.data;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 
+import javax.swing.JOptionPane;
+
 import com.google.gdata.client.DocumentQuery;
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.Link;
+import com.google.gdata.data.PlainTextConstruct;
+import com.google.gdata.data.acl.AclEntry;
+import com.google.gdata.data.acl.AclRole;
+import com.google.gdata.data.acl.AclScope;
+import com.google.gdata.data.docs.DocumentEntry;
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.DocumentListFeed;
+import com.google.gdata.data.docs.PresentationEntry;
+import com.google.gdata.data.docs.SpreadsheetEntry;
 import com.google.gdata.util.ServiceException;
 
 public class DocumentList {
@@ -85,5 +95,45 @@ public class DocumentList {
 	}
 	public Document getDocumentById(String id){
 		return mDocsById.get(id);
+	}
+	public DocumentListEntry createDocument(String documentType) throws MalformedURLException, IOException, ServiceException
+	{
+		DocumentListEntry newEntry = null;
+
+		if(documentType == "Document")
+		{
+			newEntry = new DocumentEntry();
+		}
+		else if(documentType == "Presentation")
+		{
+			newEntry = new PresentationEntry();
+		}
+		else if(documentType == "Spreadsheet")
+		{
+			newEntry = new SpreadsheetEntry();
+		}
+		//else if(action == "Drawing")
+		//{
+		//	newEntry = new DrawingEntry();
+		//}
+		else
+		{
+			throw new ServiceException("Invalid document type specified");
+		}
+
+		newEntry.setTitle(new PlainTextConstruct("New " + documentType));
+		return uploadDocument(newEntry);
+	}
+	public DocumentListEntry uploadDocument(DocumentListEntry entry) throws MalformedURLException, IOException, ServiceException
+	{
+		return docsService.insert(new URL("https://docs.google.com/feeds/default/private/full/"), entry);
+	}
+	public AclEntry addAclRole(AclRole role, AclScope scope, DocumentListEntry entry) throws MalformedURLException, IOException, ServiceException
+	{
+		AclEntry aclEntry = new AclEntry();
+		aclEntry.setRole(role);
+		aclEntry.setScope(scope);
+		
+		return docsService.insert(new URL(entry.getAclFeedLink().getHref()), aclEntry);
 	}
 }

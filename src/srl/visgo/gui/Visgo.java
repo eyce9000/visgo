@@ -13,8 +13,10 @@ import java.awt.geom.Point2D;
 import java.net.URL;
 import java.util.ArrayList;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import com.google.gdata.client.docs.DocsService;
@@ -80,6 +82,7 @@ public class Visgo extends JFrame {
 		Container contentPane = this.getContentPane();
 
 		chatPanel = new ChatPanel();
+		CreateDocsPanel createDocsPanel = new CreateDocsPanel(data.workspace);
 
 		canvas = new PCanvas();
 		//		try {
@@ -97,7 +100,13 @@ public class Visgo extends JFrame {
 		//canvas.addMouseListener(mouseListener);
 		//canvas.addMouseMotionListener(mouseListener);
 		contentPane.add(canvas,BorderLayout.CENTER);
-		contentPane.add(chatPanel,BorderLayout.WEST);
+		
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+		leftPanel.add(createDocsPanel);
+		leftPanel.add(chatPanel);
+
+		contentPane.add(leftPanel, BorderLayout.WEST);
 		load();
 	}
 
