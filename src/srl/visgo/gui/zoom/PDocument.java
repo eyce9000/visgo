@@ -18,7 +18,6 @@ import srl.visgo.data.DocumentGroup;
 import srl.visgo.gui.Resources;
 import srl.visgo.gui.Visgo;
 import srl.visgo.gui.interaction.VisgoDragEventHandler;
-import edu.umd.cs.piccolo.PLayer;
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
@@ -26,7 +25,6 @@ import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
-import edu.umd.cs.piccolo.util.PBounds;
 
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.GRAY;
@@ -244,13 +242,16 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			if(mDocument.currentGroup!=null){
 				mDocument.currentGroup.removeDocument(mDocument);
 			}
-			
+			mDocument.setGlobalScale(1);
+
 			mDocument.mDocument.setOffsetX(mDocument.getFullBounds().x);
 			mDocument.mDocument.setOffsetY(mDocument.getFullBounds().y);
 
 			System.out.println("Move Document:"+mDocument.mDocument.getOffsetX()+","+
 					mDocument.mDocument.getOffsetY());
 			mDocument.mDocument.save();
+			mDocument.setGlobalScale(1);
+
 		}
 	}
 	

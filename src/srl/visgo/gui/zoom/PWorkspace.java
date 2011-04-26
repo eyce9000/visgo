@@ -89,7 +89,7 @@ public class PWorkspace extends PNode{
 
             if(initialPaint){
 	            PBounds test = this.getGlobalFullBounds();
-	    		//Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 100);
+	    		Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 100);
 	    		initialPaint = false;
             }
         }
@@ -142,7 +142,7 @@ class PWorkspaceEventHandler extends PBasicInputEventHandler{
 	public void mouseClicked(PInputEvent event){
 		if(event.getClickCount() == 2){
 			PBounds test = Visgo.workspace.getGlobalFullBounds();
-			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 2000);
+			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 1000);
 		}
 	}
 }
