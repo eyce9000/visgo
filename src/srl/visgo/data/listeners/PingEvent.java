@@ -11,6 +11,7 @@ import edu.umd.cs.piccolo.util.PBounds;
 /**
  * Create a ping for other people
  *	TODO: Be able to target certain people, return to old bounds
+ *	TODO: Add ping indicator to screen. On click, moveToBounds()
  */
 public class PingEvent extends EventObject{
 	private static final long serialVersionUID = 1L;
