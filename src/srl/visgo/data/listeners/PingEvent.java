@@ -8,7 +8,7 @@ import edu.umd.cs.piccolo.util.PBounds;
 
 /**
  * Create a ping for other people
- *	TODO: Be able to target certain people
+ *	TODO: Be able to target certain people, return to old bounds
  */
 public class PingEvent extends EventObject{
 	private static final long serialVersionUID = 1L;

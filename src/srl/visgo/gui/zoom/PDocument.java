@@ -123,6 +123,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	
 	@Override
 	public void mouseDragged(PInputEvent event){
+		event.setHandled(true);
 		//Is doc in a group or free?
 		if(mDocument.getParent().equals(Visgo.workspace))
 		{
