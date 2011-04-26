@@ -174,30 +174,14 @@ public class Workspace implements CommandMessageListener{
 		try
 		{
 			DocumentListEntry newEntry = mDocumentList.createDocument(documentType);
-			try
-			{
-				addCollaboratorRoles(newEntry);
-			}
-			catch(Exception e)
-			{
-				return false;
-			}
-			
-			// TODO: Add icon to workspace
-			Document doc = new Document(newEntry);
-			mFileSystem.insertEntry(doc);
-			Visgo.workspace.invalidate();
-			
-			return true;
+			postProcessDocCreation(newEntry);
 		}
-		catch(ServiceException e)
+		catch(Exception e)
 		{
 			return false;
 		}
-		catch(Exception e1)
-		{
-			return false;
-		}
+		
+		return true;
 	}
 
 	/**
@@ -211,26 +195,14 @@ public class Workspace implements CommandMessageListener{
 		try
 		{
 			DocumentListEntry newEntry = mDocumentList.uploadDocument(entry);
-			try
-			{
-				addCollaboratorRoles(newEntry);
-			}
-			catch(Exception e)
-			{
-				return false;
-			}
-			
-			// TODO: Add icon to workspace
-			Document doc = new Document(newEntry);
-			mFileSystem.insertEntry(doc);
-			Visgo.workspace.invalidate();
-			
-			return true;
+			postProcessDocCreation(newEntry);
 		}
-		catch(Exception e1)
+		catch(Exception e)
 		{
 			return false;
 		}
+		
+		return true;
 	}
 	
 	/**
@@ -254,5 +226,34 @@ public class Workspace implements CommandMessageListener{
 			AclScope scope = new AclScope(AclScope.Type.USER, c.getUsername());
 			mDocumentList.addAclRole(role, scope, entry);
 		}
+	}
+	
+	/**
+	 * Helper function to update collaborators, add the document to the worksheet and the workspace
+	 * @param entry The document to be added
+	 * @throws Exception
+	 */
+	private void postProcessDocCreation(DocumentListEntry entry) throws Exception
+	{
+		//Add everyone as a writer
+		addCollaboratorRoles(entry);
+
+		//Write it to the database
+		Document doc = new Document(entry);
+		mFileSystem.insertEntry(doc);
+
+		//We don't know its file ID, so we have to find it and then add it to the root list
+		List<Document> documents = mFileSystem.getRootFiles();
+		for(Document document : documents)
+		{
+			if(document.getGoogleId().compareTo(entry.getDocId()) == 0)
+			{
+				rootDocuments.put(document.getGoogleId(), document);
+				break;
+			}
+		}
+
+		//Repaint the workspace with the new file
+		Visgo.workspace.invalidate();
 	}
 }
