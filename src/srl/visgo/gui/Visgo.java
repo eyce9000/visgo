@@ -19,6 +19,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import chrriis.common.UIUtils;
+import chrriis.dj.nativeswing.swtimpl.NativeInterface;
+
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.DocumentListFeed;
@@ -29,6 +32,7 @@ import srl.visgo.data.DocumentGroup;
 import srl.visgo.data.Workspace;
 import srl.visgo.gui.chat.ChatPanel;
 import srl.visgo.gui.zoom.PDocument;
+import srl.visgo.gui.zoom.PDocumentEditor;
 import srl.visgo.gui.zoom.PDocumentGroup;
 
 import edu.umd.cs.piccolo.PCamera;
@@ -51,10 +55,10 @@ public class Visgo extends JFrame {
 
 
 
-		//UIUtils.setPreferredLookAndFeel();
-		//NativeInterface.open();
-		//SwingUtilities.invokeLater(new Runnable() {
-			//public void run() {
+		UIUtils.setPreferredLookAndFeel();
+		NativeInterface.open();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
 				//Login.getCredentials();
 				Login.username = "hpi.test.2@gmail.com";
 				Login.password = "Visgo2011";
@@ -64,14 +68,14 @@ public class Visgo extends JFrame {
 				visgo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				visgo.setSize(1000,700);
 				visgo.setVisible(true);
-			//}
-		//});
-		//NativeInterface.runEventPump();
+			}
+		});
+		NativeInterface.runEventPump();
 
 	}
 
 	DocsService docsService;
-	public static PCanvas canvas;
+	public static PSwingCanvas canvas;
 	public static Data data;
 	ChatPanel chatPanel;
 
@@ -84,7 +88,7 @@ public class Visgo extends JFrame {
 		chatPanel = new ChatPanel();
 		CreateDocsPanel createDocsPanel = new CreateDocsPanel(data.workspace);
 
-		canvas = new PCanvas();
+		canvas = new PSwingCanvas();
 		//		try {
 		//			systemTest = new GFileSystem("visgo.workspace");
 		//		} catch (Exception e) {

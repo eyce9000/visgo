@@ -42,6 +42,7 @@ public class Workspace implements CommandMessageListener{
 	HashMap<String,Document> rootDocuments = new HashMap<String,Document>();
 	HashMap<String,DocumentGroup> rootGroups = new HashMap<String,DocumentGroup>();
 	HashMap<String,DocumentGroup> allGroups = new HashMap<String,DocumentGroup>();
+	HashMap<String,Document> mDocsById = new HashMap<String,Document>();
 
 	public Workspace(DocumentList docList, GDatabase database, ChatManager manager) throws Exception {
 		mDocumentList = docList;
@@ -64,6 +65,7 @@ public class Workspace implements CommandMessageListener{
 			Document doc = mDocumentList.getDocumentByGoogleId(file.getGoogleId());
 			doc.copyValues(file);
 			rootDocuments.put(doc.getGoogleId(), doc);
+			mDocsById.put(doc.getId(), doc);
 		}
 		manager.getMessageInterpreter().addCommandMessageListener(this);
 	}
@@ -75,8 +77,10 @@ public class Workspace implements CommandMessageListener{
 
 		for(Document file: childrenFiles){
 			Document childDoc = mDocumentList.getDocumentByGoogleId(file.getGoogleId());
+			
 			if(childDoc!=null){
 				childDoc.copyValues(file);
+				mDocsById.put(childDoc.getId(), childDoc);
 				group.addDocument(childDoc);
 				System.out.println("Doc: "+childDoc.getName());
 			}
@@ -96,7 +100,7 @@ public class Workspace implements CommandMessageListener{
 		return rootGroups.values();
 	}
 	public Document getDocumentById(String id){
-		return mDocumentList.getDocumentById(id);
+		return mDocsById.get(id);
 	}
 	public DocumentGroup getDocumentGroupById(String id){
 		return allGroups.get(id);
@@ -120,7 +124,7 @@ public class Workspace implements CommandMessageListener{
 					if(ourDoc==null){
 						try {
 							mDocumentList.load(tempDoc.getName());
-							ourDoc = mDocumentList.getDocumentById(tempDoc.getId());
+							ourDoc = mDocsById.get(tempDoc.getId());
 						} catch (ServiceException e) {
 							e.printStackTrace();
 						}

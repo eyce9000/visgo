@@ -47,7 +47,6 @@ public class DocumentList {
 				}
 				else{
 					mDocuments.put(doc.getGoogleId(), doc);
-					mDocsById.put(doc.getId(), doc);
 				}
 			}
 			else{
@@ -92,9 +91,6 @@ public class DocumentList {
 	}
 	public Document getDocumentByGoogleId(String id){
 		return mDocuments.get(id);
-	}
-	public Document getDocumentById(String id){
-		return mDocsById.get(id);
 	}
 	public DocumentListEntry createDocument(String documentType) throws MalformedURLException, IOException, ServiceException
 	{
