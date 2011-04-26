@@ -49,13 +49,15 @@ import edu.umd.cs.piccolox.pswing.PSwingCanvas;
 
 public class Visgo extends JFrame implements PingListener,EditDocumentListener,CloseDocumentListener{
 	public static void main(String[] args){
+		
 		UIUtils.setPreferredLookAndFeel();
 		NativeInterface.open();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				//Login.getCredentials();
-				Login.username = "hpi.test.2@gmail.com";
-				Login.password = "Visgo2011";
+				Login.getCredentials();
+				//
+				//Login.username = "hpi.test.2@gmail.com";
+				//Login.password = "Visgo2011";
 				Visgo.data = new Data();
 
 				Visgo visgo = new Visgo();
@@ -89,11 +91,11 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		canvas = new PCanvas();
 		//canvas.setPreferredSize(new Dimension(1000,1000));
 
-		canvas.removeInputEventListener(canvas.getZoomEventHandler());
+//		canvas.removeInputEventListener(canvas.getZoomEventHandler());
 //		canvas.removeInputEventListener(canvas.getPanEventHandler());
 
 		VisgoMouseListener mouseListener = new VisgoMouseListener(canvas);
-		canvas.addMouseWheelListener(mouseListener);
+//		canvas.addMouseWheelListener(mouseListener);
 		
 		JPanel centerPanel = new JPanel();
 		OverlayLayout layout = new OverlayLayout(centerPanel);
@@ -116,7 +118,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 
 	private void load(){
 		workspace = new PWorkspace();
-		//workspace.addEditDocumentListener(this);
+		workspace.addEditDocumentListener(this);
 		editPanel.addCloseDocumentListener(this);
 		canvas.getLayer().addChild(workspace);
 		data.workspace.startBackgroudThreads();
@@ -138,6 +140,8 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		editPanel.revalidate();
 		canvas.setVisible(true);
 		canvas.revalidate();
+        PBounds test = workspace.getGlobalFullBounds();
+		Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 500);
 	}
 
 	PInputEventListener inputEventListener = new PInputEventListener(){
@@ -152,7 +156,8 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 
 	@Override
 	public void onPing(PingEvent e) {
-		e.moveToBounds();
+
+		//e.moveToBounds();
 	}
 
 }

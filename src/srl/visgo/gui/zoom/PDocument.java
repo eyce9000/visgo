@@ -18,12 +18,15 @@ import srl.visgo.data.DocumentGroup;
 import srl.visgo.gui.Resources;
 import srl.visgo.gui.Visgo;
 import edu.umd.cs.piccolo.PNode;
+import edu.umd.cs.piccolo.activities.PActivity;
+import edu.umd.cs.piccolo.activities.PTransformActivity;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
+import edu.umd.cs.piccolo.util.PBounds;
 
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.GRAY;
@@ -148,7 +151,31 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseClicked(PInputEvent event){
 		if(event.getClickCount() == 2){
-			Visgo.workspace.onEditDocument(this.mDocument.mDocument);
+
+	        PBounds test = mDocument.getGlobalFullBounds();
+			PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 500);
+			
+			final Document doc = this.mDocument.mDocument;
+			
+			PActivity.PActivityDelegate delegate = new PActivity.PActivityDelegate() {
+				
+				@Override
+				public void activityStepped(PActivity arg0) {
+					
+				}
+				
+				@Override
+				public void activityStarted(PActivity arg0) {
+					
+				}
+				
+				@Override
+				public void activityFinished(PActivity arg0) {
+					Visgo.workspace.onEditDocument(doc);
+					
+				}
+			};
+			animation.setDelegate(delegate);
 		}
 	}
 	

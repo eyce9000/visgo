@@ -176,7 +176,7 @@ class PWorkspaceEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseClicked(PInputEvent event){
 		if(event.getClickCount() == 2){
-			workspace.sendPingEvent(new PingEvent(this));
+			//workspace.sendPingEvent(new PingEvent(this));
 			
 //			PBounds test = Visgo.workspace.getGlobalFullBounds();
 //			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 1000);
