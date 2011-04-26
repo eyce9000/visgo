@@ -27,6 +27,8 @@ import srl.visgo.data.Data;
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.data.Workspace;
+import srl.visgo.data.listeners.PingEvent;
+import srl.visgo.data.listeners.PingListener;
 import srl.visgo.gui.chat.ChatPanel;
 import srl.visgo.gui.zoom.PDocument;
 import srl.visgo.gui.zoom.PDocumentGroup;
@@ -47,7 +49,7 @@ import edu.umd.cs.piccolox.pswing.PSwingCanvas;
 import gDocsFileSystem.GDatabase;
 import gDocsFileSystem.GFileSystem;
 
-public class Visgo extends JFrame {
+public class Visgo extends JFrame implements PingListener{
 	public static void main(String[] args){
 
 
@@ -117,7 +119,10 @@ public class Visgo extends JFrame {
 	private void load(){
 		workspace = new PWorkspace();
 		canvas.getLayer().addChild(workspace);
+		workspace.addPingListener(this);
 	}
+	
+
 
 	PInputEventListener inputEventListener = new PInputEventListener(){
 
@@ -128,6 +133,11 @@ public class Visgo extends JFrame {
 		}
 
 	};
+
+	@Override
+	public void onPing(PingEvent e) {
+		e.moveToBounds();
+	}
 }
 
 class VisgoMouseListener implements MouseListener, MouseMotionListener, MouseWheelListener{
