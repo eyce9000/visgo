@@ -100,12 +100,13 @@ public class DocumentList {
 	/**
 	 * Creates a blank document of the given type
 	 * @param documentType The type of document to create
+	 * @param documentName The document's desired name
 	 * @return
 	 * @throws MalformedURLException
 	 * @throws IOException
 	 * @throws ServiceException
 	 */
-	public DocumentListEntry createDocument(String documentType) throws MalformedURLException, IOException, ServiceException
+	public DocumentListEntry createDocument(String documentType, String documentName) throws MalformedURLException, IOException, ServiceException
 	{
 		DocumentListEntry newEntry = null;
 
@@ -130,7 +131,7 @@ public class DocumentList {
 			throw new ServiceException("Invalid document type specified");
 		}
 
-		newEntry.setTitle(new PlainTextConstruct("New " + documentType));
+		newEntry.setTitle(new PlainTextConstruct(documentName));
 		return uploadDocument(newEntry);
 	}
 	

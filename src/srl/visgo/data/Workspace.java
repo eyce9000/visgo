@@ -1,5 +1,6 @@
 package srl.visgo.data;
 
+import edu.umd.cs.piccolo.PNode;
 import gDocsFileSystem.GDatabase;
 import gDocsFileSystem.GFileSystem;
 
@@ -19,6 +20,8 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import srl.visgo.gui.Visgo;
+import srl.visgo.gui.zoom.PDocument;
+import srl.visgo.gui.zoom.PDocumentGroup;
 import srl.visgo.util.chat.ChatManager;
 import srl.visgo.util.chat.listeners.CommandMessage;
 import srl.visgo.util.chat.listeners.CommandMessageListener;
@@ -167,13 +170,14 @@ public class Workspace implements CommandMessageListener{
 	/**
 	 * Creates a blank document of the given type
 	 * @param documentType The type of document created
+	 * @param documentName The name to give to the document
 	 * @return success
 	 */
-	public boolean createDocument(String documentType)
+	public boolean createDocument(String documentType, String documentName)
 	{
 		try
 		{
-			DocumentListEntry newEntry = mDocumentList.createDocument(documentType);
+			DocumentListEntry newEntry = mDocumentList.createDocument(documentType, documentName);
 			postProcessDocCreation(newEntry);
 		}
 		catch(Exception e)
@@ -238,22 +242,25 @@ public class Workspace implements CommandMessageListener{
 		//Add everyone as a writer
 		addCollaboratorRoles(entry);
 
-		//Write it to the database
 		Document doc = new Document(entry);
-		mFileSystem.insertEntry(doc);
+		doc.save();
 
-		//We don't know its file ID, so we have to find it and then add it to the root list
-		List<Document> documents = mFileSystem.getRootFiles();
-		for(Document document : documents)
-		{
-			if(document.getGoogleId().compareTo(entry.getDocId()) == 0)
-			{
-				rootDocuments.put(document.getGoogleId(), document);
-				break;
-			}
-		}
+		PNode layer = Visgo.workspace;
+		PDocument newPDoc = new PDocument(doc);
+		layer.addChild(newPDoc);
+	}
 
-		//Repaint the workspace with the new file
-		Visgo.workspace.invalidate();
+	/**
+	 * Creates a new group object
+	 * @param groupName Name of the new group
+	 */
+	public void createGroup(String groupName)
+	{
+		DocumentGroup newGroup = DocumentGroup.createGroup(groupName);
+		newGroup.save();
+
+		PNode layer = Visgo.workspace;
+		PDocumentGroup newPGroup = new PDocumentGroup(newGroup);
+		layer.addChild(newPGroup);
 	}
 }

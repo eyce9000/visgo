@@ -1,14 +1,9 @@
 package srl.visgo.gui;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -20,14 +15,8 @@ import javax.swing.JPopupMenu;
 import org.openide.awt.DropDownButtonFactory;
 
 import srl.visgo.data.Workspace;
-
-import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.PlainTextConstruct;
-import com.google.gdata.data.docs.DocumentEntry;
 import com.google.gdata.data.docs.DocumentListEntry;
-import com.google.gdata.data.docs.PresentationEntry;
-import com.google.gdata.data.docs.SpreadsheetEntry;
-import com.google.gdata.util.ServiceException;
 
 
 @SuppressWarnings("serial")
@@ -63,15 +52,26 @@ public class CreateDocsPanel extends JPanel
 
 		docsDropDownButton.setToolTipText("Create a new document");
 
+		//Upload document button
 		JButton uploadButton = new JButton(new ImageIcon("image/docupload.png"));
 		uploadButton.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		uploadButton.setToolTipText("Upload a new document");
 		uploadButton.addActionListener(uploadCallback);
+
+		//Create folder button
+		JButton folderButton = new JButton(new ImageIcon("image/add_folder.png"));
+		folderButton.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+		folderButton.setToolTipText("Create a new group");
+		folderButton.addActionListener(folderCallback);
 		
 		this.add(docsDropDownButton);
+		this.add(folderButton);
 		this.add(uploadButton);
 	}
-	
+
+	/**
+	 * The event for clicking the Upload button
+	 */
 	private ActionListener uploadCallback = new ActionListener()
 	{
 		public void actionPerformed(ActionEvent e)
@@ -94,7 +94,13 @@ public class CreateDocsPanel extends JPanel
             }
 		}
 	};
-	
+
+	/**
+	 * Helper function for uploading files
+	 * @param file The file
+	 * @param title The file's name
+	 * @return success
+	 */
 	public boolean uploadFile(File file, String title)
 	{
 		String mimeType;
@@ -115,18 +121,63 @@ public class CreateDocsPanel extends JPanel
 
 		return mWorkspace.createDocumentFromExisting(newDocument);
 	}
-	
+
+	/**
+	 * The event for clicking the Create New Document button
+	 */
 	private ActionListener createDocCallback = new ActionListener()
 	{
 		public void actionPerformed(ActionEvent e)
 		{
-			if(mWorkspace.createDocument(e.getActionCommand()))
+			//Prompt for a file name
+			String name = null;
+			ImageIcon icon = new ImageIcon("image/add_page.png");
+			name = (String) JOptionPane.showInputDialog(
+					null, "Enter file name:",
+					"Create a new file", JOptionPane.PLAIN_MESSAGE, 
+					icon, null, 
+					"new file");
+			if(name != null)
 			{
-				JOptionPane.showMessageDialog(null, "File created successfully");
+				if(mWorkspace.createDocument(e.getActionCommand(), name))
+				{
+					JOptionPane.showMessageDialog(null, "File created successfully");
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "There was an error creating the file.");
+				}
 			}
 			else
 			{
-				JOptionPane.showMessageDialog(null, "There was an error creating the file.");
+				JOptionPane.showMessageDialog(null, "No name specified");
+			}
+		}
+	};
+
+	/**
+	 * The event for clicking the Create New Group button
+	 */
+	private ActionListener folderCallback = new ActionListener()
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			//Prompt for new group name
+			String name = null;
+			ImageIcon icon = new ImageIcon("image/add_to_folder.png");
+			name = (String) JOptionPane.showInputDialog(
+					null, "Enter group name:",
+					"Create a new group", JOptionPane.PLAIN_MESSAGE, 
+					icon, null, 
+					"new group");
+			if(name != null)
+			{
+				mWorkspace.createGroup(name);
+				JOptionPane.showMessageDialog(null, "Group created successfully");
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(null, "No name specified");
 			}
 		}
 	};

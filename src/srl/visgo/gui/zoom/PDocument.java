@@ -56,7 +56,32 @@ public class PDocument extends PNode {
 		}
 		
 		textNode = new PText(shortTitle);
-		imageNode.setImage(Resources.getImage("doc.png"));
+		
+		String type = document.getListEntry().getType();
+		if(type.compareTo("document") == 0)
+		{
+			imageNode.setImage(Resources.getImage("document.png"));
+		}
+		else if(type.compareTo("drawing") == 0)
+		{
+			imageNode.setImage(Resources.getImage("drawing.png"));
+		}
+		else if(type.compareTo("pdf") == 0)
+		{
+			imageNode.setImage(Resources.getImage("pdf.png"));
+		}
+		else if(type.compareTo("presentation") == 0)
+		{
+			imageNode.setImage(Resources.getImage("presentation.png"));
+		}
+		else if(type.compareTo("spreadsheet") == 0)
+		{
+			imageNode.setImage(Resources.getImage("spreadsheet.png"));
+		}
+		else
+		{
+			imageNode.setImage(Resources.getImage("file.png"));
+		}
 		
 		backgroundNode.addChild(imageNode);
 		backgroundNode.addChild(textNode);
@@ -118,7 +143,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 		//TODO: Time off for this paint
 		aNode.setPaint(Color.GREEN);
         checkLocation(mDocument);
-		
+
 	}
 	
 	@Override
