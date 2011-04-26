@@ -18,6 +18,8 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import srl.visgo.data.threads.DataSaver;
+import srl.visgo.data.threads.RevisionChecker;
 import srl.visgo.gui.Visgo;
 import srl.visgo.util.chat.ChatManager;
 import srl.visgo.util.chat.listeners.CommandMessage;
@@ -43,14 +45,15 @@ public class Workspace implements CommandMessageListener{
 	HashMap<String,DocumentGroup> rootGroups = new HashMap<String,DocumentGroup>();
 	HashMap<String,DocumentGroup> allGroups = new HashMap<String,DocumentGroup>();
 	HashMap<String,Document> mDocsById = new HashMap<String,Document>();
+	private RevisionChecker revChecker;
+	private ChatManager chatManager;
 
 	public Workspace(DocumentList docList, GDatabase database, ChatManager manager) throws Exception {
 		mDocumentList = docList;
 		mDatabase = database;
 		mFileSystem = new GFileSystem(database);
+		chatManager = manager;
 
-		saver = new DataSaver(mFileSystem,manager);
-		new Thread(saver).start();
 
 		List<DocumentGroup> folders = mFileSystem.getRootFolders();
 		List<Document> files = mFileSystem.getRootFiles();
@@ -68,6 +71,16 @@ public class Workspace implements CommandMessageListener{
 			mDocsById.put(doc.getId(), doc);
 		}
 		manager.getMessageInterpreter().addCommandMessageListener(this);
+		
+
+	}
+	public void startBackgroudThreads(){
+
+		saver = new DataSaver(mFileSystem,chatManager);
+		new Thread(saver).start();
+		
+		revChecker = new RevisionChecker(mDocumentList);
+		new Thread(revChecker).start();
 	}
 
 	private void lookupChildren(DocumentGroup group) throws Exception{
@@ -98,6 +111,9 @@ public class Workspace implements CommandMessageListener{
 	}
 	public Collection<DocumentGroup> getRootDocumentGroups(){
 		return rootGroups.values();
+	}
+	public Collection<Document> getRootDocuments(){
+		return rootDocuments.values();
 	}
 	public Document getDocumentById(String id){
 		return mDocsById.get(id);
@@ -164,7 +180,12 @@ public class Workspace implements CommandMessageListener{
 
 		}
 	}
-	
+
+	/**
+	 * Creates a blank document of the given type
+	 * @param documentType The type of document created
+	 * @return success
+	 */
 	public boolean createDocument(String documentType)
 	{
 		try
@@ -180,6 +201,9 @@ public class Workspace implements CommandMessageListener{
 			}
 			
 			// TODO: Add icon to workspace
+			Document doc = new Document(newEntry);
+			mFileSystem.insertEntry(doc);
+			Visgo.workspace.invalidate();
 			
 			return true;
 		}
@@ -193,6 +217,12 @@ public class Workspace implements CommandMessageListener{
 		}
 	}
 
+	/**
+	 * Creates a document from an existing DocumentListEntry.
+	 * This is used in uploading documents from the user's computer.
+	 * @param entry A DocumentListEntry to create a new document from
+	 * @return success
+	 */
 	public boolean createDocumentFromExisting(DocumentListEntry entry)
 	{
 		try
@@ -208,6 +238,9 @@ public class Workspace implements CommandMessageListener{
 			}
 			
 			// TODO: Add icon to workspace
+			Document doc = new Document(newEntry);
+			mFileSystem.insertEntry(doc);
+			Visgo.workspace.invalidate();
 			
 			return true;
 		}
@@ -217,6 +250,13 @@ public class Workspace implements CommandMessageListener{
 		}
 	}
 	
+	/**
+	 * Gives all collaborators "writer" status on a given document 
+	 * @param entry The document to add collaborators to
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws ServiceException
+	 */
 	public void addCollaboratorRoles(DocumentListEntry entry) throws MalformedURLException, IOException, ServiceException
 	{
 		Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();

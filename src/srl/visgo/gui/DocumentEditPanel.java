@@ -1,9 +1,8 @@
-package srl.visgo.gui.zoom;
+package srl.visgo.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -13,44 +12,33 @@ import srl.visgo.data.Document;
 import chrriis.common.UIUtils;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
-import edu.umd.cs.piccolo.PNode;
-import edu.umd.cs.piccolox.pswing.PSwing;
-import edu.umd.cs.piccolox.pswing.PSwingCanvas;
 
-public class PDocumentEditor extends PNode{
-
-	public PDocumentEditor(Document doc){
-		super();
-		mDocument = doc;
-		panel = new EditorPanel(doc);
-		this.addChild(new PSwing(panel));
-	}
-	Document mDocument;
-	EditorPanel panel;
-}
-class EditorPanel extends JPanel {
+public class DocumentEditPanel extends JPanel {
 	JWebBrowser browser;
 	public static void main(String[] args){
 
 		UIUtils.setPreferredLookAndFeel();
 		NativeInterface.open();
-		/*SwingUtilities.invokeLater(new Runnable() {
+		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				JFrame frame = new JFrame("Doc Panel Test");
-				EditorPanel panel = new EditorPanel();
+				DocumentEditPanel panel = new DocumentEditPanel();
 				frame.getContentPane().add(panel);
 				frame.setBounds(100, 100, 600, 600);
 				frame.setVisible(true);
 			}
 		});
-		*/
 		NativeInterface.runEventPump();
 	}
-	public EditorPanel(Document doc){
+	public DocumentEditPanel(){
+		super();
+		this.setLayout(new BorderLayout());
 		browser = new JWebBrowser(JWebBrowser.proxyComponentHierarchy());
-		browser.setPreferredSize(new Dimension(600,600));
+		browser.setPreferredSize(new Dimension(1000,1000));
 		this.add(browser,BorderLayout.CENTER);
+		browser.navigate("http://docs.google.com");
+	}
+	public void setDocument(Document doc){
 		browser.navigate(doc.getHref());
 	}
 }
-

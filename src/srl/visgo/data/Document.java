@@ -1,10 +1,19 @@
 package srl.visgo.data;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Formatter;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.Semaphore;
 
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
@@ -12,7 +21,11 @@ import org.bson.BasicBSONObject;
 import srl.visgo.gui.Login;
 import srl.visgo.gui.Visgo;
 
+import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.docs.DocumentListEntry;
+import com.google.gdata.data.docs.RevisionEntry;
+import com.google.gdata.data.docs.RevisionFeed;
+import com.google.gdata.util.ServiceException;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -27,11 +40,13 @@ public class Document implements Entry {
 	private double mOffsetY;
 	private Calendar mLastModified;
 	private String mLastModifiedBy;
+	private Semaphore modifyRevHistory = new Semaphore(1,true);
+	private Map<String,Revision> revisionHistory = new HashMap<String,Revision>();
 
 	private Document(){
 		mLastModified = GregorianCalendar.getInstance();
 	}
-	
+
 	private Document(Document doc){
 		this();
 		this.copyValues(doc);
@@ -80,7 +95,11 @@ public class Document implements Entry {
 	@Override
 	public void setParent(DocumentGroup parent) {
 		mParent = parent;
+		if(parent == null){
+			mParentId = "0";
+		}
 	}
+
 
 	@Override
 	public DocumentGroup getParent() {
@@ -119,6 +138,13 @@ public class Document implements Entry {
 	public void setListEntry(DocumentListEntry entry) {
 		this.mEntry = new DocumentListEntry(entry);
 	}
+	@Override
+	public Collection<Revision> getRevisionHistory(){
+		modifyRevHistory.acquireUninterruptibly();
+		Collection<Revision> rev = Collections.synchronizedCollection(revisionHistory.values());
+		modifyRevHistory.release();
+		return rev;
+	}
 	public void save(){
 		mLastModified = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT-0"));
 		mLastModifiedBy = Login.username;
@@ -141,7 +167,7 @@ public class Document implements Entry {
 
 	public static Map serialize(Document doc){
 		Map m = new HashMap();
-		m.put("filename", doc.mName);
+		m.put("filename", doc.getName());
 		m.put("fileid",doc.mId);
 		m.put("gfid",doc.getGoogleId());
 		m.put("offsetX", doc.mOffsetX+"");
@@ -163,5 +189,41 @@ public class Document implements Entry {
 		return doc;
 	}
 
+	public static void updateRevisionHistory(Document doc, DocsService service) throws IOException, ServiceException{
+
+		URL url = new URL(doc.mEntry.getSelfLink().getHref() + "/revisions?reverse=true");
+		RevisionFeed revisionFeed = service.getFeed(url, RevisionFeed.class);
+
+		Calendar now = GregorianCalendar.getInstance();
+		Calendar gmt = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT+0"));
+		now.setTimeInMillis(System.currentTimeMillis());
+		doc.modifyRevHistory.acquireUninterruptibly();
+		doc.revisionHistory.clear();
+		List<RevisionEntry> entries = new ArrayList<RevisionEntry>(revisionFeed.getEntries());
+		Collections.reverse(entries);
+		for (RevisionEntry entry : entries) {
+			
+			Revision rev = Revision.createRevision(entry);
+			
+			
+			if(now.getTimeInMillis()-rev.getModifiedTime() > 300000)
+				break;
+			System.out.println(" -- " + entry.getTitle().getPlainText());
+			System.out.println(", created on " + entry.getUpdated().toStringRfc822() +" -- "+entry.getUpdated().getTzShift()+ " ");
+			System.out.println(" by " + entry.getModifyingUser().getName() + " - "
+					+ entry.getModifyingUser().getEmail() + "\n");
+			
+			if(!doc.revisionHistory.containsKey(rev.getModifiedByUsername())){
+				doc.revisionHistory.put(rev.getModifiedBy().getUsername(),rev);
+			}
+			else{
+				Revision prevRev = doc.revisionHistory.get(rev.getModifiedByUsername());
+				if(prevRev.compareTo(rev)<0){
+					doc.revisionHistory.put(rev.getModifiedByUsername(), rev);
+				}
+			}
+		}
+		doc.modifyRevHistory.release();
+	}
 
 }

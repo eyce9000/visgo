@@ -105,7 +105,10 @@ public class DocumentGroup implements Entry{
 	}
 
 	public void removeDocument(Document document){
-		mDocuments.remove(document.getName());
+		if(document!=null){
+			mDocuments.remove(document.getName());
+			document.setParent(null);
+		}
 	}
 
 	@Override
@@ -186,6 +189,26 @@ public class DocumentGroup implements Entry{
 		else{
 			return mParentId;
 		}
+	}
+	@Override
+	public Collection<Revision> getRevisionHistory() {
+		HashMap<String,Revision> revisions = new HashMap<String,Revision>();
+		for(Document doc: mDocuments.values()){
+			for(Revision rev: doc.getRevisionHistory()){
+				String username = rev.getModifiedByUsername();
+				if(revisions.containsKey(username)){
+					//Already exists
+					Revision prevRev = revisions.get(username);
+					if(prevRev.compareTo(rev) < 0){ //More recent
+						revisions.put(username, rev);
+					}
+				}
+				else{
+					revisions.put(username, rev);
+				}
+			}
+		}
+		return revisions.values();
 	}
 	@Override
 	public Entry clone(){

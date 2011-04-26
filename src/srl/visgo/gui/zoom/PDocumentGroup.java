@@ -47,22 +47,6 @@ public class PDocumentGroup extends PNode{
 	public int getColumnCount(){
 		return mColCount;
 	}
-	@Override
-	public boolean setY(double y){
-		boolean set = super.setY(y);
-		System.out.println("move position: y-"+y);
-		return set;
-	}
-	@Override
-	public boolean setX(double x){
-		boolean set = super.setX(x);
-		System.out.println("move position: x-"+x);
-		return set;
-	}
-	@Override
-	public void offset(double x, double y){
-		super.offset(x, y);
-	}
 	
 	/**
 	 * Use to initialize the group. Sets the draggable background node's size to that of 

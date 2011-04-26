@@ -2,6 +2,7 @@ package srl.visgo.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -17,44 +18,28 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
 
 import chrriis.common.UIUtils;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
+import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
 
 import com.google.gdata.client.docs.DocsService;
-import com.google.gdata.data.docs.DocumentListEntry;
-import com.google.gdata.data.docs.DocumentListFeed;
 
 import srl.visgo.data.Data;
 import srl.visgo.data.Document;
-import srl.visgo.data.DocumentGroup;
-import srl.visgo.data.Workspace;
 import srl.visgo.gui.chat.ChatPanel;
-import srl.visgo.gui.zoom.PDocument;
-import srl.visgo.gui.zoom.PDocumentEditor;
-import srl.visgo.gui.zoom.PDocumentGroup;
+import srl.visgo.gui.listeners.EditDocumentEvent;
+import srl.visgo.gui.listeners.EditDocumentListener;
+import srl.visgo.gui.zoom.PWorkspace;
 
 import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.PCanvas;
-import edu.umd.cs.piccolo.PLayer;
-import edu.umd.cs.piccolo.PNode;
-import edu.umd.cs.piccolo.PRoot;
-import edu.umd.cs.piccolo.event.PDragEventHandler;
-import edu.umd.cs.piccolo.event.PInputEvent;
-import edu.umd.cs.piccolo.event.PInputEventListener;
-import edu.umd.cs.piccolo.nodes.PText;
-import edu.umd.cs.piccolo.util.PBounds;
-import edu.umd.cs.piccolox.event.PSelectionEventHandler;
 import edu.umd.cs.piccolox.pswing.PSwingCanvas;
-import gDocsFileSystem.GDatabase;
-import gDocsFileSystem.GFileSystem;
 
-public class Visgo extends JFrame {
+public class Visgo extends JFrame implements EditDocumentListener{
 	public static void main(String[] args){
-
-
-
 		UIUtils.setPreferredLookAndFeel();
 		NativeInterface.open();
 		SwingUtilities.invokeLater(new Runnable() {
@@ -71,39 +56,44 @@ public class Visgo extends JFrame {
 			}
 		});
 		NativeInterface.runEventPump();
-
 	}
 
 	DocsService docsService;
-	public static PSwingCanvas canvas;
+	public static PCanvas canvas;
 	public static Data data;
 	ChatPanel chatPanel;
+	public static PWorkspace workspace;
+	DocumentEditPanel editPanel;
 
-	Visgo(){
+	private Visgo(){
 		super("Visgo - "+Login.username);
+		//browser.setPreferredSize(new Dimension(600,600));
+		editPanel = new DocumentEditPanel();
+		editPanel.setVisible(false);
+		editPanel.setOpaque(true);
 
-		//Visgo.data = new Data();
 		Container contentPane = this.getContentPane();
 
 		chatPanel = new ChatPanel();
 		CreateDocsPanel createDocsPanel = new CreateDocsPanel(data.workspace);
 
-		canvas = new PSwingCanvas();
-		//		try {
-		//			systemTest = new GFileSystem("visgo.workspace");
-		//		} catch (Exception e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		}
+		canvas = new PCanvas();
+		//canvas.setPreferredSize(new Dimension(1000,1000));
 
 		canvas.removeInputEventListener(canvas.getZoomEventHandler());
 		canvas.removeInputEventListener(canvas.getPanEventHandler());
 
 		VisgoMouseListener mouseListener = new VisgoMouseListener(canvas);
 		canvas.addMouseWheelListener(mouseListener);
-		//canvas.addMouseListener(mouseListener);
-		//canvas.addMouseMotionListener(mouseListener);
-		contentPane.add(canvas,BorderLayout.CENTER);
+		
+		JPanel centerPanel = new JPanel();
+		OverlayLayout layout = new OverlayLayout(centerPanel);
+		centerPanel.setLayout(layout);
+		centerPanel.add(canvas);
+		
+		centerPanel.add(editPanel);
+		
+		contentPane.add(centerPanel,BorderLayout.CENTER);
 		
 		JPanel leftPanel = new JPanel();
 		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
@@ -115,42 +105,19 @@ public class Visgo extends JFrame {
 	}
 
 	private void load(){
-		try{
-			int i = 1;
-			PDocumentGroup prevNode = null;
-			for(DocumentGroup group : data.workspace.getRootDocumentGroups()){
-
-				PDocumentGroup projectNode = new PDocumentGroup(group);
-				projectNode.setColumnCount(3);
-				projectNode.invalidate();
-				if(prevNode!=null){
-					PBounds bounds = prevNode.computeFullBounds(null);
-					double yOffset =prevNode.getOffset().getY()+bounds.height+10;
-					double xOffset = prevNode.getOffset().getX();
-					//projectNode.setOffset(xOffset, yOffset);
-				}
-				else{
-					//projectNode.setOffset(i*200, 100);
-				}
-				i++;
-				canvas.getLayer().addChild(projectNode);
-			}
-
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
+		workspace = new PWorkspace();
+		workspace.addEditDocumentListener(this);
+		canvas.getLayer().addChild(workspace);
+		data.workspace.startBackgroudThreads();
 	}
 
-	PInputEventListener inputEventListener = new PInputEventListener(){
-
-		@Override
-		public void processEvent(PInputEvent arg0, int arg1) {
-			// TODO Auto-generated method stub
-
-		}
-
-	};
+	@Override
+	public void onEditDocument(EditDocumentEvent event) {
+		editPanel.setDocument((Document)event.getSource());
+		editPanel.setVisible(true);
+		editPanel.revalidate();
+	}
+	
 }
 
 class VisgoMouseListener implements MouseListener, MouseMotionListener, MouseWheelListener{

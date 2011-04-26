@@ -26,6 +26,7 @@ import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
+import edu.umd.cs.piccolo.util.PBounds;
 
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.GRAY;
@@ -62,7 +63,7 @@ public class PDocument extends PNode {
 		
 		backgroundNode.addChild(imageNode);
 		backgroundNode.addChild(textNode);
-//		backgroundNode.addInputEventListener(new PDragEventHandler());
+		backgroundNode.addInputEventListener(new PDragEventHandler());
 
 		//prevents dragging off names/images from the overall node
 		for(int i = 0; i < backgroundNode.getChildrenCount(); i++)
@@ -83,8 +84,9 @@ public class PDocument extends PNode {
 		
 		eventHandler = new PDocumentEventHandler(this);
 		this.addInputEventListener(eventHandler);
+
+		this.setOffset(mDocument.getOffsetX(), mDocument.getOffsetY());
 	}
-	
 	//get the document behind this PDoc
 	public Document getDocument(){
 		return mDocument;
@@ -116,18 +118,24 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
         checkLocation(mDocument);
 		
 	}
+	@Override
+	public void mouseClicked(PInputEvent event){
+		if(event.getClickCount() == 2){
+			Visgo.workspace.onEditDocument(this.mDocument.mDocument);
+		}
+	}
 	
 	@Override
 	public void mouseDragged(PInputEvent event){
 		//Is doc in a group or free?
-		if(mDocument.getParent().equals(Visgo.canvas.getLayer()))
+		if(mDocument.getParent().equals(Visgo.workspace))
 		{
-
+			
 		}
 		else if(mDocument.getParent().getParent().getParent() instanceof srl.visgo.gui.zoom.PDocumentGroup)
 		{
 			//Remove from group
-			PLayer layer = Visgo.canvas.getLayer();
+			PNode layer = Visgo.workspace;
 			PDocumentGroup oldGroup = (PDocumentGroup) mDocument.getParent().getParent().getParent();
 			
 			final Point2D spot = mDocument.getGlobalFullBounds().getCenter2D();
@@ -141,10 +149,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	
 	@Override
 	public void mousePressed(PInputEvent event){
-//		if(event.getClickCount() > 1)
-//			return;
-//		Rectangle bounds = Visgo.canvas.getBounds();
-//		Visgo.canvas.getCamera().setViewBounds(bounds);
+
 	}
 	
 	/**
@@ -157,7 +162,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	 * @throws Exception 
 	 */
 	public void checkLocation(PDocument aNode){
-		PLayer layer = Visgo.canvas.getLayer();
+		PNode layer = Visgo.workspace;
 		boolean onWorkspace = true;
 		
 		for(int i = 0; i < layer.getChildrenCount(); i++)
@@ -177,6 +182,12 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 						mDocument.currentGroup.removeDocument(mDocument);
 					mDocument.currentGroup = test;
 					
+					mDocument.currentGroup.mGroup.addDocument(mDocument.mDocument);
+					mDocument.mDocument.setOffsetX(0);
+					mDocument.mDocument.setOffsetY(0);
+					System.out.println("Move Document:"+mDocument.mDocument.getOffsetX()+","+
+							mDocument.mDocument.getOffsetY());
+					mDocument.mDocument.save();
 					onWorkspace = false;
 					break;
 				}
@@ -209,20 +220,44 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 						mDocument.currentGroup.removeDocument(mDocument);
 						mDocument.currentGroup = newGroup;
 						onWorkspace = false;
+						mDocument.mDocument.setOffsetX(0);
+						mDocument.mDocument.setOffsetY(0);
+						System.out.println("Move Document:"+mDocument.mDocument.getOffsetX()+","+
+								mDocument.mDocument.getOffsetY());
+						mDocument.mDocument.save();
 					}
 					break;
 				}
 			}
 			else
 			{
-				mDocument.currentGroup.removeDocument(mDocument);
-				//mDocument.currentGroup = new PDocumentGroup(DocumentGroup.createGroup("empty"));
+				if(mDocument.currentGroup!=null){
+					mDocument.currentGroup.removeDocument(mDocument);
+				}
+				
+				
+				mDocument.mDocument.setOffsetX(mDocument.getFullBounds().x);
+				mDocument.mDocument.setOffsetY(mDocument.getFullBounds().y);
+
+				System.out.println("Move Document:"+mDocument.mDocument.getOffsetX()+","+
+						mDocument.mDocument.getOffsetY());
+				mDocument.mDocument.save();
+				mDocument.setGlobalScale(1);
+
 			}
 		}
 		if(onWorkspace)
 		{
-			mDocument.currentGroup.removeDocument(mDocument);
-			//mDocument.currentGroup = new PDocumentGroup(DocumentGroup.createGroup("empty"));
+			if(mDocument.currentGroup!=null){
+				mDocument.currentGroup.removeDocument(mDocument);
+			}
+			
+			mDocument.mDocument.setOffsetX(mDocument.getFullBounds().x);
+			mDocument.mDocument.setOffsetY(mDocument.getFullBounds().y);
+
+			System.out.println("Move Document:"+mDocument.mDocument.getOffsetX()+","+
+					mDocument.mDocument.getOffsetY());
+			mDocument.mDocument.save();
 		}
 	}
 	

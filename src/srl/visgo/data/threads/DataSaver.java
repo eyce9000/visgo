@@ -1,4 +1,4 @@
-package srl.visgo.data;
+package srl.visgo.data.threads;
 
 import gDocsFileSystem.GFileSystem;
 
@@ -18,6 +18,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import com.mongodb.GroupCommand;
 
+import srl.visgo.data.Document;
+import srl.visgo.data.DocumentGroup;
+import srl.visgo.data.Entry;
 import srl.visgo.util.chat.ChatManager;
 import srl.visgo.util.chat.listeners.CommandMessage;
 
@@ -30,7 +33,7 @@ public class DataSaver implements Runnable{
 
 	private final Semaphore modifyList = new Semaphore(1,true);
 
-	DataSaver(GFileSystem filesystem,ChatManager chatManager){
+	public DataSaver(GFileSystem filesystem,ChatManager chatManager){
 		mFileSystem = filesystem;
 		map = new HashMap<String,Entry>();
 		queue = new LinkedList<Entry>();
