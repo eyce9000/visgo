@@ -1,9 +1,11 @@
 package srl.visgo.data.listeners;
 
+import java.awt.Color;
 import java.util.EventObject;
 
 import srl.visgo.gui.Visgo;
 
+import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.util.PBounds;
 
 /**
@@ -32,6 +34,11 @@ public class PingEvent extends EventObject{
 	 */
 	public void moveToBounds(){
 		returnBounds = Visgo.workspace.getGlobalFullBounds();
+		PPath test = PPath.createEllipse(100, 100, 100, 50);
+		test.setPaint(Color.green);
+		test.setVisible(true);
+		Visgo.canvas.getLayer().addChild(test);
+		Visgo.canvas.invalidate();
 		Visgo.canvas.getCamera().animateViewToCenterBounds(bounds.getBounds2D(), true, 1000);
 	}
 
