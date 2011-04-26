@@ -110,6 +110,8 @@ public class Visgo extends JFrame {
 
 		contentPane.add(leftPanel, BorderLayout.WEST);
 		load();
+        PBounds test = workspace.getGlobalFullBounds();
+		Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 100);
 	}
 
 	private void load(){

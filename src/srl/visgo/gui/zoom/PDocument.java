@@ -17,7 +17,6 @@ import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.gui.Resources;
 import srl.visgo.gui.Visgo;
-import srl.visgo.gui.interaction.VisgoDragEventHandler;
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
@@ -35,7 +34,7 @@ public class PDocument extends PNode {
 	PText textNode;
 	PPath backgroundNode;
 	PDocumentEventHandler eventHandler;
-	VisgoDragEventHandler dragger;
+	PDragEventHandler dragHandler;
 	PDocumentGroup currentGroup;
 	
 	
@@ -61,7 +60,8 @@ public class PDocument extends PNode {
 		
 		backgroundNode.addChild(imageNode);
 		backgroundNode.addChild(textNode);
-		backgroundNode.addInputEventListener(new PDragEventHandler());
+		dragHandler = new PDragEventHandler();
+		backgroundNode.addInputEventListener(dragHandler);
 
 		//prevents dragging off names/images from the overall node
 		for(int i = 0; i < backgroundNode.getChildrenCount(); i++)
@@ -88,6 +88,10 @@ public class PDocument extends PNode {
 	//get the document behind this PDoc
 	public Document getDocument(){
 		return mDocument;
+	}
+	
+	public void removeDragHandler(){
+		backgroundNode.removeInputEventListener(eventHandler);
 	}
 }
 
@@ -134,7 +138,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			mDocument.currentGroup = oldGroup;
 			layer.addChild(mDocument);
 			mDocument.setOffset(spot);
-			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
+//			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
 		}
 	}
 	
@@ -168,6 +172,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				{
 					test.addDocument(aNode);
 					layer.removeChild(mDocument);
+					mDocument.removeDragHandler();
 					//Remove from old group if it's not the same drop location
 					if(mDocument.currentGroup != null && !mDocument.currentGroup.equals(test))
 						mDocument.currentGroup.removeDocument(mDocument);
@@ -242,8 +247,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			if(mDocument.currentGroup!=null){
 				mDocument.currentGroup.removeDocument(mDocument);
 			}
-			mDocument.setGlobalScale(1);
-
+			
 			mDocument.mDocument.setOffsetX(mDocument.getFullBounds().x);
 			mDocument.mDocument.setOffsetY(mDocument.getFullBounds().y);
 
