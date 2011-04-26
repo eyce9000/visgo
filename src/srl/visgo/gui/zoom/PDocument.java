@@ -17,8 +17,6 @@ import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.gui.Resources;
 import srl.visgo.gui.Visgo;
-import srl.visgo.gui.interaction.VisgoDragEventHandler;
-import edu.umd.cs.piccolo.PLayer;
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
@@ -26,7 +24,6 @@ import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
-import edu.umd.cs.piccolo.util.PBounds;
 
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.GRAY;
@@ -37,7 +34,7 @@ public class PDocument extends PNode {
 	PText textNode;
 	PPath backgroundNode;
 	PDocumentEventHandler eventHandler;
-	VisgoDragEventHandler dragger;
+	PDragEventHandler dragHandler;
 	PDocumentGroup currentGroup;
 	
 	
@@ -59,11 +56,37 @@ public class PDocument extends PNode {
 		}
 		
 		textNode = new PText(shortTitle);
-		imageNode.setImage(Resources.getImage("doc.png"));
+		
+		String type = document.getListEntry().getType();
+		if(type.compareTo("document") == 0)
+		{
+			imageNode.setImage(Resources.getImage("document.png"));
+		}
+		else if(type.compareTo("drawing") == 0)
+		{
+			imageNode.setImage(Resources.getImage("drawing.png"));
+		}
+		else if(type.compareTo("pdf") == 0)
+		{
+			imageNode.setImage(Resources.getImage("pdf.png"));
+		}
+		else if(type.compareTo("presentation") == 0)
+		{
+			imageNode.setImage(Resources.getImage("presentation.png"));
+		}
+		else if(type.compareTo("spreadsheet") == 0)
+		{
+			imageNode.setImage(Resources.getImage("spreadsheet.png"));
+		}
+		else
+		{
+			imageNode.setImage(Resources.getImage("file.png"));
+		}
 		
 		backgroundNode.addChild(imageNode);
 		backgroundNode.addChild(textNode);
-		backgroundNode.addInputEventListener(new PDragEventHandler());
+		dragHandler = new PDragEventHandler();
+		backgroundNode.addInputEventListener(dragHandler);
 
 		//prevents dragging off names/images from the overall node
 		for(int i = 0; i < backgroundNode.getChildrenCount(); i++)
@@ -91,6 +114,10 @@ public class PDocument extends PNode {
 	public Document getDocument(){
 		return mDocument;
 	}
+	
+	public void removeDragHandler(){
+		backgroundNode.removeInputEventListener(eventHandler);
+	}
 }
 
 class PDocumentEventHandler extends PBasicInputEventHandler{
@@ -116,7 +143,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 		//TODO: Time off for this paint
 		aNode.setPaint(Color.GREEN);
         checkLocation(mDocument);
-		
+
 	}
 	@Override
 	public void mouseClicked(PInputEvent event){
@@ -127,6 +154,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	
 	@Override
 	public void mouseDragged(PInputEvent event){
+		event.setHandled(true);
 		//Is doc in a group or free?
 		if(mDocument.getParent().equals(Visgo.workspace))
 		{
@@ -143,7 +171,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			mDocument.currentGroup = oldGroup;
 			layer.addChild(mDocument);
 			mDocument.setOffset(spot);
-			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
+//			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
 		}
 	}
 	
@@ -177,6 +205,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				{
 					test.addDocument(aNode);
 					layer.removeChild(mDocument);
+					mDocument.removeDragHandler();
 					//Remove from old group if it's not the same drop location
 					if(mDocument.currentGroup != null && !mDocument.currentGroup.equals(test))
 						mDocument.currentGroup.removeDocument(mDocument);
@@ -258,6 +287,8 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			System.out.println("Move Document:"+mDocument.mDocument.getOffsetX()+","+
 					mDocument.mDocument.getOffsetY());
 			mDocument.mDocument.save();
+			mDocument.setGlobalScale(1);
+
 		}
 	}
 	

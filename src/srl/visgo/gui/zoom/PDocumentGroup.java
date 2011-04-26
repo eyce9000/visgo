@@ -8,7 +8,9 @@ import java.util.Collection;
 import java.util.List;
 
 import edu.umd.cs.piccolo.PNode;
+import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
+import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
@@ -24,6 +26,8 @@ public class PDocumentGroup extends PNode{
 	List<PDocument> docNodes;
 	int mColCount = 1;
 	public static PBounds currentBounds;
+	PDocGroupEventHandler eventHandler;
+
 	
 	
 	public PDocumentGroup(DocumentGroup group){
@@ -36,6 +40,8 @@ public class PDocumentGroup extends PNode{
 		backgroundNode = PPath.createRectangle(0f, 0f, 50, 50);
 		PDragEventHandler handler = new PDragEventHandler();
 		backgroundNode.addInputEventListener(handler);
+		eventHandler = new PDocGroupEventHandler(this);
+		this.addInputEventListener(eventHandler);
 		this.setPaint(Color.LIGHT_GRAY);
 		backgroundNode.setPaint(Color.LIGHT_GRAY);
 		this.addChild(backgroundNode);
@@ -181,4 +187,19 @@ public class PDocumentGroup extends PNode{
     	}
     	pDoc.backgroundNode.setPaint(Color.GRAY);
     }
+}
+
+class PDocGroupEventHandler extends PBasicInputEventHandler{
+	PDocumentGroup mDocGroup;
+	
+	PDocGroupEventHandler(PDocumentGroup group){
+		mDocGroup = group;
+	}
+	
+	@Override
+	public void mouseDragged(PInputEvent event){
+		event.setHandled(true);
+	}
+	
+	
 }

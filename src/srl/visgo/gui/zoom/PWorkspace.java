@@ -3,20 +3,21 @@ package srl.visgo.gui.zoom;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
-import srl.visgo.data.Entry;
+import srl.visgo.data.listeners.PingEvent;
+import srl.visgo.data.listeners.PingListener;
 import srl.visgo.gui.Visgo;
 import srl.visgo.gui.listeners.EditDocumentEvent;
 import srl.visgo.gui.listeners.EditDocumentListener;
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
-import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
 
@@ -30,6 +31,8 @@ public class PWorkspace extends PNode{
 
     PBounds cachedChildBounds = new PBounds();
     PBounds comparisonBounds = new PBounds();
+	private ArrayList<PingListener> listeners = new ArrayList<PingListener>();
+
     
     private Queue<EditDocumentListener> editDocumentListeners;
 	
@@ -111,7 +114,7 @@ public class PWorkspace extends PNode{
 
             if(initialPaint){
 	            PBounds test = this.getGlobalFullBounds();
-	    		//Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 100);
+	    		Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 100);
 	    		initialPaint = false;
             }
         }
@@ -149,6 +152,17 @@ public class PWorkspace extends PNode{
         }
         return super.validateFullBounds();
     }
+    
+	public void addPingListener(PingListener e){
+		listeners.add(e);
+	}
+
+	public void sendPingEvent(PingEvent pingEvent) {
+		for (PingListener listener: listeners)
+			listener.onPing(pingEvent);
+		
+	}
+
 }
 
 class PWorkspaceEventHandler extends PBasicInputEventHandler{
@@ -162,8 +176,10 @@ class PWorkspaceEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseClicked(PInputEvent event){
 		if(event.getClickCount() == 2){
-			PBounds test = Visgo.workspace.getGlobalFullBounds();
-			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 2000);
+			workspace.sendPingEvent(new PingEvent(this));
+			
+//			PBounds test = Visgo.workspace.getGlobalFullBounds();
+//			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 1000);
 		}
 	}
 }

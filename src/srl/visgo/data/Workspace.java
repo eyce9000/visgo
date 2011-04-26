@@ -1,5 +1,6 @@
 package srl.visgo.data;
 
+import edu.umd.cs.piccolo.PNode;
 import gDocsFileSystem.GDatabase;
 import gDocsFileSystem.GFileSystem;
 
@@ -21,6 +22,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import srl.visgo.data.threads.DataSaver;
 import srl.visgo.data.threads.RevisionChecker;
 import srl.visgo.gui.Visgo;
+import srl.visgo.gui.zoom.PDocument;
+import srl.visgo.gui.zoom.PDocumentGroup;
 import srl.visgo.util.chat.ChatManager;
 import srl.visgo.util.chat.listeners.CommandMessage;
 import srl.visgo.util.chat.listeners.CommandMessageListener;
@@ -184,37 +187,22 @@ public class Workspace implements CommandMessageListener{
 	/**
 	 * Creates a blank document of the given type
 	 * @param documentType The type of document created
+	 * @param documentName The name to give to the document
 	 * @return success
 	 */
-	public boolean createDocument(String documentType)
+	public boolean createDocument(String documentType, String documentName)
 	{
 		try
 		{
-			DocumentListEntry newEntry = mDocumentList.createDocument(documentType);
-			try
-			{
-				addCollaboratorRoles(newEntry);
-			}
-			catch(Exception e)
-			{
-				return false;
-			}
-			
-			// TODO: Add icon to workspace
-			Document doc = new Document(newEntry);
-			mFileSystem.insertEntry(doc);
-			Visgo.workspace.invalidate();
-			
-			return true;
+			DocumentListEntry newEntry = mDocumentList.createDocument(documentType, documentName);
+			postProcessDocCreation(newEntry);
 		}
-		catch(ServiceException e)
+		catch(Exception e)
 		{
 			return false;
 		}
-		catch(Exception e1)
-		{
-			return false;
-		}
+		
+		return true;
 	}
 
 	/**
@@ -228,26 +216,14 @@ public class Workspace implements CommandMessageListener{
 		try
 		{
 			DocumentListEntry newEntry = mDocumentList.uploadDocument(entry);
-			try
-			{
-				addCollaboratorRoles(newEntry);
-			}
-			catch(Exception e)
-			{
-				return false;
-			}
-			
-			// TODO: Add icon to workspace
-			Document doc = new Document(newEntry);
-			mFileSystem.insertEntry(doc);
-			Visgo.workspace.invalidate();
-			
-			return true;
+			postProcessDocCreation(newEntry);
 		}
-		catch(Exception e1)
+		catch(Exception e)
 		{
 			return false;
 		}
+		
+		return true;
 	}
 	
 	/**
@@ -271,5 +247,37 @@ public class Workspace implements CommandMessageListener{
 			AclScope scope = new AclScope(AclScope.Type.USER, c.getUsername());
 			mDocumentList.addAclRole(role, scope, entry);
 		}
+	}
+	
+	/**
+	 * Helper function to update collaborators, add the document to the worksheet and the workspace
+	 * @param entry The document to be added
+	 * @throws Exception
+	 */
+	private void postProcessDocCreation(DocumentListEntry entry) throws Exception
+	{
+		//Add everyone as a writer
+		addCollaboratorRoles(entry);
+
+		Document doc = new Document(entry);
+		doc.save();
+
+		PNode layer = Visgo.workspace;
+		PDocument newPDoc = new PDocument(doc);
+		layer.addChild(newPDoc);
+	}
+
+	/**
+	 * Creates a new group object
+	 * @param groupName Name of the new group
+	 */
+	public void createGroup(String groupName)
+	{
+		DocumentGroup newGroup = DocumentGroup.createGroup(groupName);
+		newGroup.save();
+
+		PNode layer = Visgo.workspace;
+		PDocumentGroup newPGroup = new PDocumentGroup(newGroup);
+		layer.addChild(newPGroup);
 	}
 }
