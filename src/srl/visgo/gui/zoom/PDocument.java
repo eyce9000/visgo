@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.TrayIcon.MessageType;
 import java.awt.geom.Point2D;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -15,6 +17,7 @@ import chrriis.dj.nativeswing.swtimpl.Message;
 
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
+import srl.visgo.data.Revision;
 import srl.visgo.gui.Resources;
 import srl.visgo.gui.Visgo;
 import edu.umd.cs.piccolo.PNode;
@@ -23,22 +26,24 @@ import edu.umd.cs.piccolo.activities.PTransformActivity;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PDragEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
+import edu.umd.cs.piccolo.nodes.PHtmlView;
 import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
 
 public class PDocument extends PNode {
-	static Color BACK_COLOR = Color.GRAY;
+	static Color BACK_COLOR = Color.getHSBColor(200, 200, 200);
 	static Color SELECT_COLOR = Color.orange;
 	
 	Document mDocument;
 	PImage imageNode = new PImage();
-	PText textNode;
+	PHtmlView textNode;
 	PPath backgroundNode;
 	PDocumentEventHandler eventHandler;
 	PDragEventHandler dragHandler;
 	PDocumentGroup currentGroup;
+	PRevisionActivity activityBar;
 	
 	
 	//Have title and image be grouped together as a single, movable node
@@ -51,14 +56,11 @@ public class PDocument extends PNode {
 		
 		this.addChild(backgroundNode);	
 		backgroundNode.setVisible(true);
-		
 
-		String shortTitle = document.getName();
-		if(shortTitle.length()>10){
-			shortTitle = shortTitle.substring(0, 10)+"...";
-		}
+		String title = document.getName();
 		
-		textNode = new PText(shortTitle);
+		textNode = new PHtmlView("<p align=\"center\">"+title+"</p>");
+		textNode.setBounds(0, 0, 80, 20);
 		
 		String type = document.getListEntry().getType();
 		if(type.compareTo("document") == 0)
@@ -100,19 +102,31 @@ public class PDocument extends PNode {
 		double tw = textNode.getWidth();
 		double th = textNode.getHeight();
 		textNode.setOffset(new Point2D.Double(0,h));
-		imageNode.setOffset(new Point2D.Double(w/2,0));
+		imageNode.setOffset(new Point2D.Double((tw/2)-(w/2),0));
 		backgroundNode.setOffset(0,0);
-		
+
+		//TODO
+		//Replace with
+		//List<Revision> revisions = mDocument.getRevisionHistory();
+		List<Revision> revisions = Arrays.asList(new Revision[]{
+				new Revision(Visgo.data.getCollaborator("hpi.test.2@gmail.com"),System.currentTimeMillis()-150000),
+				new Revision(Visgo.data.getCollaborator("heychrisaikens@gmail.com"),System.currentTimeMillis()-250000),
+				new Revision(Visgo.data.getCollaborator("eyce9000@gmail.com"),System.currentTimeMillis()-10000),
+		});
+		activityBar = new PRevisionActivity(revisions,PRevisionActivity.Orientation.Vertical);
+		activityBar.setOffset(tw,10);
+		backgroundNode.addChild(activityBar);
 		//makes background as big as text + image area
-		backgroundNode.setWidth(this.getWidth() + ((shortTitle.length() > 10) ? tw : tw + w/2));
-		backgroundNode.setHeight(this.getHeight() + h + th);
+		backgroundNode.setWidth(tw);
+		backgroundNode.setHeight(h + th);
 		this.setX(tw/2);
 		
 		eventHandler = new PDocumentEventHandler(this);
 		this.addInputEventListener(eventHandler);
-
 		this.setOffset(mDocument.getOffsetX(), mDocument.getOffsetY());
 	}
+	
+	
 	//get the document behind this PDoc
 	public Document getDocument(){
 		return mDocument;
@@ -153,21 +167,15 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 		if(event.getClickCount() == 2){
 
 	        PBounds test = mDocument.getGlobalFullBounds();
-			PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 500);
+			PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 700);
 			
 			final Document doc = this.mDocument.mDocument;
-			
+			Visgo.instance.loadEditDocument(doc);
 			PActivity.PActivityDelegate delegate = new PActivity.PActivityDelegate() {
-				
 				@Override
-				public void activityStepped(PActivity arg0) {
-					
-				}
-				
+				public void activityStepped(PActivity arg0) {}
 				@Override
-				public void activityStarted(PActivity arg0) {
-					
-				}
+				public void activityStarted(PActivity arg0) {}
 				
 				@Override
 				public void activityFinished(PActivity arg0) {
@@ -298,7 +306,8 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				System.out.println("Move Document:"+mDocument.mDocument.getOffsetX()+","+
 						mDocument.mDocument.getOffsetY());
 				mDocument.mDocument.save();
-				mDocument.setGlobalScale(1);
+				mDocument.setGlobalScale(.75);
+				break;
 
 			}
 		}
@@ -314,7 +323,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			System.out.println("Move Document:"+mDocument.mDocument.getOffsetX()+","+
 					mDocument.mDocument.getOffsetY());
 			mDocument.mDocument.save();
-			mDocument.setGlobalScale(1);
+			mDocument.setGlobalScale(.75);
 
 		}
 	}

@@ -143,6 +143,7 @@ class CollaboratorPanel extends JPanel{
 		JLabel name = new JLabel(collaborator.getName());
 		if(collaborator.getStatus() != Presence.Type.available){
 			name.setForeground(Color.GRAY);
+			this.setVisible(false);
 		}
 		this.add(name,BorderLayout.CENTER);
 	}

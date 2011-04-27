@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,6 +20,8 @@ import gDocsFileSystem.GFileSystem;
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.data.Entry;
+import srl.visgo.data.Revision;
+import srl.visgo.gui.Visgo;
 
 public class PDocumentGroup extends PNode{
 	DocumentGroup mGroup;
@@ -27,6 +30,7 @@ public class PDocumentGroup extends PNode{
 	int mColCount = 1;
 	public static PBounds currentBounds;
 	PDocGroupEventHandler eventHandler;
+	private PRevisionActivity activityBar;
 
 	
 	
@@ -86,6 +90,18 @@ public class PDocumentGroup extends PNode{
 		PText nameNode = new PText(mGroup.getName());
 		backgroundNode.addChild(nameNode);
 		nameNode.setPickable(false);
+		
+		//TODO
+		//Replace with
+		//List<Revision> revisions = mDocument.getRevisionHistory();
+		List<Revision> revisions = Arrays.asList(new Revision[]{
+				new Revision(Visgo.data.getCollaborator("hpi.test.2@gmail.com"),System.currentTimeMillis()-150000),
+				new Revision(Visgo.data.getCollaborator("heychrisaikens@gmail.com"),System.currentTimeMillis()-250000),
+				new Revision(Visgo.data.getCollaborator("eyce9000@gmail.com"),System.currentTimeMillis()-10000),
+		});
+		activityBar = new PRevisionActivity(revisions,PRevisionActivity.Orientation.Horizontal);
+		activityBar.setOffset(0,-10);
+		backgroundNode.addChild(activityBar);
 	}
 	
 	int INDENT = 10;

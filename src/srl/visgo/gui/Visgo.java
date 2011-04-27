@@ -54,16 +54,16 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		NativeInterface.open();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				Login.getCredentials();
+				//Login.getCredentials();
 				//
-				//Login.username = "hpi.test.2@gmail.com";
-				//Login.password = "Visgo2011";
+				Login.username = "hpi.test.2@gmail.com";
+				Login.password = "Visgo2011";
 				Visgo.data = new Data();
 
-				Visgo visgo = new Visgo();
-				visgo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				visgo.setSize(1000,700);
-				visgo.setVisible(true);
+				Visgo.instance = new Visgo();
+				Visgo.instance.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				Visgo.instance.setSize(1000,700);
+				Visgo.instance.setVisible(true);
 			}
 		});
 		NativeInterface.runEventPump();
@@ -72,6 +72,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 	DocsService docsService;
 	public static PCanvas canvas;
 	public static Data data;
+	public static Visgo instance;
 	ChatPanel chatPanel;
 	public static PWorkspace workspace;
 	DocumentEditPanel editPanel;
@@ -91,10 +92,10 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		canvas = new PCanvas();
 		//canvas.setPreferredSize(new Dimension(1000,1000));
 
-//		canvas.removeInputEventListener(canvas.getZoomEventHandler());
-//		canvas.removeInputEventListener(canvas.getPanEventHandler());
+		canvas.removeInputEventListener(canvas.getZoomEventHandler());
+		canvas.removeInputEventListener(canvas.getPanEventHandler());
 
-		VisgoMouseListener mouseListener = new VisgoMouseListener(canvas);
+		//VisgoMouseListener mouseListener = new VisgoMouseListener(canvas);
 //		canvas.addMouseWheelListener(mouseListener);
 		
 		JPanel centerPanel = new JPanel();
@@ -125,10 +126,12 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		workspace.addPingListener(this);
 	}
 	
+	public void loadEditDocument(Document doc){
+		editPanel.setDocument(doc);
+	}
 
 	@Override
 	public void onEditDocument(EditDocumentEvent event) {
-		editPanel.setDocument((Document)event.getSource());
 		canvas.setVisible(false);
 		editPanel.setVisible(true);
 		editPanel.revalidate();
