@@ -124,6 +124,12 @@ public class Workspace implements CommandMessageListener{
 	public DocumentGroup getDocumentGroupById(String id){
 		return allGroups.get(id);
 	}
+	public Document getPersonalDocumentById(String id) {
+		return mDocumentList.getDocumentByGoogleId(id);
+	}
+	public List<Document> getAllFiles() throws Exception {
+		return mFileSystem.getAllFiles();
+	}
 	public void saveEntry(Entry e){
 		saver.saveEntry(e);
 	}
@@ -254,7 +260,7 @@ public class Workspace implements CommandMessageListener{
 	 * @param entry The document to be added
 	 * @throws Exception
 	 */
-	private void postProcessDocCreation(DocumentListEntry entry) throws Exception
+	public void postProcessDocCreation(DocumentListEntry entry) throws Exception
 	{
 		//Add everyone as a writer
 		addCollaboratorRoles(entry);
