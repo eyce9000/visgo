@@ -20,6 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
@@ -183,9 +184,19 @@ class CollaboratorPanel extends JPanel{
 		this.add(name,BorderLayout.CENTER);
 	}
 	
+	/**
+	 * Indicate that the panel's collaborator has generated a ping.
+	 */
 	public void addPing(){
-		setBackground(Color.magenta);
-		setOpaque(false);
+		Timer flashy = new Timer(2000, new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {				
+			}
+		});
+		
+		setBackground(Color.GREEN);
+		setOpaque(true);
 		name.setForeground(Color.PINK);
 	}
 }
@@ -200,7 +211,7 @@ class CollaboratorPanelListener implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		System.out.println("Remove ping marker!");
-		mPanel.setOpaque(true);
+		mPanel.setOpaque(false);
 		mPanel.name.setForeground(Color.black);
 		mPanel.revalidate();
 		mPanel.getParent().invalidate();
