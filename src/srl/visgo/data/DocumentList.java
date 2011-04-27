@@ -90,10 +90,8 @@ public class DocumentList {
 				try {
 					Document.updateRevisionHistory(doc, docsService);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (ServiceException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

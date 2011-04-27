@@ -160,14 +160,11 @@ public class MessageProcessor implements PacketListener{
 			
 		} catch (SAXException e) {
 			
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (ParserConfigurationException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		

@@ -27,6 +27,7 @@ import srl.visgo.data.Collaborator;
 import srl.visgo.data.Data;
 import srl.visgo.data.Document;
 import srl.visgo.data.listeners.PingEvent;
+import srl.visgo.data.listeners.PingEventType;
 import srl.visgo.data.listeners.PingListener;
 import srl.visgo.gui.chat.ChatPanel;
 import srl.visgo.gui.listeners.CloseDocumentEvent;
@@ -156,21 +157,21 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 
 	@Override
 	public void onPing(PingEvent e) {
-		//TODO: Indicate a ping has been received
-		Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();
-		Collaborator self = Visgo.data.getCurrentCollaborator();
-		
-		//Ignore self created pings
-		if(self == e.getCreator()){
-			System.out.println("I Created the PING");
+		//Indicate a ping has been received
+		if(e.getType() == PingEventType.USER_PING){
+			Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();
+			Collaborator self = Visgo.data.getCurrentCollaborator();
+			
+			//Ignore self created pings
+			if(self == e.getCreator()){
+				System.out.println("I Created the PING");
+				chatPanel.addPing(e.getCreator());
+				return;
+			}
+			
+			//Show ping's origin in Collaborator menu
 			chatPanel.addPing(e.getCreator());
-
-			return;
 		}
-		
-		//Show ping's origin in Collaborator menu
-		chatPanel.addPing(e.getCreator());
-		
 		//TODO: Click visual indicator causes something... 
 //		e.moveToBounds();
 	}

@@ -10,6 +10,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import srl.visgo.data.listeners.PingEvent;
+import srl.visgo.data.listeners.PingEventType;
 import srl.visgo.gui.Visgo;
 
 /**
@@ -31,7 +32,7 @@ public class PingPopupMenu extends JPopupMenu{
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Ping to all active users");
 				
-				Visgo.workspace.sendPingEvent(new PingEvent(Visgo.workspace, Visgo.data.getCurrentCollaborator()));
+				Visgo.workspace.sendPingEvent(new PingEvent(PingEventType.USER_PING, Visgo.data.getCurrentCollaborator()));
 				
 			}
 		});

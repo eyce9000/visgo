@@ -74,7 +74,6 @@ public class DataSaver implements Runnable{
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException ex) {
-					// TODO Auto-generated catch block
 					ex.printStackTrace();
 				}
 			}
