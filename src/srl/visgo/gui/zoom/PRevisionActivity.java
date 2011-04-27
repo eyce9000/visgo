@@ -2,6 +2,9 @@ package srl.visgo.gui.zoom;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import srl.visgo.data.Revision;
@@ -24,20 +27,23 @@ public class PRevisionActivity  extends PNode{
 	
 	private long currentTime;
 	
-	public PRevisionActivity(List<Revision> revisions,Orientation orientation){
+	public PRevisionActivity(Collection<Revision> revisions,Orientation orientation){
 		super();
 		mOrientation = orientation;
 		setRevisions(revisions);
 		rebuild();
 		
 	}
-	public void setRevisions(List<Revision> revisions){
-		mRevisions = revisions;
+	public void setRevisions(Collection<Revision> revisions){
+		mRevisions = new ArrayList<Revision>(revisions);
+		Collections.sort(mRevisions);
+		Collections.reverse(mRevisions);
 		invalidate();
 	}
 	public void invalidate(){
 		invalid = true;
 		currentTime = System.currentTimeMillis();
+		this.invalidatePaint();
 	}
 	private void rebuild(){
 		this.removeAllChildren();

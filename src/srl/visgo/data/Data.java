@@ -9,9 +9,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Random;
 
 import org.jivesoftware.smack.XMPPException;
@@ -19,8 +21,8 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Presence.Type;
 
-import srl.visgo.data.listeners.DataEventType;
-import srl.visgo.data.listeners.DataListener;
+import srl.visgo.data.listeners.DocumentEvent;
+import srl.visgo.data.listeners.DocumentListener;
 import srl.visgo.gui.Login;
 import srl.visgo.util.chat.ChatManager;
 import srl.visgo.util.chat.MessageProcessor;
@@ -49,16 +51,18 @@ public class Data implements StatusChangeListener{
 	private ChatManager chatManager;
 	private HashMap<String,Collaborator> mCollaborators;
 	private DocsService docsService;
-	private LinkedList<DataListener> listeners;
+	private LinkedList<DocumentListener> listeners;
 	private MessageProcessor messageProcessor;
 	private DocumentList mDocumentList;
 	private Collaborator mCurrentCollaborator;
+	private LinkedList<DocumentListener> mDocListeners;
 
 	public Data(){
 		mDatabase = new GDatabase();
 
-		listeners = new LinkedList<DataListener>();
+		listeners = new LinkedList<DocumentListener>();
 		mCollaborators = new HashMap<String,Collaborator>();
+		mDocListeners = new LinkedList<DocumentListener>();
 		docsService = new DocsService("VISGO-V1");
 		try {
 			docsService.setUserCredentials(Login.username, Login.password);
@@ -177,6 +181,26 @@ public class Data implements StatusChangeListener{
 		workspace.saveEntry(e);
 	}
 
+	public void fireDocumentEvent(DocumentEvent event){
+		switch(event.getType()){
+		case Modified:
+			for(DocumentListener listener:mDocListeners){
+				listener.onDocumentModified(event);
+			}
+			break;
+		case Created:
+			for(DocumentListener listener:mDocListeners){
+				listener.onDocumentCreated(event);
+			}
+			break;
+		case Moved:
+			for(DocumentListener listener:mDocListeners){
+				listener.onDocumentMoved(event);
+			}
+			break;
+		}
+	}
+	
 	public Collaborator getCurrentCollaborator(){
 		return mCurrentCollaborator;
 	}
@@ -186,12 +210,7 @@ public class Data implements StatusChangeListener{
 	public Collection<Collaborator> getAllCollaborators(){
 		return mCollaborators.values();
 	}
-	public synchronized void fireDataChange(DataEventType type){
-		for(DataListener listener:listeners){
-			listener.onDataUpdate(type);
-		}
-	}
-	public void addDataListener(DataListener listener){
+	public void addDataListener(DocumentListener listener){
 		listeners.add(listener);
 	}
 
@@ -213,6 +232,10 @@ public class Data implements StatusChangeListener{
 		return chatManager.sendGroupMessage(message);
 	}
 	
+	public void addDocumentListener(DocumentListener listener){
+		mDocListeners.add(listener);
+	}
+	
 	public boolean addCollaborator(String email) {
 		Collaborator collab = new Collaborator(email);
 		
@@ -224,9 +247,16 @@ public class Data implements StatusChangeListener{
 				{
 					DocumentListEntry entry = workspace.getDocumentById(doc.getId()).getListEntry();
 
-					AclRole role = new AclRole("writer");
-					AclScope scope = new AclScope(AclScope.Type.USER, email);
-					mDocumentList.addAclRole(role, scope, entry);
+					try
+					{
+						AclRole role = new AclRole("writer");
+						AclScope scope = new AclScope(AclScope.Type.USER, email);
+						mDocumentList.addAclRole(role, scope, entry);
+					}
+					catch (Exception e1)
+					{
+						//Do nothing, this user already has access to the doc
+					}
 				}
 				Random numGen = new Random();
 				Color color = new Color(numGen.nextInt(256), numGen.nextInt(256), numGen.nextInt(256));
@@ -235,9 +265,9 @@ public class Data implements StatusChangeListener{
 				m.put("userid", mDatabase.getNextId("collaborators", "userid").toString());
 				m.put("gid",collab.getName());
 				m.put("realname",collab.getName());
-				m.put("color", color.toString());
+				m.put("color", "#" + Integer.toHexString(color.getRGB() & 0x00ffffff));
 
-				mDatabase.insert("collaborators", null);
+				mDatabase.insert("collaborators", m);
 				updateCollaborators();
 				return true;
 			}

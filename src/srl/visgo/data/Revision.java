@@ -36,7 +36,7 @@ public class Revision implements Comparable<Revision>{
 		
 		long time = entry.getUpdated().getValue();
 		//Something weird with the time. Subtract 7 hours
-		time -= (7 * 60 * 60 * 1000);
+		//time -= (7 * 60 * 60 * 1000);
 		
 		return new Revision(collab,time);
 	}

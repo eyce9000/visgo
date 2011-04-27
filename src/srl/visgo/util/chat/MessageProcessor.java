@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.EventListener;
+import java.util.Stack;
 
 import javax.swing.event.EventListenerList;
 
@@ -22,6 +23,7 @@ import srl.visgo.util.chat.listeners.IndividualMessage;
 import srl.visgo.util.chat.listeners.IndividualMessageListener;
 
 import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;	
 
@@ -144,17 +146,25 @@ public class MessageProcessor implements PacketListener{
 	@Override
 	public void processPacket(Packet currentMessage) {
 		
-		// Creating the DOM parser 
+		// Creating the DOM parser
+		
 		DocumentBuilder builder;
 		
 		Document parsedXMLMessage = null;
 		String xmlMessage = null;
 		try {
 			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-				
+			
+			Message message = (Message)currentMessage;
+			
+			if(message.getBody()==null || !ChatManager.fromVisgo(message)){
+				return;
+			}
+			
 			xmlMessage = XMLVERSION + ((Message)currentMessage).getBody();
 			
 			// creating the XML document object
+			//System.out.println(xmlMessage);
 			parsedXMLMessage = builder.parse(new ByteArrayInputStream(xmlMessage.getBytes("UTF-8")));
 			
 			
@@ -202,4 +212,22 @@ public class MessageProcessor implements PacketListener{
 	
 	
 
+}
+
+class CDATAHandler extends DefaultHandler {
+	  private Stack currentElement = new Stack();
+
+	  public void startElement(String uri, String localName, String qName, Attributes attrs)
+	      throws SAXException {
+	    currentElement.push(qName);
+	  }
+
+	  public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
+	    currentElement.pop();
+	  }
+
+	  public void characters(char[] ch, int start, int length) throws SAXException {
+	    String cdata = new String(ch, start, length);
+	    System.out.println("Element '" + currentElement.peek() + "' contains text: " + cdata);
+	  }
 }

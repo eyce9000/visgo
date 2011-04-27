@@ -1,10 +1,14 @@
 package srl.visgo.util.chat.listeners;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.EventObject;
 
 import org.xml.sax.*;
 import org.jivesoftware.smack.packet.Message;
 import org.w3c.dom.*;
+
 import javax.xml.parsers.*;	
 
 /***
@@ -63,14 +67,21 @@ public class CommandMessage extends EventObject{
 	 * @return
 	 */
 	public String toXML(){
-		String xmlString = "<" + TAGNAME + " name = \""
-			+ commandName 
-			+ " \" > " 
-			+ arguments 
-			+ "</" +  TAGNAME  +">"; 
+		String xmlString;
+		try {
+			xmlString = "<" + TAGNAME + " name = \""
+				+ commandName 
+				+ " \" >" 
+				+ URLEncoder.encode(arguments,"UTF-8") 
+				+ "</" +  TAGNAME  +">";
+
+			return xmlString;
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 		
-		return xmlString;
-					
+		return "";			
 	}
 	
 	/**
@@ -81,11 +92,19 @@ public class CommandMessage extends EventObject{
 	public static CommandMessage parse(Message source, Element xml){
 		
 		//TODO : Finish implementing the parse method.
-		String name = xml.getAttribute("name");
-		String arguments = xml.getTextContent();
-		
-		CommandMessage result = new CommandMessage(source, name, arguments);
-		return result;
-		
+		try {
+			String name = xml.getAttribute("name");
+			String arguments;
+			arguments = URLDecoder.decode(xml.getTextContent(),"UTF-8");
+			CommandMessage result = new CommandMessage(source, name, arguments);
+			return result;
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (DOMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
