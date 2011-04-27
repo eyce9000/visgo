@@ -1,6 +1,7 @@
 package srl.visgo.gui.zoom;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +15,7 @@ import edu.umd.cs.piccolo.nodes.PText;
 
 public class PDocumentGrid extends PNode {
 	Collection<Entry> mEntries  = new LinkedList<Entry>();
+	ArrayList<PDocument> docNodes = new ArrayList<PDocument>();
 	private int mColCount = 5;
 
 
@@ -27,13 +29,19 @@ public class PDocumentGrid extends PNode {
 	public void setEntries(Collection<Entry> entries){
 		mEntries = entries;
 	}
+	
+	public ArrayList<PDocument> getDocNodes(){
+		return docNodes;
+	}
 
 	public void invalidate(){
 		this.removeAllChildren();
+		docNodes.clear();
 		int i=0;
 		for(Entry entry: mEntries){
 			if(entry instanceof Document){
 				PDocument docNode = new PDocument((Document)entry);
+				docNodes.add(docNode);
 
 				this.addChild(docNode);
 				int col = i % mColCount;

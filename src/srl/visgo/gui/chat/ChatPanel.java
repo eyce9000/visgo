@@ -2,6 +2,7 @@ package srl.visgo.gui.chat;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -65,8 +66,8 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		final GroupMessage message = currentMessage;
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				// TODO Auto-generated method stub
-				System.out.println(message.getMessage());
+
+//				System.out.println(message.getMessage());
 				String from = ((Message)message.getSource()).getFrom().split("@gmail\\.com")[0]+"@gmail.com";
 				addMessage(message.getMessage(),from);
 			}
@@ -97,7 +98,7 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
+
 		if(arg0.getSource() == mTextInputPanel.mSendButton){
 			GroupMessage message = Visgo.data.sendGroupMessage(mTextInputPanel.mMessageField.getText());
 			addMessage(message.getMessage(),Login.username);
@@ -221,42 +222,40 @@ class CollaboratorPanelListener implements MouseListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		//TODO: Make sure timer is set up first...
-		//TODO: Change cursor on hover
-		if(mPanel.timer.isRunning()){
+		if(mPanel.timer != null && mPanel.timer.isRunning()){
 			mPanel.timer.stop();
 			mPanel.setOpaque(false);
 			mPanel.name.setForeground(Color.black);
 			mPanel.revalidate();
 			mPanel.getParent().invalidate();
 			mPanel.getParent().repaint();
-		}
-		
+			Visgo.chatPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			
+			//TODO: On click, move to the spot
+			Visgo.workspace.goToPing(mPanel.mCollaborator);
+			
+		}	
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		if(mPanel.timer != null && mPanel.timer.isRunning()){
+			Visgo.chatPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		}
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		if(mPanel.timer != null && mPanel.timer.isRunning()){
+			Visgo.chatPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}	
 	}
 
 	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void mousePressed(MouseEvent e) {}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void mouseReleased(MouseEvent e) {}
 	
 }
 

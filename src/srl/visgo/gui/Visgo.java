@@ -30,6 +30,7 @@ import com.google.gdata.data.acl.AclScope;
 import srl.visgo.data.Collaborator;
 import srl.visgo.data.Data;
 import srl.visgo.data.Document;
+import srl.visgo.data.SoundFile;
 import srl.visgo.data.listeners.PingEvent;
 import srl.visgo.data.listeners.PingEventType;
 import srl.visgo.data.listeners.PingListener;
@@ -75,7 +76,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 	public static PCanvas canvas;
 	public static Data data;
 	public static Visgo instance;
-	ChatPanel chatPanel;
+	public static ChatPanel chatPanel;
 	public static PWorkspace workspace;
 	DocumentEditPanel editPanel;
 
@@ -95,7 +96,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		//canvas.setPreferredSize(new Dimension(1000,1000));
 
 		canvas.removeInputEventListener(canvas.getZoomEventHandler());
-		canvas.removeInputEventListener(canvas.getPanEventHandler());
+//		canvas.removeInputEventListener(canvas.getPanEventHandler());
 
 		//VisgoMouseListener mouseListener = new VisgoMouseListener(canvas);
 //		canvas.addMouseWheelListener(mouseListener);
@@ -168,6 +169,8 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 			
 			//Ignore own pings
 //			if(self == e.getCreator()){
+//			SoundFile sound = new SoundFile("audio/beacon_placed.wav");
+//			sound.play();
 //				return;
 //			}
 			
@@ -184,7 +187,9 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 					test.setVisible(true);
 					Visgo.canvas.getLayer().addChild(test);
 					Visgo.canvas.invalidate();
-		        	System.out.println("This should print only once in timer");
+					
+//					SoundFile sound = new SoundFile("audio/beacon_detected.wav");
+//					sound.play();
 		        	
 		        }
 		      });
@@ -197,9 +202,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 
 		        public void actionPerformed(ActionEvent actionEvent) {
 					Visgo.canvas.getLayer().removeChild(test);
-					Visgo.canvas.invalidate();
-
-		        	
+					Visgo.canvas.invalidate();  	
 		        }
 		      });
 		    
@@ -207,6 +210,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		    timer2.start();
 		    timer2.setRepeats(false);
 			
+		    
 			//Show ping's origin in Collaborator menu
 			chatPanel.addPing(e.getCreator());
 		}
@@ -265,10 +269,7 @@ class VisgoMouseListener implements MouseListener, MouseMotionListener, MouseWhe
 	}
 
 	@Override
-	public void mouseMoved(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
+	public void mouseMoved(MouseEvent arg0) {}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -280,27 +281,15 @@ class VisgoMouseListener implements MouseListener, MouseMotionListener, MouseWhe
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
+	public void mouseEntered(MouseEvent e) {}
 
 	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
+	public void mouseExited(MouseEvent e) {}
 
 	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
+	public void mousePressed(MouseEvent e) {}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
+	public void mouseReleased(MouseEvent e) {}
 
 }

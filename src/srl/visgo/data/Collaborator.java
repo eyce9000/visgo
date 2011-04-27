@@ -4,10 +4,13 @@ import java.awt.Color;
 
 import org.jivesoftware.smack.packet.Presence;
 
+import srl.visgo.data.listeners.PingEvent;
+
 public class Collaborator {
 	private String mUsername;
 	private String mName;
 	private Color mColor;
+	private PingEvent lastPing;
 	private Presence.Type mStatus = Presence.Type.unavailable;
 	public Collaborator(String username){
 		mUsername = username;
@@ -46,4 +49,16 @@ public class Collaborator {
 	public Presence.Type getStatus(){
 		return mStatus;
 	}
+	
+	public void setPing(PingEvent ping){
+		lastPing = ping;
+	}
+	
+	public PingEvent getLastPing(){
+		if(lastPing == null)
+			return null;
+		return lastPing;
+	}
+	
+	
 }

@@ -31,6 +31,7 @@ public class PDocumentGroup extends PNode{
 	public static PBounds currentBounds;
 	PDocGroupEventHandler eventHandler;
 	private PRevisionActivity activityBar;
+	PDocumentGrid grid;
 	
 	private boolean invalid=false;
 
@@ -60,6 +61,10 @@ public class PDocumentGroup extends PNode{
 		return mColCount;
 	}
 	
+	public ArrayList<PNode> getPDocs(){
+		return null;
+	}
+	
 	/**
 	 * Use to initialize the group. Sets the draggable background node's size to that of 
 	 * the group's title.
@@ -67,7 +72,7 @@ public class PDocumentGroup extends PNode{
 	private void initialize(){
 		backgroundNode.removeAllChildren();
 		Collection<Entry> docs = mDocumentGroup.getRootEntries();
-		PDocumentGrid grid = new PDocumentGrid(docs);
+		grid = new PDocumentGrid(docs);
 		backgroundNode.addChild(grid);
 		grid.invalidate();
 		grid.setOffset(0,40);
@@ -87,7 +92,7 @@ public class PDocumentGroup extends PNode{
 	private void rebuild(){
 		backgroundNode.removeAllChildren();
 		Collection<Entry> docs = mDocumentGroup.getRootEntries();
-		PDocumentGrid grid = new PDocumentGrid(docs);
+		grid = new PDocumentGrid(docs);
 		backgroundNode.addChild(grid);
 		grid.invalidate();
 		grid.setOffset(0,40);

@@ -7,6 +7,7 @@ import javax.swing.JPopupMenu;
 
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
+import edu.umd.cs.piccolo.util.PBounds;
 import srl.visgo.data.listeners.PingEvent;
 import srl.visgo.data.listeners.PingEventType;
 import srl.visgo.gui.Visgo;
@@ -32,16 +33,16 @@ public class PWorkspaceEventHandler extends PBasicInputEventHandler{
 			event.setHandled(true);
 			int x = (int) event.getPosition().getX();
         	int y = (int) event.getPosition().getY();
-			Visgo.workspace.sendPingEvent(new PingEvent(PingEventType.USER_PING, 
-					Visgo.data.getCurrentCollaborator(), x, y));
+        	PingEvent newPing = new PingEvent(PingEventType.USER_PING, 
+					Visgo.data.getCurrentCollaborator(), x, y);
+        	Visgo.data.getCurrentCollaborator().setPing(newPing);
+			Visgo.workspace.sendPingEvent(newPing);
 //			PingPopupMenu pop = new PingPopupMenu();
 			
 		}
-		else if(event.getClickCount() == 2){
-			//workspace.sendPingEvent(new PingEvent(this));
-			
-//			PBounds test = Visgo.workspace.getGlobalFullBounds();
-//			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 1000);
+		else if(event.getClickCount() == 2){			
+//		PBounds test = Visgo.workspace.getGlobalFullBounds();
+//		Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 1000);
 		}
 	}
 }

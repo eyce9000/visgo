@@ -3,10 +3,16 @@ package srl.visgo.gui.zoom;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+
+import srl.visgo.data.Collaborator;
 import srl.visgo.data.Document;
 import srl.visgo.data.DocumentGroup;
 import srl.visgo.data.listeners.DocumentEvent;
@@ -17,6 +23,8 @@ import srl.visgo.gui.Visgo;
 import srl.visgo.gui.listeners.EditDocumentEvent;
 import srl.visgo.gui.listeners.EditDocumentListener;
 import edu.umd.cs.piccolo.PNode;
+import edu.umd.cs.piccolo.activities.PActivity;
+import edu.umd.cs.piccolo.activities.PTransformActivity;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
 
@@ -58,6 +66,107 @@ public class PWorkspace extends PNode implements DocumentListener{
 
 	public void onEditDocument(Document doc) {
 		fireEditDocumentListener(doc);
+	}
+	
+
+	/**
+	 * Move to the origin of the selected ping
+	 * @param collaborator
+	 */
+	public void goToPing(Collaborator collaborator){
+		//TODO: Have this handle going to the location of a ping by checking overlaps
+		
+			PNode layer = Visgo.workspace;
+			boolean onWorkspace = true;
+
+			for(int i = 0; i < layer.getChildrenCount(); i++)
+			{
+				//Checks for groups and documents
+				if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocument)
+				{
+					PDocument test = (PDocument) layer.getChild(i);
+					final Point2D spot = new Point(collaborator.getLastPing().getX(), 
+							collaborator.getLastPing().getY()) ;
+					//Was the ping over a doc?
+					if(test.getGlobalFullBounds().contains(spot))
+					{
+						//TODO: Zoom into document
+						PBounds test1 = test.getGlobalFullBounds();
+						PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test1.getBounds2D(), true, 700);
+
+						final Document doc = test.mDocument;
+						Visgo.instance.loadEditDocument(doc);
+						PActivity.PActivityDelegate delegate = new PActivity.PActivityDelegate() {
+							@Override
+							public void activityStepped(PActivity arg0) {}
+							@Override
+							public void activityStarted(PActivity arg0) {}
+
+							@Override
+							public void activityFinished(PActivity arg0) {
+								Visgo.workspace.onEditDocument(doc);
+
+							}
+						};
+						animation.setDelegate(delegate);
+						onWorkspace = false;
+						break;
+					}
+				}
+				else if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocumentGroup)
+				{
+					PDocumentGroup testGroup = (PDocumentGroup) layer.getChild(i);
+					final Point2D spot = new Point(collaborator.getLastPing().getX(), 
+							collaborator.getLastPing().getY()) ;
+					//Was the ping over a group?
+					if(testGroup.getGlobalFullBounds().contains(spot))
+					{
+						//Was the ping over a doc in the group?
+						for(PDocument test :  testGroup.grid.getDocNodes())
+						{
+							//Was the ping over a doc?
+							if(test.getGlobalFullBounds().contains(spot))
+							{
+								//Zoom into document
+								PBounds test1 = test.getGlobalFullBounds();
+								PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test1.getBounds2D(), true, 700);
+
+								final Document doc = test.mDocument;
+								Visgo.instance.loadEditDocument(doc);
+								PActivity.PActivityDelegate delegate = new PActivity.PActivityDelegate() {
+									@Override
+									public void activityStepped(PActivity arg0) {}
+									@Override
+									public void activityStarted(PActivity arg0) {}
+
+									@Override
+									public void activityFinished(PActivity arg0) {
+										Visgo.workspace.onEditDocument(doc);
+
+									}
+								};
+								animation.setDelegate(delegate);
+								onWorkspace = false;
+								break;
+							}
+							
+						}
+						//TODO: Zoom to Doc group or whatever else
+						onWorkspace = false;
+						break;
+					}
+				}
+				else
+				{
+					//Do something else?
+				}
+			}
+			if(onWorkspace)
+			{
+				//Don't do anything?
+
+			}
+		
 	}
 
 	/**
