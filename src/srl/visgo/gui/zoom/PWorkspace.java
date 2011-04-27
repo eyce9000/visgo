@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -16,8 +15,6 @@ import srl.visgo.gui.Visgo;
 import srl.visgo.gui.listeners.EditDocumentEvent;
 import srl.visgo.gui.listeners.EditDocumentListener;
 import edu.umd.cs.piccolo.PNode;
-import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
-import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
 
@@ -40,7 +37,6 @@ public class PWorkspace extends PNode{
 	public PWorkspace(){
 		super();
 		this.setPaint(Color.CYAN);
-		this.addInputEventListener(new PWorkspaceEventHandler(this));
 		load();
 		editDocumentListeners = new LinkedList<EditDocumentListener>();
 	}
@@ -134,9 +130,6 @@ public class PWorkspace extends PNode{
                 + 2 * INDENT);
         localToParent(result);
 
-//		mGroup.setOffsetX(result.getX());
-//		mGroup.setOffsetY(result.getY());
-//		mGroup.save();
         return result;
     }
 
@@ -153,33 +146,22 @@ public class PWorkspace extends PNode{
         return super.validateFullBounds();
     }
     
+    /**
+     * Add a PingListener to the array of listeners
+     * @param e
+     */
 	public void addPingListener(PingListener e){
 		listeners.add(e);
 	}
 
+	/**
+	 * Send a ping event to the set of listeners
+	 * @param pingEvent
+	 */
 	public void sendPingEvent(PingEvent pingEvent) {
 		for (PingListener listener: listeners)
 			listener.onPing(pingEvent);
 		
 	}
 
-}
-
-class PWorkspaceEventHandler extends PBasicInputEventHandler{
-	PWorkspace workspace;
-	
-	
-	public PWorkspaceEventHandler(PWorkspace space){
-		workspace = space;
-	}
-	
-	@Override
-	public void mouseClicked(PInputEvent event){
-		if(event.getClickCount() == 2){
-			//workspace.sendPingEvent(new PingEvent(this));
-			
-//			PBounds test = Visgo.workspace.getGlobalFullBounds();
-//			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 1000);
-		}
-	}
 }

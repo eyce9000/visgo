@@ -2,8 +2,6 @@ package srl.visgo.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -11,11 +9,9 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
-import java.net.URL;
-import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
@@ -23,14 +19,13 @@ import javax.swing.SwingUtilities;
 
 import chrriis.common.UIUtils;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
-import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
-
 import com.google.gdata.client.docs.DocsService;
+import com.google.gdata.data.acl.AclRole;
+import com.google.gdata.data.acl.AclScope;
 
+import srl.visgo.data.Collaborator;
 import srl.visgo.data.Data;
 import srl.visgo.data.Document;
-import srl.visgo.data.DocumentGroup;
-import srl.visgo.data.Workspace;
 import srl.visgo.data.listeners.PingEvent;
 import srl.visgo.data.listeners.PingListener;
 import srl.visgo.gui.chat.ChatPanel;
@@ -39,13 +34,14 @@ import srl.visgo.gui.listeners.CloseDocumentListener;
 import srl.visgo.gui.listeners.EditDocumentEvent;
 import srl.visgo.gui.listeners.EditDocumentListener;
 import srl.visgo.gui.zoom.PWorkspace;
+import srl.visgo.interaction.PWorkspaceEventHandler;
+import srl.visgo.interaction.PingPopupMenu;
 
 import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.PCanvas;
 import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.event.PInputEventListener;
 import edu.umd.cs.piccolo.util.PBounds;
-import edu.umd.cs.piccolox.pswing.PSwingCanvas;
 
 public class Visgo extends JFrame implements PingListener,EditDocumentListener,CloseDocumentListener{
 	public static void main(String[] args){
@@ -120,6 +116,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 	private void load(){
 		workspace = new PWorkspace();
 		workspace.addEditDocumentListener(this);
+		canvas.addInputEventListener(new PWorkspaceEventHandler(workspace));
 		editPanel.addCloseDocumentListener(this);
 		canvas.getLayer().addChild(workspace);
 		data.workspace.startBackgroudThreads();
@@ -159,8 +156,23 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 
 	@Override
 	public void onPing(PingEvent e) {
+		//TODO: Indicate a ping has been received
+		Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();
+		Collaborator self = Visgo.data.getCurrentCollaborator();
+		
+		//Ignore self created pings
+		if(self == e.getCreator()){
+			System.out.println("I Created the PING");
+			chatPanel.addPing(e.getCreator());
 
-		//e.moveToBounds();
+			return;
+		}
+		
+		//Show ping's origin in Collaborator menu
+		chatPanel.addPing(e.getCreator());
+		
+		//TODO: Click visual indicator causes something... 
+//		e.moveToBounds();
 	}
 
 }

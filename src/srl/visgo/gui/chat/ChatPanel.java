@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Collection;
 
 import javax.swing.AbstractAction;
@@ -82,6 +84,10 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		mMessagesPanel.revalidate();
 		mScroll.revalidate();
 	}
+	
+	public void addPing(Collaborator creator){
+		mCollaboratorListPanel.pingInList(creator);
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
@@ -111,7 +117,20 @@ class CollaboratorListPanel extends JPanel implements StatusChangeListener{
 		this.removeAll();
 		Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();
 		for(Collaborator collaborator: collaborators){
-			this.add(new CollaboratorPanel(collaborator));
+			this.add(new CollaboratorPanel(collaborator, false));
+		}
+		this.revalidate();
+	}
+	
+	//TODO: Make it so more than one ping can be up at a time, aka, just change name and not recreate list...
+	public void pingInList(Collaborator creator){
+		this.removeAll();
+		Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();
+		for(Collaborator collaborator: collaborators){
+			if(collaborator == creator)
+				this.add(new CollaboratorPanel(collaborator, true));
+			else
+				this.add(new CollaboratorPanel(collaborator, false));
 		}
 		this.revalidate();
 	}
@@ -129,9 +148,13 @@ class CollaboratorListPanel extends JPanel implements StatusChangeListener{
 @SuppressWarnings("serial")
 class CollaboratorPanel extends JPanel{
 	Collaborator mCollaborator;
-	CollaboratorPanel(Collaborator collaborator){
+	JLabel name;
+	CollaboratorPanelListener listener;
+	CollaboratorPanel(Collaborator collaborator, boolean pingSource){
 		super(new BorderLayout());
 		mCollaborator = collaborator;
+		listener = new CollaboratorPanelListener(this);
+		this.addMouseListener(listener);
 		JPanel colorSwatch = new JPanel(){
 			@Override
 			public Dimension getPreferredSize(){
@@ -140,13 +163,59 @@ class CollaboratorPanel extends JPanel{
 		};
 		colorSwatch.setBackground(collaborator.getColor());
 		this.add(colorSwatch,BorderLayout.WEST);
-		JLabel name = new JLabel(collaborator.getName());
+		name = new JLabel(collaborator.getName());
+		if(pingSource){
+			name.setForeground(Color.ORANGE);
+			
+		}
 		if(collaborator.getStatus() != Presence.Type.available){
 			name.setForeground(Color.GRAY);
 			this.setVisible(false);
 		}
 		this.add(name,BorderLayout.CENTER);
 	}
+}
+
+class CollaboratorPanelListener implements MouseListener {
+	CollaboratorPanel mPanel;
+	
+	public CollaboratorPanelListener(CollaboratorPanel panel){
+		mPanel = panel;
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		System.out.println("Remove ping marker!");
+		mPanel.name.setBackground(Color.black);
+		mPanel.revalidate();
+		mPanel.getParent().invalidate();
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 }
 
 @SuppressWarnings("serial")
