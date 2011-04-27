@@ -364,8 +364,18 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 		}
 		return "";
 	}
+	public static String extractClientID(Message message){
+		String slashSplit[] = message.getFrom().split("\\/");
+		if(slashSplit.length > 1){
+			return slashSplit[1].split("\\.")[0];
+		}
+		return "";
+	}
 	public static boolean usingVisgo(Presence presence){
 		return extractClientID(presence).equals(CLIENT_ID);
+	}
+	public static boolean fromVisgo(Message message){
+		return extractClientID(message).equals(CLIENT_ID);
 	}
 	
 	/**

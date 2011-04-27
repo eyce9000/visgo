@@ -140,7 +140,7 @@ public class Workspace implements CommandMessageListener{
 		String name = notification.getCommandName();
 		String body = notification.getArguments();
 		if(name.equals("dataChanged")){
-			//System.out.println(body);
+			System.out.println("Received data change: "+body);
 			try {
 				Map<String,Object> map = mapper.readValue(body, Map.class);
 				String className = (String)map.get("class");
