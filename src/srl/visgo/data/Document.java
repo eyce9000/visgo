@@ -22,6 +22,7 @@ import srl.visgo.gui.Login;
 import srl.visgo.gui.Visgo;
 
 import com.google.gdata.client.docs.DocsService;
+import com.google.gdata.data.Person;
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.RevisionEntry;
 import com.google.gdata.data.docs.RevisionFeed;
@@ -201,17 +202,33 @@ public class Document implements Entry {
 		doc.revisionHistory.clear();
 		List<RevisionEntry> entries = new ArrayList<RevisionEntry>(revisionFeed.getEntries());
 		Collections.reverse(entries);
+		
+		System.out.println("Looking up revisions for "+doc.getName());
+		
 		for (RevisionEntry entry : entries) {
 			
 			Revision rev = Revision.createRevision(entry);
 			
+			long diff = now.getTimeInMillis()-rev.getModifiedTime();
 			
-			if(now.getTimeInMillis()-rev.getModifiedTime() > 300000)
+			
+			if(diff > 300000)
 				break;
+			/*
 			System.out.println(" -- " + entry.getTitle().getPlainText());
 			System.out.println(", created on " + entry.getUpdated().toStringRfc822() +" -- "+entry.getUpdated().getTzShift()+ " ");
 			System.out.println(" by " + entry.getModifyingUser().getName() + " - "
 					+ entry.getModifyingUser().getEmail() + "\n");
+			*/
+			
+
+			System.out.println("--Modified at:"+(diff/60000.0f)+" by:"+entry.getModifyingUser().getName());
+			String contributors = "";
+			
+			for(Person contrib : entry.getAuthors()){
+				contributors +=" "+contrib.getEmail();
+			}
+			System.out.println(contributors);
 			
 			if(!doc.revisionHistory.containsKey(rev.getModifiedByUsername())){
 				doc.revisionHistory.put(rev.getModifiedBy().getUsername(),rev);

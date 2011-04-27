@@ -8,6 +8,9 @@ import java.util.HashMap;
 
 import javax.swing.JOptionPane;
 
+import srl.visgo.data.listeners.DocumentEvent;
+import srl.visgo.gui.Visgo;
+
 import com.google.gdata.client.DocumentQuery;
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.Link;
@@ -65,6 +68,7 @@ public class DocumentList {
 		for (DocumentListEntry listEntry : feed.getEntries()) {
 			//System.out.println(listEntry.getTitle().getPlainText());
 			//This is a document
+			
 			Document doc = mDocuments.get(listEntry.getDocId());
 			if(doc == null){
 				doc = new Document(listEntry);
@@ -89,6 +93,11 @@ public class DocumentList {
 			if(doc.getId()!=null){
 				try {
 					Document.updateRevisionHistory(doc, docsService);
+					Collection<Revision> revs = doc.getRevisionHistory();
+					if(revs.size()>0){
+						System.out.println(doc.getName()+" has "+revs.size()+" recent modifiers.");
+						Visgo.data.fireDocumentEvent(new DocumentEvent(doc,DocumentEvent.Type.Modified));
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				} catch (ServiceException e) {
@@ -109,7 +118,7 @@ public class DocumentList {
 	public Document getDocumentById(String id){
 		return mDocsById.get(id);
 	}
-	
+
 	/**
 	 * Creates a blank document of the given type
 	 * @param documentType The type of document to create
@@ -147,7 +156,7 @@ public class DocumentList {
 		newEntry.setTitle(new PlainTextConstruct(documentName));
 		return uploadDocument(newEntry);
 	}
-	
+
 	/**
 	 * Tells Google to create a document in Google Docs
 	 * @param entry The document to create
@@ -160,7 +169,7 @@ public class DocumentList {
 	{
 		return docsService.insert(new URL("https://docs.google.com/feeds/default/private/full/"), entry);
 	}
-	
+
 	/**
 	 * Tells Google to add a new Access Control role for the given document
 	 * @param role The role to add
@@ -176,7 +185,7 @@ public class DocumentList {
 		AclEntry aclEntry = new AclEntry();
 		aclEntry.setRole(role);
 		aclEntry.setScope(scope);
-		
+
 		return docsService.insert(new URL(entry.getAclFeedLink().getHref()), aclEntry);
 	}
 }

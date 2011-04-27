@@ -24,20 +24,22 @@ import srl.visgo.data.Revision;
 import srl.visgo.gui.Visgo;
 
 public class PDocumentGroup extends PNode{
-	DocumentGroup mGroup;
+	DocumentGroup mDocumentGroup;
 	PPath backgroundNode;
 	List<PDocument> docNodes;
 	int mColCount = 1;
 	public static PBounds currentBounds;
 	PDocGroupEventHandler eventHandler;
 	private PRevisionActivity activityBar;
+	
+	private boolean invalid=false;
 
 	
 	
 	public PDocumentGroup(DocumentGroup group){
 		super();
-		mGroup = group;
 		
+		mDocumentGroup = group;
 			
 		docNodes = new ArrayList<PDocument>();
 
@@ -64,44 +66,49 @@ public class PDocumentGroup extends PNode{
 	 */
 	private void initialize(){
 		backgroundNode.removeAllChildren();
-		Collection<Entry> docs = mGroup.getRootEntries();
+		Collection<Entry> docs = mDocumentGroup.getRootEntries();
 		PDocumentGrid grid = new PDocumentGrid(docs);
 		backgroundNode.addChild(grid);
 		grid.invalidate();
 		grid.setOffset(0,40);
-		PText nameNode = new PText(mGroup.getName());
+		PText nameNode = new PText(mDocumentGroup.getName());
 		backgroundNode.addChild(nameNode);
 		nameNode.setPickable(false);
 		PBounds nameBounds = nameNode.getGlobalFullBounds();
 		backgroundNode.setPathToRectangle((float)nameBounds.getX(), 
 				(float)nameBounds.getY(), (float)nameBounds.width, (float)nameBounds.height);
 
-		this.setOffset(mGroup.getOffsetX(), mGroup.getOffsetY());
+		this.setOffset(mDocumentGroup.getOffsetX(), mDocumentGroup.getOffsetY());
+		rebuild();
 	}
 	
 	//Group -> backgroundNode -> Grid -> Docs
-	public void invalidate(){
+	
+	private void rebuild(){
 		backgroundNode.removeAllChildren();
-		Collection<Entry> docs = mGroup.getRootEntries();
+		Collection<Entry> docs = mDocumentGroup.getRootEntries();
 		PDocumentGrid grid = new PDocumentGrid(docs);
 		backgroundNode.addChild(grid);
 		grid.invalidate();
 		grid.setOffset(0,40);
-		PText nameNode = new PText(mGroup.getName());
+		PText nameNode = new PText(mDocumentGroup.getName());
 		backgroundNode.addChild(nameNode);
 		nameNode.setPickable(false);
 		
 		//TODO
 		//Replace with
-		//List<Revision> revisions = mDocument.getRevisionHistory();
-		List<Revision> revisions = Arrays.asList(new Revision[]{
-				new Revision(Visgo.data.getCollaborator("hpi.test.2@gmail.com"),System.currentTimeMillis()-150000),
-				new Revision(Visgo.data.getCollaborator("heychrisaikens@gmail.com"),System.currentTimeMillis()-250000),
-				new Revision(Visgo.data.getCollaborator("eyce9000@gmail.com"),System.currentTimeMillis()-10000),
-		});
+		Collection<Revision> revisions = mDocumentGroup.getRevisionHistory();
 		activityBar = new PRevisionActivity(revisions,PRevisionActivity.Orientation.Horizontal);
 		activityBar.setOffset(0,-10);
 		backgroundNode.addChild(activityBar);
+		invalid = false;
+	}
+	
+	public void invalidate(){
+		invalid = true;
+		rebuild();
+		if(this.getParent()!=null)
+		this.getParent().repaint();
 	}
 	
 	int INDENT = 10;
@@ -114,6 +121,10 @@ public class PDocumentGroup extends PNode{
      * children's bounds
      */
     public void paint(final PPaintContext ppc) {
+    	if(invalid){
+    		rebuild();
+    	}
+    	
         final Paint paint = getPaint();
         if (paint != null) {
             final Graphics2D g2 = ppc.getGraphics();
@@ -142,9 +153,9 @@ public class PDocumentGroup extends PNode{
                 + 2 * INDENT);
         localToParent(result);
 
-		mGroup.setOffsetX(result.getX());
-		mGroup.setOffsetY(result.getY());
-		mGroup.save();
+		mDocumentGroup.setOffsetX(result.getX());
+		mDocumentGroup.setOffsetY(result.getY());
+		mDocumentGroup.save();
         return result;
     }
 
@@ -162,7 +173,7 @@ public class PDocumentGroup extends PNode{
     }
     
     public DocumentGroup getDocumentGroup(){
-    	return mGroup;
+    	return mDocumentGroup;
     }
     
     public PBounds getCachedBounds(){
@@ -185,7 +196,7 @@ public class PDocumentGroup extends PNode{
      * @param pDoc
      */
     public void removeDocument(PDocument pDoc){
-    	mGroup.removeDocument(pDoc.getDocument());
+    	mDocumentGroup.removeDocument(pDoc.getDocument());
     	invalidate();
     }
     
@@ -194,9 +205,9 @@ public class PDocumentGroup extends PNode{
      * @param pDoc
      */
     public void addDocument(PDocument pDoc){
-    	if(!mGroup.getDocuments().contains(pDoc.getDocument()))
+    	if(!mDocumentGroup.getDocuments().contains(pDoc.getDocument()))
     	{
-    		mGroup.addDocument(pDoc.getDocument());
+    		mDocumentGroup.addDocument(pDoc.getDocument());
     		//TODO: Add File/Folder update here
     		invalidate();
     		

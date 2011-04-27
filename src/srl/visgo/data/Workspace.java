@@ -19,6 +19,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import srl.visgo.data.listeners.DocumentEvent;
 import srl.visgo.data.threads.DataSaver;
 import srl.visgo.data.threads.RevisionChecker;
 import srl.visgo.gui.Visgo;
@@ -144,9 +145,13 @@ public class Workspace implements CommandMessageListener{
 				Map<String,Object> map = mapper.readValue(body, Map.class);
 				String className = (String)map.get("class");
 				if(className.equals("srl.visgo.data.Document")){
+					DocumentEvent.Type eventType = DocumentEvent.Type.Modified;
+					
 					Document tempDoc = Document.deserializeShallow(map);
 					Document ourDoc = getDocumentById(tempDoc.getId());
 					if(ourDoc==null){
+						//DOCUMENT IS BEING CREATED
+						eventType = DocumentEvent.Type.Created;
 						try {
 							mDocumentList.load(tempDoc.getName());
 							ourDoc = mDocsById.get(tempDoc.getId());
@@ -155,13 +160,18 @@ public class Workspace implements CommandMessageListener{
 						}
 					}
 					if(ourDoc.hasParent()){
-						ourDoc.getParent().removeDocument(ourDoc);
+						//DOCUMENT IS BEING MOVED
+						if(!ourDoc.getParentId().equals(tempDoc.getParentId())){
+							ourDoc.getParent().removeDocument(ourDoc);
+							DocumentGroup group = getDocumentGroupById(ourDoc.getParentId());
+							if(group!=null){
+								group.addDocument(ourDoc);
+							}
+							eventType = DocumentEvent.Type.Moved;
+						}
 					}
 					ourDoc.copyValues(tempDoc);
-					DocumentGroup group = getDocumentGroupById(ourDoc.getParentId());
-					if(group!=null){
-						group.addDocument(ourDoc);
-					}
+					Visgo.data.fireDocumentEvent(new DocumentEvent(ourDoc,eventType));
 				}
 				else if(className.equals("srl.visgo.data.DocumentGroup")){
 					DocumentGroup tempGroup = DocumentGroup.deserializeShallow(map);
