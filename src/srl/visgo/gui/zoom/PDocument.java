@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import java.awt.TrayIcon.MessageType;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -31,6 +32,7 @@ import edu.umd.cs.piccolo.nodes.PImage;
 import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.nodes.PText;
 import edu.umd.cs.piccolo.util.PBounds;
+import edu.umd.cs.piccolo.util.PPaintContext;
 
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.getHSBColor(200, 200, 200);
@@ -45,24 +47,31 @@ public class PDocument extends PNode {
 	PDocumentGroup currentGroup;
 	PRevisionActivity activityBar;
 	
+	private boolean invalid = false;
+	
 	
 	//Have title and image be grouped together as a single, movable node
 	public PDocument(Document document){
 		super();
 		mDocument = document;
-
+		rebuild();
+	}
+	
+	private void rebuild(){
+		this.removeAllChildren();
+		
 		backgroundNode = PPath.createRoundRectangle(0f, 0f, 50, 50, 5f, 5f);
 		backgroundNode.setPaint(BACK_COLOR);
 		
 		this.addChild(backgroundNode);	
 		backgroundNode.setVisible(true);
 
-		String title = document.getName();
+		String title = mDocument.getName();
 		
 		textNode = new PHtmlView("<p align=\"center\">"+title+"</p>");
 		textNode.setBounds(0, 0, 80, 20);
 		
-		String type = document.getListEntry().getType();
+		String type = mDocument.getListEntry().getType();
 		if(type.compareTo("document") == 0)
 		{
 			imageNode.setImage(Resources.getImage("document.png"));
@@ -94,8 +103,6 @@ public class PDocument extends PNode {
 		backgroundNode.addInputEventListener(dragHandler);
 
 		//prevents dragging off names/images from the overall node
-		for(int i = 0; i < backgroundNode.getChildrenCount(); i++)
-			backgroundNode.getChild(i).setPickable(false);
 		
 		double h = imageNode.getHeight();
 		double w = imageNode.getWidth();
@@ -105,14 +112,12 @@ public class PDocument extends PNode {
 		imageNode.setOffset(new Point2D.Double((tw/2)-(w/2),0));
 		backgroundNode.setOffset(0,0);
 
-		//TODO
-		//Replace with
-		//List<Revision> revisions = mDocument.getRevisionHistory();
-		List<Revision> revisions = Arrays.asList(new Revision[]{
+		Collection<Revision> revisions = mDocument.getRevisionHistory();
+		/*List<Revision> revisions = Arrays.asList(new Revision[]{
 				new Revision(Visgo.data.getCollaborator("hpi.test.2@gmail.com"),System.currentTimeMillis()-150000),
 				new Revision(Visgo.data.getCollaborator("heychrisaikens@gmail.com"),System.currentTimeMillis()-250000),
 				new Revision(Visgo.data.getCollaborator("eyce9000@gmail.com"),System.currentTimeMillis()-10000),
-		});
+		});*/
 		activityBar = new PRevisionActivity(revisions,PRevisionActivity.Orientation.Vertical);
 		activityBar.setOffset(tw,10);
 		backgroundNode.addChild(activityBar);
@@ -124,8 +129,19 @@ public class PDocument extends PNode {
 		eventHandler = new PDocumentEventHandler(this);
 		this.addInputEventListener(eventHandler);
 		this.setOffset(mDocument.getOffsetX(), mDocument.getOffsetY());
+
+		for(int i = 0; i < backgroundNode.getChildrenCount(); i++)
+			backgroundNode.getChild(i).setPickable(false);
+		
+		invalid = false;
 	}
-	
+
+	public void invalidate(){
+		invalid = true;
+		rebuild();
+		
+		this.getParent().repaint();
+	}
 	
 	//get the document behind this PDoc
 	public Document getDocument(){
@@ -246,7 +262,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 						mDocument.currentGroup.removeDocument(mDocument);
 					mDocument.currentGroup = test;
 					
-					mDocument.currentGroup.mGroup.addDocument(mDocument.mDocument);
+					mDocument.currentGroup.mDocumentGroup.addDocument(mDocument.mDocument);
 					mDocument.mDocument.setOffsetX(0);
 					mDocument.mDocument.setOffsetY(0);
 					System.out.println("Move Document:"+mDocument.mDocument.getOffsetX()+","+

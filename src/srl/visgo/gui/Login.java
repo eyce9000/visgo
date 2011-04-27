@@ -236,6 +236,7 @@ class LoginPanel extends JPanel{
 		if (usernameField == null) {
 			usernameField = new JTextField();
 			usernameField.setColumns(15);
+			usernameField.setText("hpi.test.2@gmail.com");
 		}
 		return usernameField;
 	}
@@ -249,6 +250,7 @@ class LoginPanel extends JPanel{
 		if (passwordField == null) {
 			passwordField = new JPasswordField();
 			passwordField.setColumns(15);
+			passwordField.setText("Visgo2011");
 		}
 		return passwordField;
 	}

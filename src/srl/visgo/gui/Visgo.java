@@ -50,10 +50,10 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		NativeInterface.open();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				//Login.getCredentials();
+				Login.getCredentials();
 				//
-				Login.username = "hpi.test.2@gmail.com";
-				Login.password = "Visgo2011";
+				//Login.username = "hpi.test.2@gmail.com";
+				//Login.password = "Visgo2011";
 				Visgo.data = new Data();
 
 				Visgo.instance = new Visgo();
