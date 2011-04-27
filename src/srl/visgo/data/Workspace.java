@@ -271,6 +271,7 @@ public class Workspace implements CommandMessageListener{
 		PNode layer = Visgo.workspace;
 		PDocument newPDoc = new PDocument(doc);
 		layer.addChild(newPDoc);
+		newPDoc.setOffset(Visgo.workspace.getFullBounds().getCenter2D());
 	}
 
 	/**
@@ -285,5 +286,6 @@ public class Workspace implements CommandMessageListener{
 		PNode layer = Visgo.workspace;
 		PDocumentGroup newPGroup = new PDocumentGroup(newGroup);
 		layer.addChild(newPGroup);
+		newPGroup.setOffset(Visgo.workspace.getFullBounds().getCenter2D());
 	}
 }
