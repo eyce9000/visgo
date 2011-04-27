@@ -152,6 +152,7 @@ public class PWorkspace extends PNode implements DocumentListener{
 							
 						}
 						//TODO: Zoom to Doc group or whatever else
+						System.out.println("Ping was on a Document Group, but not a doc in it");
 						onWorkspace = false;
 						break;
 					}
@@ -164,6 +165,7 @@ public class PWorkspace extends PNode implements DocumentListener{
 			if(onWorkspace)
 			{
 				//Don't do anything?
+				System.out.println("Ping was on the workspace, but not on anything in it");
 
 			}
 		

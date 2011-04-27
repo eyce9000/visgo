@@ -96,7 +96,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		//canvas.setPreferredSize(new Dimension(1000,1000));
 
 		canvas.removeInputEventListener(canvas.getZoomEventHandler());
-//		canvas.removeInputEventListener(canvas.getPanEventHandler());
+		canvas.removeInputEventListener(canvas.getPanEventHandler());
 
 		//VisgoMouseListener mouseListener = new VisgoMouseListener(canvas);
 //		canvas.addMouseWheelListener(mouseListener);
