@@ -21,13 +21,17 @@ public class PingEvent extends EventObject{
 	PBounds returnBounds;
 	Collaborator creator;
 	PingEventType type;
+	int originX;
+	int originY;
 	
-	public PingEvent(PingEventType type, Collaborator collaborator) {
+	public PingEvent(PingEventType type, Collaborator collaborator, int x, int y) {
 		super(type);
 		this.type = type;
 //		bounds = Visgo.workspace.getGlobalFullBounds();
 		bounds = new PBounds(100, 100, 100, 100);
 		creator = collaborator;
+		originX = x;
+		originY = y;
 	}
 	
 	public PingEvent(PingEventType type, Collaborator collaborator, PBounds callingBounds) {
@@ -43,6 +47,14 @@ public class PingEvent extends EventObject{
 	
 	public PingEventType getType(){
 		return type;
+	}
+	
+	public int getX(){
+		return originX;
+	}
+	
+	public int getY(){
+		return originY;
 	}
 	
 	/**

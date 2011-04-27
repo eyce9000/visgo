@@ -92,7 +92,6 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 	 * @param creator
 	 */
 	public void addPing(Collaborator creator){
-		//TODO: Find correct panel and highlight it
 		mCollaboratorListPanel.addPing(creator);
 	}
 
@@ -161,6 +160,7 @@ class CollaboratorPanel extends JPanel{
 	Collaborator mCollaborator;
 	JLabel name;
 	CollaboratorPanelListener listener;
+	Timer timer;
 	
 	CollaboratorPanel(Collaborator collaborator){
 		super(new BorderLayout());
@@ -179,7 +179,7 @@ class CollaboratorPanel extends JPanel{
 
 		if(collaborator.getStatus() != Presence.Type.available){
 			name.setForeground(Color.GRAY);
-			this.setVisible(false);
+//			this.setVisible(false);
 		}
 		this.add(name,BorderLayout.CENTER);
 	}
@@ -188,19 +188,30 @@ class CollaboratorPanel extends JPanel{
 	 * Indicate that the panel's collaborator has generated a ping.
 	 */
 	public void addPing(){
-		Timer flashy = new Timer(2000, new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {				
-			}
-		});
-		
-		setBackground(Color.GREEN);
-		setOpaque(true);
-		name.setForeground(Color.PINK);
+	    ActionListener actionListener = new ActionListener() {
+	        public void actionPerformed(ActionEvent actionEvent) {
+		        if(name.getForeground().equals(Color.black)){
+			  		setBackground(Color.orange);
+					setOpaque(true);
+					name.setForeground(Color.white);
+		        }
+		        else{
+		        	setOpaque(false);
+		    		name.setForeground(Color.black);
+		        }
+	        }
+	      };
+	      if(timer == null)
+	    	  timer = new Timer(1000, actionListener);
+	      if(!timer.isRunning())
+	    	  timer.start();
 	}
 }
 
+/**
+ * Custom class for handling clicks on collaborators above the chat box.  
+ *
+ */
 class CollaboratorPanelListener implements MouseListener {
 	CollaboratorPanel mPanel;
 	
@@ -210,12 +221,16 @@ class CollaboratorPanelListener implements MouseListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		System.out.println("Remove ping marker!");
-		mPanel.setOpaque(false);
-		mPanel.name.setForeground(Color.black);
-		mPanel.revalidate();
-		mPanel.getParent().invalidate();
-		mPanel.getParent().repaint();
+		//TODO: Make sure timer is set up first...
+		//TODO: Change cursor on hover
+		if(mPanel.timer.isRunning()){
+			mPanel.timer.stop();
+			mPanel.setOpaque(false);
+			mPanel.name.setForeground(Color.black);
+			mPanel.revalidate();
+			mPanel.getParent().invalidate();
+			mPanel.getParent().repaint();
+		}
 		
 	}
 

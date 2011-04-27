@@ -1,8 +1,11 @@
 package srl.visgo.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -16,6 +19,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import chrriis.common.UIUtils;
 import chrriis.dj.nativeswing.swtimpl.NativeInterface;
@@ -42,6 +46,7 @@ import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.PCanvas;
 import edu.umd.cs.piccolo.event.PInputEvent;
 import edu.umd.cs.piccolo.event.PInputEventListener;
+import edu.umd.cs.piccolo.nodes.PPath;
 import edu.umd.cs.piccolo.util.PBounds;
 
 public class Visgo extends JFrame implements PingListener,EditDocumentListener,CloseDocumentListener{
@@ -156,24 +161,56 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 	};
 
 	@Override
-	public void onPing(PingEvent e) {
+	public void onPing(final PingEvent e) {
 		//Indicate a ping has been received
 		if(e.getType() == PingEventType.USER_PING){
-			Collection<Collaborator> collaborators = Visgo.data.getAllCollaborators();
 			Collaborator self = Visgo.data.getCurrentCollaborator();
 			
-			//Ignore self created pings
-			if(self == e.getCreator()){
-				System.out.println("I Created the PING");
-				chatPanel.addPing(e.getCreator());
-				return;
-			}
+			//Ignore own pings
+//			if(self == e.getCreator()){
+//				return;
+//			}
+			
+			//DO NOT LOOK AT THIS CODE
+			//Puts visual indicator on workspace for Ping origin.
+			float width = 20;
+			float height = 20;
+			final PPath test = PPath.createEllipse(e.getX()-width/2, e.getY()-height/2, width, height);
+			final Timer timer = new Timer(3000, new ActionListener() {
+
+		        public void actionPerformed(ActionEvent actionEvent) {
+
+					test.setPaint(e.getCreator().getColor());
+					test.setVisible(true);
+					Visgo.canvas.getLayer().addChild(test);
+					Visgo.canvas.invalidate();
+		        	System.out.println("This should print only once in timer");
+		        	
+		        }
+		      });
+
+		    timer.setInitialDelay(0);
+		    timer.start();
+		    timer.setRepeats(false);
+		    
+		    final Timer timer2 = new Timer(0, new ActionListener() {
+
+		        public void actionPerformed(ActionEvent actionEvent) {
+					Visgo.canvas.getLayer().removeChild(test);
+					Visgo.canvas.invalidate();
+
+		        	
+		        }
+		      });
+		    
+		    timer2.setInitialDelay(3000);
+		    timer2.start();
+		    timer2.setRepeats(false);
 			
 			//Show ping's origin in Collaborator menu
 			chatPanel.addPing(e.getCreator());
 		}
-		//TODO: Click visual indicator causes something... 
-//		e.moveToBounds();
+
 	}
 
 }

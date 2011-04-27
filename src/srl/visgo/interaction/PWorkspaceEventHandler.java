@@ -8,6 +8,7 @@ import javax.swing.JPopupMenu;
 import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
 import edu.umd.cs.piccolo.event.PInputEvent;
 import srl.visgo.data.listeners.PingEvent;
+import srl.visgo.data.listeners.PingEventType;
 import srl.visgo.gui.Visgo;
 import srl.visgo.gui.zoom.PWorkspace;
 
@@ -29,7 +30,11 @@ public class PWorkspaceEventHandler extends PBasicInputEventHandler{
 		//Look for and consume right clicks as Pings
 		if (event.getButton() == MouseEvent.BUTTON3) { 
 			event.setHandled(true);
-			PingPopupMenu pop = new PingPopupMenu();
+			int x = (int) event.getPosition().getX();
+        	int y = (int) event.getPosition().getY();
+			Visgo.workspace.sendPingEvent(new PingEvent(PingEventType.USER_PING, 
+					Visgo.data.getCurrentCollaborator(), x, y));
+//			PingPopupMenu pop = new PingPopupMenu();
 			
 		}
 		else if(event.getClickCount() == 2){

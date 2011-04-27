@@ -1,13 +1,16 @@
 package srl.visgo.interaction;
 
+import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.geom.Point2D;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+
+import edu.umd.cs.piccolo.event.PBasicInputEventHandler;
+import edu.umd.cs.piccolo.event.PInputEvent;
 
 import srl.visgo.data.listeners.PingEvent;
 import srl.visgo.data.listeners.PingEventType;
@@ -20,6 +23,9 @@ import srl.visgo.gui.Visgo;
 public class PingPopupMenu extends JPopupMenu{
 	private static final long serialVersionUID = 1L;
 	
+	int x;
+	int y;
+	
 	/**
 	 * Create a new ping menu at the point of right click in canvas
 	 */
@@ -31,8 +37,9 @@ public class PingPopupMenu extends JPopupMenu{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Ping to all active users");
-				
-				Visgo.workspace.sendPingEvent(new PingEvent(PingEventType.USER_PING, Visgo.data.getCurrentCollaborator()));
+				System.out.println("at point: " + x + ", " + y);
+				Visgo.workspace.sendPingEvent(new PingEvent(PingEventType.USER_PING, 
+						Visgo.data.getCurrentCollaborator(), x, y));
 				
 			}
 		});
@@ -40,36 +47,42 @@ public class PingPopupMenu extends JPopupMenu{
 	    this.add(pingAll);
 	    
 	    //Location of right click on overall canvas gets popup menu
-	    MouseListener popupListener = new PopupListener(this);
-	    Visgo.canvas.addMouseListener(popupListener);
+	    PBasicInputEventHandler popupListener = new PopupListener(this);
+	    Visgo.canvas.addInputEventListener(popupListener);
 
 	}
-
-
-
-
     
 }
 
-class PopupListener extends MouseAdapter {
+
+/**
+ * Create a ping on right click.
+ *
+ */
+class PopupListener extends PBasicInputEventHandler {
 	PingPopupMenu popup;
 	
 	public PopupListener(PingPopupMenu menu){
 		popup = menu;
 	}
 	
-    public void mousePressed(MouseEvent e) {
+	@Override
+	public void mousePressed(PInputEvent e) {
         maybeShowPopup(e);
     }
 
-    public void mouseReleased(MouseEvent e) {
+	@Override
+    public void mouseReleased(PInputEvent e) {
         maybeShowPopup(e);
     }
 
-    private void maybeShowPopup(MouseEvent e) {
+    private void maybeShowPopup(PInputEvent e) {
         if (e.isPopupTrigger()) {
-            popup.show(e.getComponent(),
-                       e.getX(), e.getY());
+        	popup.x = (int) e.getPosition().getX();
+        	popup.y = (int) e.getPosition().getY();
+        	Point2D translate = Visgo.workspace.globalToLocal(new Point((int) e.getPosition().getX(), 
+    						(int) e.getPosition().getY()));
+            popup.show((Component) e.getComponent(), (int) translate.getX(), (int) translate.getY());
         }
     }
 }
