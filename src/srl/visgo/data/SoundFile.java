@@ -20,64 +20,82 @@ public class SoundFile
 		pathToFile = path;
 	}
 	
-	public void play()
+	class InternalSoundThread implements Runnable
 	{
-		File soundFile = new File(pathToFile);
-		AudioInputStream audioInputStream = null;
-		try
-		{
-			audioInputStream = AudioSystem.getAudioInputStream(soundFile);
+		Thread t;
+		public void init()	
+		{	
+			t = new Thread(this);
+			t.start();
 		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return;
-		}
-		
-		AudioFormat	audioFormat = audioInputStream.getFormat();
-		SourceDataLine	line = null;
-		DataLine.Info	info = new DataLine.Info(SourceDataLine.class, audioFormat);
-		try
-		{
-			line = (SourceDataLine) AudioSystem.getLine(info);
 
-			/*
-			  The line is there, but it is not yet ready to
-			  receive audio data. We have to open the line.
-			*/
-			line.open(audioFormat);
-		}
-		catch (LineUnavailableException e)
+		@SuppressWarnings("deprecation")
+		public void run()
 		{
-			e.printStackTrace();
-			return;
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return;
-		}
-		
-		line.start();
-		int	nBytesRead = 0;
-		byte[]	abData = new byte[EXTERNAL_BUFFER_SIZE];
-		while (nBytesRead != -1)
-		{
+			File soundFile = new File(pathToFile);
+			AudioInputStream audioInputStream = null;
 			try
 			{
-				nBytesRead = audioInputStream.read(abData, 0, abData.length);
+				audioInputStream = AudioSystem.getAudioInputStream(soundFile);
 			}
-			catch (IOException e)
+			catch (Exception e)
 			{
 				e.printStackTrace();
+				return;
 			}
-			if (nBytesRead >= 0)
+			
+			AudioFormat	audioFormat = audioInputStream.getFormat();
+			SourceDataLine	line = null;
+			DataLine.Info	info = new DataLine.Info(SourceDataLine.class, audioFormat);
+			try
 			{
-				line.write(abData, 0, nBytesRead);
+				line = (SourceDataLine) AudioSystem.getLine(info);
+
+				/*
+				  The line is there, but it is not yet ready to
+				  receive audio data. We have to open the line.
+				*/
+				line.open(audioFormat);
 			}
+			catch (LineUnavailableException e)
+			{
+				e.printStackTrace();
+				return;
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				return;
+			}
+			
+			line.start();
+			int	nBytesRead = 0;
+			byte[]	abData = new byte[EXTERNAL_BUFFER_SIZE];
+			while (nBytesRead != -1)
+			{
+				try
+				{
+					nBytesRead = audioInputStream.read(abData, 0, abData.length);
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				if (nBytesRead >= 0)
+				{
+					line.write(abData, 0, nBytesRead);
+				}
+			}
+			
+			line.drain();
+			line.close();
+			t.stop();
 		}
-		
-		line.drain();
-		line.close();
+	}
+	
+	public void play()
+	{
+		InternalSoundThread soundThread = new InternalSoundThread();
+		soundThread.init();
 	}
 }
