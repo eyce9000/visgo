@@ -37,7 +37,7 @@ import edu.umd.cs.piccolo.util.PPaintContext;
 public class PDocument extends PNode {
 	static Color BACK_COLOR = Color.getHSBColor(200, 200, 200);
 	static Color SELECT_COLOR = Color.orange;
-	
+
 	Document mDocument;
 	PImage imageNode = new PImage();
 	PHtmlView textNode;
@@ -46,31 +46,31 @@ public class PDocument extends PNode {
 	PDragEventHandler dragHandler;
 	PDocumentGroup currentGroup;
 	PRevisionActivity activityBar;
-	
+
 	private boolean invalid = false;
-	
-	
+
+
 	//Have title and image be grouped together as a single, movable node
 	public PDocument(Document document){
 		super();
 		mDocument = document;
 		rebuild();
 	}
-	
+
 	private void rebuild(){
 		this.removeAllChildren();
-		
+
 		backgroundNode = PPath.createRoundRectangle(0f, 0f, 50, 50, 5f, 5f);
 		backgroundNode.setPaint(BACK_COLOR);
-		
+
 		this.addChild(backgroundNode);	
 		backgroundNode.setVisible(true);
 
 		String title = mDocument.getName();
-		
+
 		textNode = new PHtmlView("<p align=\"center\">"+title+"</p>");
 		textNode.setBounds(0, 0, 80, 20);
-		
+
 		String type = mDocument.getListEntry().getType();
 		if(type.compareTo("document") == 0)
 		{
@@ -96,14 +96,14 @@ public class PDocument extends PNode {
 		{
 			imageNode.setImage(Resources.getImage("file.png"));
 		}
-		
+
 		backgroundNode.addChild(imageNode);
 		backgroundNode.addChild(textNode);
 		dragHandler = new PDragEventHandler();
 		backgroundNode.addInputEventListener(dragHandler);
 
 		//prevents dragging off names/images from the overall node
-		
+
 		double h = imageNode.getHeight();
 		double w = imageNode.getWidth();
 		double tw = textNode.getWidth();
@@ -125,29 +125,29 @@ public class PDocument extends PNode {
 		backgroundNode.setWidth(tw);
 		backgroundNode.setHeight(h + th);
 		this.setX(tw/2);
-		
+
 		eventHandler = new PDocumentEventHandler(this);
 		this.addInputEventListener(eventHandler);
 		this.setOffset(mDocument.getOffsetX(), mDocument.getOffsetY());
 
 		for(int i = 0; i < backgroundNode.getChildrenCount(); i++)
 			backgroundNode.getChild(i).setPickable(false);
-		
+
 		invalid = false;
 	}
 
 	public void invalidate(){
 		invalid = true;
 		rebuild();
-		
-		this.getParent().repaint();
+		if(this.getParent()!=null)
+			this.getParent().repaint();
 	}
-	
+
 	//get the document behind this PDoc
 	public Document getDocument(){
 		return mDocument;
 	}
-	
+
 	public void removeDragHandler(){
 		backgroundNode.removeInputEventListener(eventHandler);
 	}
@@ -155,36 +155,36 @@ public class PDocument extends PNode {
 
 class PDocumentEventHandler extends PBasicInputEventHandler{
 	PDocument mDocument;
-	
+
 	PDocumentEventHandler(PDocument document){
 		mDocument = document;
 	}
-	
+
 	@Override
 	public void mouseExited(PInputEvent event){
 		mDocument.backgroundNode.setPaint(PDocument.BACK_COLOR);
 	}
-	
+
 	@Override
 	public void mouseEntered(PInputEvent event){
 		mDocument.backgroundNode.setPaint(PDocument.SELECT_COLOR);
 	}
-	
+
 	@Override
 	public void mouseReleased(PInputEvent event){
 		PNode aNode = event.getPickedNode();
 		//TODO: Time off for this paint
 		aNode.setPaint(Color.GREEN);
-        checkLocation(mDocument);
+		checkLocation(mDocument);
 
 	}
 	@Override
 	public void mouseClicked(PInputEvent event){
 		if(event.getClickCount() == 2){
 
-	        PBounds test = mDocument.getGlobalFullBounds();
+			PBounds test = mDocument.getGlobalFullBounds();
 			PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 700);
-			
+
 			final Document doc = this.mDocument.mDocument;
 			Visgo.instance.loadEditDocument(doc);
 			PActivity.PActivityDelegate delegate = new PActivity.PActivityDelegate() {
@@ -192,45 +192,45 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				public void activityStepped(PActivity arg0) {}
 				@Override
 				public void activityStarted(PActivity arg0) {}
-				
+
 				@Override
 				public void activityFinished(PActivity arg0) {
 					Visgo.workspace.onEditDocument(doc);
-					
+
 				}
 			};
 			animation.setDelegate(delegate);
 		}
 	}
-	
+
 	@Override
 	public void mouseDragged(PInputEvent event){
 		event.setHandled(true);
 		//Is doc in a group or free?
 		if(mDocument.getParent().equals(Visgo.workspace))
 		{
-			
+
 		}
 		else if(mDocument.getParent().getParent().getParent() instanceof srl.visgo.gui.zoom.PDocumentGroup)
 		{
 			//Remove from group
 			PNode layer = Visgo.workspace;
 			PDocumentGroup oldGroup = (PDocumentGroup) mDocument.getParent().getParent().getParent();
-			
+
 			final Point2D spot = mDocument.getGlobalFullBounds().getCenter2D();
 			oldGroup.greyDocument(mDocument);
 			mDocument.currentGroup = oldGroup;
 			layer.addChild(mDocument);
 			mDocument.setOffset(spot);
-//			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
+			//			mDocument.backgroundNode.addInputEventListener(new PDragEventHandler());
 		}
 	}
-	
+
 	@Override
 	public void mousePressed(PInputEvent event){
 
 	}
-	
+
 	/**
 	 * Handles the dropping of a PDocument. PDocs can be dropped onto the main canvas, into
 	 * existing groups, or onto another canvas PDoc for form a new group. 
@@ -243,7 +243,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	public void checkLocation(PDocument aNode){
 		PNode layer = Visgo.workspace;
 		boolean onWorkspace = true;
-		
+
 		for(int i = 0; i < layer.getChildrenCount(); i++)
 		{
 			//Checks for groups and documents
@@ -261,7 +261,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 					if(mDocument.currentGroup != null && !mDocument.currentGroup.equals(test))
 						mDocument.currentGroup.removeDocument(mDocument);
 					mDocument.currentGroup = test;
-					
+
 					mDocument.currentGroup.mDocumentGroup.addDocument(mDocument.mDocument);
 					mDocument.mDocument.setOffsetX(0);
 					mDocument.mDocument.setOffsetY(0);
@@ -287,7 +287,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 							null, "Enter group name:",
 							"Create a new group", JOptionPane.PLAIN_MESSAGE, 
 							icon, null, 
-							"new group");
+					"new group");
 					if(name != null){
 						//New group desired
 						PDocumentGroup newGroup = new PDocumentGroup(DocumentGroup.createGroup(name));
@@ -314,8 +314,8 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 				if(mDocument.currentGroup!=null){
 					mDocument.currentGroup.removeDocument(mDocument);
 				}
-				
-				
+
+
 				mDocument.mDocument.setOffsetX(mDocument.getFullBounds().x);
 				mDocument.mDocument.setOffsetY(mDocument.getFullBounds().y);
 
@@ -332,7 +332,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 			if(mDocument.currentGroup!=null){
 				mDocument.currentGroup.removeDocument(mDocument);
 			}
-			
+
 			mDocument.mDocument.setOffsetX(mDocument.getFullBounds().x);
 			mDocument.mDocument.setOffsetY(mDocument.getFullBounds().y);
 
@@ -343,5 +343,5 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 
 		}
 	}
-	
+
 }

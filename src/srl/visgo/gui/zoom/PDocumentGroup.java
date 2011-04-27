@@ -107,6 +107,7 @@ public class PDocumentGroup extends PNode{
 	public void invalidate(){
 		invalid = true;
 		rebuild();
+		if(this.getParent()!=null)
 		this.getParent().repaint();
 	}
 	
