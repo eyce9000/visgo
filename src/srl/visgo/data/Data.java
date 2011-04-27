@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Random;
 
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
@@ -35,6 +36,9 @@ import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.Person;
 import com.google.gdata.data.acl.AclEntry;
 import com.google.gdata.data.acl.AclFeed;
+import com.google.gdata.data.acl.AclRole;
+import com.google.gdata.data.acl.AclScope;
+import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
 
@@ -230,6 +234,49 @@ public class Data implements StatusChangeListener{
 	
 	public void addDocumentListener(DocumentListener listener){
 		mDocListeners.add(listener);
+	}
+	
+	public boolean addCollaborator(String email) {
+		Collaborator collab = new Collaborator(email);
+		
+		if(mCollaborators.get(collab) == null)
+		{
+			try
+			{
+				for(Document doc : this.workspace.getAllFiles())
+				{
+					DocumentListEntry entry = workspace.getDocumentById(doc.getId()).getListEntry();
+
+					try
+					{
+						AclRole role = new AclRole("writer");
+						AclScope scope = new AclScope(AclScope.Type.USER, email);
+						mDocumentList.addAclRole(role, scope, entry);
+					}
+					catch (Exception e1)
+					{
+						//Do nothing, this user already has access to the doc
+					}
+				}
+				Random numGen = new Random();
+				Color color = new Color(numGen.nextInt(256), numGen.nextInt(256), numGen.nextInt(256));
+				
+				Map<String, String> m = new HashMap<String, String>();
+				m.put("userid", mDatabase.getNextId("collaborators", "userid").toString());
+				m.put("gid",collab.getName());
+				m.put("realname",collab.getName());
+				m.put("color", "#" + Integer.toHexString(color.getRGB() & 0x00ffffff));
+
+				mDatabase.insert("collaborators", m);
+				updateCollaborators();
+				return true;
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return false;
 	}
 
 	@Override

@@ -62,6 +62,11 @@ public class Login {
 			try {
 				Login.username = panel.getUsername();
 				Login.password = new String(panel.getPassword());
+				
+				if(!Login.username.contains("@"))
+				{
+					Login.username = Login.username + "@gmail.com";
+				}
 				service.setUserCredentials(Login.username, Login.password);
 				successfulLogIn = true;
 			} catch (AuthenticationException e) {
@@ -115,7 +120,6 @@ public class Login {
 					login.wait();
 				}
 			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			if(!loginDialog.wasCanceled()){

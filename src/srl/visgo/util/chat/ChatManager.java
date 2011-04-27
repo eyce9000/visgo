@@ -138,11 +138,14 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 
 		if(serverConnection.isConnected()){
 
-			Chat newConversation = serverConnection.getChatManager().createChat(friendName, conversationID, conversationListener);
+			if(!chatInstanceMap.containsKey(friendName))
+			{
+				Chat newConversation = serverConnection.getChatManager().createChat(friendName, conversationID, conversationListener);
 
-			chatInstanceMap.put(friendName, newConversation);
+				chatInstanceMap.put(friendName, newConversation);
 
-			chatCreated = true;
+				chatCreated = true;
+			}
 		}	
 
 		return chatCreated;
@@ -363,5 +366,17 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 	}
 	public static boolean usingVisgo(Presence presence){
 		return extractClientID(presence).equals(CLIENT_ID);
+	}
+	
+	/**
+	 * Function to set the status of the visgo user
+	 * 
+	 * @param status - status message to be communicated across 
+	 */
+	public void setStatus(String status)
+	{
+		Presence statusPacket = new Presence(Presence.Type.available, status, 0, Presence.Mode.available);
+		
+		serverConnection.sendPacket(statusPacket);
 	}
 }

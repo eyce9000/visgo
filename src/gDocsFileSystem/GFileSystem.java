@@ -408,6 +408,26 @@ public class GFileSystem
 		}
 		return results;
 	}
+	
+	public List<Document> getAllFiles() throws Exception{
+		List<Document> results = new ArrayList<Document>();
+		List<String> columns = Arrays.asList(new String[]{
+				"fileid",
+				"gfid",
+				"parentfolder",
+				"filename",
+				"offsetX",
+				"offsetY",
+				"modifiedTime",
+				"modifiedBy"
+		});
+		List<Map<String,String>> files = db.select("files", columns, null);
+		for(Map<String,String> row:files){
+			Document doc = Document.deserializeShallow(row);
+			results.add(doc);
+		}
+		return results;
+	}
 
 	public void store(Entry entry){
 		insertEntry(entry,true);

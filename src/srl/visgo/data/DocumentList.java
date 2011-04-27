@@ -99,10 +99,8 @@ public class DocumentList {
 						Visgo.data.fireDocumentEvent(new DocumentEvent(doc,DocumentEvent.Type.Modified));
 					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (ServiceException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
