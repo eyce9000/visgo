@@ -1,12 +1,21 @@
 package srl.visgo.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Collection;
+
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -14,6 +23,7 @@ import javax.swing.JPopupMenu;
 
 import org.openide.awt.DropDownButtonFactory;
 
+import srl.visgo.data.Document;
 import srl.visgo.data.Workspace;
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.docs.DocumentListEntry;
@@ -64,9 +74,23 @@ public class CreateDocsPanel extends JPanel
 		folderButton.setToolTipText("Create a new group");
 		folderButton.addActionListener(folderCallback);
 		
+		//Create share existing button
+		JButton existingButton = new JButton(new ImageIcon("image/google_doc_share.png"));
+		existingButton.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+		existingButton.setToolTipText("Share an existing Google Doc");
+		existingButton.addActionListener(existingCallback);
+		
+		//Create an Add Collaborator button
+		JButton collaboratorButton = new JButton(new ImageIcon("image/add_collaborator.png"));
+		collaboratorButton.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+		collaboratorButton.setToolTipText("Add a collaborator");
+		collaboratorButton.addActionListener(collaboratorCallback);
+		
+		this.add(collaboratorButton);
 		this.add(docsDropDownButton);
 		this.add(folderButton);
 		this.add(uploadButton);
+		this.add(existingButton);
 	}
 
 	/**
@@ -178,6 +202,112 @@ public class CreateDocsPanel extends JPanel
 			else
 			{
 				JOptionPane.showMessageDialog(null, "No name specified");
+			}
+		}
+	};
+	
+	/**
+	 * The event for clicking the Share Existing Doc button
+	 */
+	private ActionListener existingCallback = new ActionListener()
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			KeyedComboBoxModel model = new KeyedComboBoxModel();
+			Collection<Document> docs = Visgo.data.workspace.getDocuments();
+			for(Document doc : docs)
+			{
+				model.add(doc.getGoogleId(), doc.getName());
+			}
+			
+			final JComboBox dropDown = new JComboBox(model);
+			
+			class DropDialog extends JDialog
+			{
+				JComboBox dropDownMenu;
+				DropDialog(JComboBox menu)
+				{
+					super((JFrame)null, "Share a Google Doc", true);
+					dropDownMenu = menu;
+				}
+
+				private void init()
+				{
+					JButton exitButton = new JButton("Select");
+					exitButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent evt) {
+							setVisible(false);
+						}
+					});
+
+					JPanel panel = new JPanel();
+					panel.add(dropDownMenu);
+					panel.add(exitButton);
+					this.getContentPane().add(panel);
+					pack();
+				}
+				
+				public Object getValue()
+				{
+					init();
+					setVisible(true);
+					return ((KeyedComboBoxModel)dropDownMenu.getModel()).getSelectedKey();
+				}
+			}
+
+			String id = null;
+			DropDialog dropDialog = new DropDialog(dropDown);
+			id = (String) dropDialog.getValue();
+			if(id != null)
+			{
+				try
+				{
+					mWorkspace.postProcessDocCreation(mWorkspace.getPersonalDocumentById(id).getListEntry());
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Error adding file");
+					return;
+				}
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(null, "No file specified");
+				return;
+			}
+			JOptionPane.showMessageDialog(null, "Successfully shared " + model.getSelectedItem().toString());
+		}
+	};
+	
+	/**
+	 * The event for clicking the Add Collaborator button
+	 */
+	private ActionListener collaboratorCallback = new ActionListener()
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			String address = null;
+			ImageIcon icon = new ImageIcon("image/users.png");
+			address = (String) JOptionPane.showInputDialog(
+					null, "Enter the collaborator's email address:",
+					"Add a collaborator", JOptionPane.PLAIN_MESSAGE, 
+					icon, null, 
+					"new collaborator");
+			if(address != null)
+			{
+				if(Visgo.data.addCollaborator(address))
+				{
+					JOptionPane.showMessageDialog(null, "Collaborator added successfully");
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "Failed to add collaborator");
+				}
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(null, "No address specified");
 			}
 		}
 	};
