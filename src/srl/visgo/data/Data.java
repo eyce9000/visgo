@@ -224,9 +224,16 @@ public class Data implements StatusChangeListener{
 				{
 					DocumentListEntry entry = workspace.getDocumentById(doc.getId()).getListEntry();
 
-					AclRole role = new AclRole("writer");
-					AclScope scope = new AclScope(AclScope.Type.USER, email);
-					mDocumentList.addAclRole(role, scope, entry);
+					try
+					{
+						AclRole role = new AclRole("writer");
+						AclScope scope = new AclScope(AclScope.Type.USER, email);
+						mDocumentList.addAclRole(role, scope, entry);
+					}
+					catch (Exception e1)
+					{
+						//Do nothing, this user already has access to the doc
+					}
 				}
 				Random numGen = new Random();
 				Color color = new Color(numGen.nextInt(256), numGen.nextInt(256), numGen.nextInt(256));
@@ -235,9 +242,9 @@ public class Data implements StatusChangeListener{
 				m.put("userid", mDatabase.getNextId("collaborators", "userid").toString());
 				m.put("gid",collab.getName());
 				m.put("realname",collab.getName());
-				m.put("color", color.toString());
+				m.put("color", "#" + Integer.toHexString(color.getRGB() & 0x00ffffff));
 
-				mDatabase.insert("collaborators", null);
+				mDatabase.insert("collaborators", m);
 				updateCollaborators();
 				return true;
 			}

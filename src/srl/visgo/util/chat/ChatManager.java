@@ -138,11 +138,14 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 
 		if(serverConnection.isConnected()){
 
-			Chat newConversation = serverConnection.getChatManager().createChat(friendName, conversationID, conversationListener);
+			if(!chatInstanceMap.containsKey(friendName))
+			{
+				Chat newConversation = serverConnection.getChatManager().createChat(friendName, conversationID, conversationListener);
 
-			chatInstanceMap.put(friendName, newConversation);
+				chatInstanceMap.put(friendName, newConversation);
 
-			chatCreated = true;
+				chatCreated = true;
+			}
 		}	
 
 		return chatCreated;
