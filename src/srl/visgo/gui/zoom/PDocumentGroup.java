@@ -111,7 +111,12 @@ public class PDocumentGroup extends PNode{
 	
 	public void invalidate(){
 		invalid = true;
-		rebuild();
+		grid.setEntries(mDocumentGroup.getRootEntries());
+		grid.invalidate();
+		
+		activityBar.setRevisions(mDocumentGroup.getRevisionHistory());
+		activityBar.invalidate();
+		
 		if(this.getParent()!=null)
 		this.getParent().repaint();
 	}
@@ -202,7 +207,12 @@ public class PDocumentGroup extends PNode{
      */
     public void removeDocument(PDocument pDoc){
     	mDocumentGroup.removeDocument(pDoc.getDocument());
-    	invalidate();
+    	if(mDocumentGroup.getRootEntries().size()>0){
+    		invalidate();
+    	}
+    	else{
+    		Visgo.workspace.removeChild(this);
+    	}
     }
     
     /**

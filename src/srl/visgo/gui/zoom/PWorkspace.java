@@ -67,7 +67,7 @@ public class PWorkspace extends PNode implements DocumentListener{
 	public void onEditDocument(Document doc) {
 		fireEditDocumentListener(doc);
 	}
-	
+
 
 	/**
 	 * Move to the origin of the selected ping
@@ -75,100 +75,100 @@ public class PWorkspace extends PNode implements DocumentListener{
 	 */
 	public void goToPing(Collaborator collaborator){
 		//TODO: Have this handle going to the location of a ping by checking overlaps
-		
-			PNode layer = Visgo.workspace;
-			boolean onWorkspace = true;
 
-			for(int i = 0; i < layer.getChildrenCount(); i++)
+		PNode layer = Visgo.workspace;
+		boolean onWorkspace = true;
+
+		for(int i = 0; i < layer.getChildrenCount(); i++)
+		{
+			//Checks for groups and documents
+			if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocument)
 			{
-				//Checks for groups and documents
-				if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocument)
+				PDocument test = (PDocument) layer.getChild(i);
+				final Point2D spot = new Point(collaborator.getLastPing().getX(), 
+						collaborator.getLastPing().getY()) ;
+				//Was the ping over a doc?
+				if(test.getGlobalFullBounds().contains(spot))
 				{
-					PDocument test = (PDocument) layer.getChild(i);
-					final Point2D spot = new Point(collaborator.getLastPing().getX(), 
-							collaborator.getLastPing().getY()) ;
-					//Was the ping over a doc?
-					if(test.getGlobalFullBounds().contains(spot))
-					{
-						//TODO: Zoom into document
-						PBounds test1 = test.getGlobalFullBounds();
-						PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test1.getBounds2D(), true, 700);
+					//TODO: Zoom into document
+					PBounds test1 = test.getGlobalFullBounds();
+					PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test1.getBounds2D(), true, 700);
 
-						final Document doc = test.mDocument;
-						Visgo.instance.loadEditDocument(doc);
-						PActivity.PActivityDelegate delegate = new PActivity.PActivityDelegate() {
-							@Override
-							public void activityStepped(PActivity arg0) {}
-							@Override
-							public void activityStarted(PActivity arg0) {}
+					final Document doc = test.mDocument;
+					Visgo.instance.loadEditDocument(doc);
+					PActivity.PActivityDelegate delegate = new PActivity.PActivityDelegate() {
+						@Override
+						public void activityStepped(PActivity arg0) {}
+						@Override
+						public void activityStarted(PActivity arg0) {}
 
-							@Override
-							public void activityFinished(PActivity arg0) {
-								Visgo.workspace.onEditDocument(doc);
+						@Override
+						public void activityFinished(PActivity arg0) {
+							Visgo.workspace.onEditDocument(doc);
 
-							}
-						};
-						animation.setDelegate(delegate);
-						onWorkspace = false;
-						break;
-					}
-				}
-				else if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocumentGroup)
-				{
-					PDocumentGroup testGroup = (PDocumentGroup) layer.getChild(i);
-					final Point2D spot = new Point(collaborator.getLastPing().getX(), 
-							collaborator.getLastPing().getY()) ;
-					//Was the ping over a group?
-					if(testGroup.getGlobalFullBounds().contains(spot))
-					{
-						//Was the ping over a doc in the group?
-						for(PDocument test :  testGroup.grid.getDocNodes())
-						{
-							//Was the ping over a doc?
-							if(test.getGlobalFullBounds().contains(spot))
-							{
-								//Zoom into document
-								PBounds test1 = test.getGlobalFullBounds();
-								PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test1.getBounds2D(), true, 700);
-
-								final Document doc = test.mDocument;
-								Visgo.instance.loadEditDocument(doc);
-								PActivity.PActivityDelegate delegate = new PActivity.PActivityDelegate() {
-									@Override
-									public void activityStepped(PActivity arg0) {}
-									@Override
-									public void activityStarted(PActivity arg0) {}
-
-									@Override
-									public void activityFinished(PActivity arg0) {
-										Visgo.workspace.onEditDocument(doc);
-
-									}
-								};
-								animation.setDelegate(delegate);
-								onWorkspace = false;
-								break;
-							}
-							
 						}
-						//TODO: Zoom to Doc group or whatever else
-						System.out.println("Ping was on a Document Group, but not a doc in it");
-						onWorkspace = false;
-						break;
-					}
-				}
-				else
-				{
-					//Do something else?
+					};
+					animation.setDelegate(delegate);
+					onWorkspace = false;
+					break;
 				}
 			}
-			if(onWorkspace)
+			else if(layer.getChild(i) instanceof srl.visgo.gui.zoom.PDocumentGroup)
 			{
-				//Don't do anything?
-				System.out.println("Ping was on the workspace, but not on anything in it");
+				PDocumentGroup testGroup = (PDocumentGroup) layer.getChild(i);
+				final Point2D spot = new Point(collaborator.getLastPing().getX(), 
+						collaborator.getLastPing().getY()) ;
+				//Was the ping over a group?
+				if(testGroup.getGlobalFullBounds().contains(spot))
+				{
+					//Was the ping over a doc in the group?
+					for(PDocument test :  testGroup.grid.getDocNodes())
+					{
+						//Was the ping over a doc?
+						if(test.getGlobalFullBounds().contains(spot))
+						{
+							//Zoom into document
+							PBounds test1 = test.getGlobalFullBounds();
+							PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test1.getBounds2D(), true, 700);
 
+							final Document doc = test.mDocument;
+							Visgo.instance.loadEditDocument(doc);
+							PActivity.PActivityDelegate delegate = new PActivity.PActivityDelegate() {
+								@Override
+								public void activityStepped(PActivity arg0) {}
+								@Override
+								public void activityStarted(PActivity arg0) {}
+
+								@Override
+								public void activityFinished(PActivity arg0) {
+									Visgo.workspace.onEditDocument(doc);
+
+								}
+							};
+							animation.setDelegate(delegate);
+							onWorkspace = false;
+							break;
+						}
+
+					}
+					//TODO: Zoom to Doc group or whatever else
+					System.out.println("Ping was on a Document Group, but not a doc in it");
+					onWorkspace = false;
+					break;
+				}
 			}
-		
+			else
+			{
+				//Do something else?
+			}
+		}
+		if(onWorkspace)
+		{
+			//Don't do anything?
+			System.out.println("Ping was on the workspace, but not on anything in it");
+
+		}
+
 	}
 
 	/**
@@ -178,12 +178,13 @@ public class PWorkspace extends PNode implements DocumentListener{
 		try{
 			int i = 1;
 			for(DocumentGroup group : Visgo.data.workspace.getRootDocumentGroups()){
-
-				PDocumentGroup projectNode = new PDocumentGroup(group);
-				projectNode.setColumnCount(3);
-				projectNode.invalidate();
-				i++;
-				this.addChild(projectNode);
+				if(group.getRootEntries().size()>0){
+					PDocumentGroup projectNode = new PDocumentGroup(group);
+					projectNode.setColumnCount(3);
+					projectNode.invalidate();
+					i++;
+					this.addChild(projectNode);
+				}
 			}
 			for(Document doc : Visgo.data.workspace.getRootDocuments()){
 
@@ -280,12 +281,24 @@ public class PWorkspace extends PNode implements DocumentListener{
 
 	@Override
 	public void onDocumentModified(DocumentEvent event) {
+		Document doc = event.getDocument();
 		for(Object obj:this.getAllNodes()){
 			if(obj instanceof PDocument){
 				PDocument pdoc = (PDocument)(obj);
 				if(pdoc.getDocument().getId().equals(event.getDocument().getId())){
 					pdoc.invalidate();
 					break;
+				}
+			}
+		}
+		if(doc.hasParent()){
+			for(Object obj:this.getAllNodes()){
+				if(obj instanceof PDocumentGroup){
+					PDocumentGroup pdoc = (PDocumentGroup)(obj);
+					if(pdoc.getDocumentGroup().getId().equals(doc.getParentId())){
+						pdoc.invalidate();
+						break;
+					}
 				}
 			}
 		}
