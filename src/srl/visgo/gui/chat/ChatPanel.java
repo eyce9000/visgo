@@ -28,6 +28,7 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Presence.Type;
 
 import srl.visgo.data.Collaborator;
+import srl.visgo.data.listeners.PingEventType;
 import srl.visgo.gui.Login;
 import srl.visgo.gui.Visgo;
 import srl.visgo.util.chat.listeners.GroupMessage;
@@ -91,9 +92,10 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 	/**
 	 * Signal that the given collaborator created a ping.
 	 * @param creator
+	 * @param type 
 	 */
-	public void addPing(Collaborator creator){
-		mCollaboratorListPanel.addPing(creator);
+	public void addPing(Collaborator creator, PingEventType type){
+		mCollaboratorListPanel.addPing(creator, type);
 	}
 
 	@Override
@@ -136,10 +138,10 @@ class CollaboratorListPanel extends JPanel implements StatusChangeListener{
 		this.revalidate();
 	}
 	
-	public void addPing(Collaborator creator){
+	public void addPing(Collaborator creator, PingEventType type){
 		for(CollaboratorPanel p : panels){
 			if(p.mCollaborator.equals(creator)){
-				p.addPing();
+				p.addPing(type);
 				this.revalidate();
 				return;
 			}
@@ -187,25 +189,52 @@ class CollaboratorPanel extends JPanel{
 	
 	/**
 	 * Indicate that the panel's collaborator has generated a ping.
+	 * @param type 
 	 */
-	public void addPing(){
-	    ActionListener actionListener = new ActionListener() {
-	        public void actionPerformed(ActionEvent actionEvent) {
-		        if(name.getForeground().equals(Color.black)){
-			  		setBackground(Color.orange);
-					setOpaque(true);
-					name.setForeground(Color.white);
+	public void addPing(PingEventType type){
+		if(type == PingEventType.USER_PING) {
+		    ActionListener actionListener = new ActionListener() {
+		        public void actionPerformed(ActionEvent actionEvent) {
+			        if(name.getForeground().equals(Color.black)){
+				  		setBackground(Color.orange);
+						setOpaque(true);
+						name.setForeground(Color.white);
+			        }
+			        else{
+			        	setOpaque(false);
+			    		name.setForeground(Color.black);
+			        }
 		        }
-		        else{
-		        	setOpaque(false);
-		    		name.setForeground(Color.black);
+		      };
+		      if(timer == null)
+		    	  timer = new Timer(1000, actionListener);
+		      if(!timer.isRunning())
+		    	  timer.start();
+		}
+		
+		else if(type == PingEventType.DOCUMENT_ADDED){
+			//TODO: Change to only have it flash their name once and then go away!
+		    ActionListener actionListener = new ActionListener() {
+		        public void actionPerformed(ActionEvent actionEvent) {
+			        if(name.getForeground().equals(Color.black)){
+				  		setBackground(Color.green);
+						setOpaque(true);
+						name.setForeground(Color.white);
+			        }
+			        else{
+			        	setOpaque(false);
+			    		name.setForeground(Color.black);
+			        }
 		        }
-	        }
-	      };
-	      if(timer == null)
-	    	  timer = new Timer(1000, actionListener);
-	      if(!timer.isRunning())
-	    	  timer.start();
+		      };
+		      if(timer == null)
+		    	  timer = new Timer(3000, actionListener);
+		      if(!timer.isRunning()){
+		    	  timer.setInitialDelay(0);
+		    	  timer.setRepeats(false);
+		    	  timer.start();
+		      }
+		}
 	}
 }
 

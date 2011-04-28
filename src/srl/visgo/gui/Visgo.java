@@ -164,7 +164,13 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 	@Override
 	public void onPing(final PingEvent e) {
 		//Indicate a ping has been received
-		if(e.getType() == PingEventType.USER_PING){
+		if(e.getType() == PingEventType.DOCUMENT_ADDED) {
+			chatPanel.addPing(e.getCreator(), e.getType());
+		}
+		else if(e.getType() == PingEventType.GROUP_ADDED) {
+			
+		}
+		else if(e.getType() == PingEventType.USER_PING){
 			Collaborator self = Visgo.data.getCurrentCollaborator();
 			
 			//Ignore own pings
@@ -212,7 +218,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 			
 		    
 			//Show ping's origin in Collaborator menu
-			chatPanel.addPing(e.getCreator());
+			chatPanel.addPing(e.getCreator(), e.getType());
 		}
 
 	}
