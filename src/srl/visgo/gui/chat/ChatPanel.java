@@ -54,7 +54,7 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		mTextInputPanel.mSendButton.addActionListener(this);
 
 		mCollaboratorListPanel = new CollaboratorListPanel();
-		
+
 		this.add(mScroll,BorderLayout.CENTER);
 		this.add(mTextInputPanel,BorderLayout.SOUTH);
 		this.add(mCollaboratorListPanel, BorderLayout.NORTH);
@@ -68,14 +68,14 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 
-//				System.out.println(message.getMessage());
+				//				System.out.println(message.getMessage());
 				String from = ((Message)message.getSource()).getFrom().split("@gmail\\.com")[0]+"@gmail.com";
 				addMessage(message.getMessage(),from);
 			}
 		});
 
 	}
-	
+
 	public void addMessage(String body, String from){
 		/*JTextArea message = new JTextArea(from+": "+body);
 		message.setEditable(false);
@@ -83,12 +83,12 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		message.setWrapStyleWord(true);
 		message.setPreferredSize(message.getPreferredSize());
 		mMessagesPanel.add(message);
-		*/
+		 */
 		mMessagesPanel.add(new MessagePanel(body,from));
 		mMessagesPanel.revalidate();
 		mScroll.revalidate();
 	}
-	
+
 	/**
 	 * Signal that the given collaborator created a ping.
 	 * @param creator
@@ -115,7 +115,7 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 @SuppressWarnings("serial")
 class CollaboratorListPanel extends JPanel implements StatusChangeListener{
 	ArrayList<CollaboratorPanel> panels;
-	
+
 	CollaboratorListPanel(){
 		super();
 		panels = new ArrayList<CollaboratorPanel>();
@@ -124,7 +124,7 @@ class CollaboratorListPanel extends JPanel implements StatusChangeListener{
 		Visgo.data.addStatusChangeListener(this);
 		this.resetList();
 	}
-	
+
 	private void resetList(){
 		this.removeAll();
 		panels.clear();
@@ -137,7 +137,7 @@ class CollaboratorListPanel extends JPanel implements StatusChangeListener{
 		}
 		this.revalidate();
 	}
-	
+
 	public void addPing(Collaborator creator, PingEventType type){
 		for(CollaboratorPanel p : panels){
 			if(p.mCollaborator.equals(creator)){
@@ -147,9 +147,9 @@ class CollaboratorListPanel extends JPanel implements StatusChangeListener{
 			}
 		}
 	}
-	
+
 	@Override
-	public void StatusChanged(String userID, Type status) {
+	public void StatusChanged(String userID, Presence status) {
 		System.out.println("Status changed:"+userID+" "+status);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -164,7 +164,7 @@ class CollaboratorPanel extends JPanel{
 	JLabel name;
 	CollaboratorPanelListener listener;
 	Timer timer;
-	
+
 	CollaboratorPanel(Collaborator collaborator){
 		super(new BorderLayout());
 		mCollaborator = collaborator;
@@ -180,13 +180,20 @@ class CollaboratorPanel extends JPanel{
 		this.add(colorSwatch,BorderLayout.WEST);
 		name = new JLabel(collaborator.getName());
 
-		if(collaborator.getStatus() != Presence.Type.available){
+		if(collaborator.getStatus().getType() == Presence.Type.available){
+			if(collaborator.getStatus().getStatus().equals(Visgo.data.getCurrentStatus())){
+				name.setForeground(Color.BLUE);
+			}
+			else{
+				name.setForeground(Color.BLACK);
+			}
+		}
+		else{
 			name.setForeground(Color.GRAY);
-//			this.setVisible(false);
 		}
 		this.add(name,BorderLayout.CENTER);
 	}
-	
+
 	/**
 	 * Indicate that the panel's collaborator has generated a ping.
 	 * @param type 
@@ -204,6 +211,17 @@ class CollaboratorPanel extends JPanel{
 			        	setOpaque(false);
 			    		name.setForeground(Color.black);
 			        }
+		        }
+		        else{
+		        	setOpaque(false);
+		    		name.setForeground(Color.black);
+		        }
+	        }
+	      };
+	      if(timer == null)
+	    	  timer = new Timer(1000, actionListener);
+	      if(!timer.isRunning())
+	    	  timer.start();
 		        }
 		      };
 		      if(timer == null)
@@ -244,7 +262,7 @@ class CollaboratorPanel extends JPanel{
  */
 class CollaboratorPanelListener implements MouseListener {
 	CollaboratorPanel mPanel;
-	
+
 	public CollaboratorPanelListener(CollaboratorPanel panel){
 		mPanel = panel;
 	}
@@ -259,10 +277,10 @@ class CollaboratorPanelListener implements MouseListener {
 			mPanel.getParent().invalidate();
 			mPanel.getParent().repaint();
 			Visgo.chatPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			
+
 			//TODO: On click, move to the spot
 			Visgo.workspace.goToPing(mPanel.mCollaborator);
-			
+
 		}	
 	}
 
@@ -285,7 +303,7 @@ class CollaboratorPanelListener implements MouseListener {
 
 	@Override
 	public void mouseReleased(MouseEvent e) {}
-	
+
 }
 
 @SuppressWarnings("serial")
@@ -311,12 +329,21 @@ class MessagePanel extends JPanel{
 				return new Dimension(20,Integer.MAX_VALUE);
 			}
 		};
+
+		if(collaborator.getStatus().getType() == Presence.Type.available){
+			if(collaborator.getStatus().getStatus().equals(Visgo.data.getCurrentStatus())){
+				mMessageArea.setForeground(Color.BLUE);
+			}
+			else{
+				mMessageArea.setForeground(Color.BLACK);
+			}
+		}
 		this.setBackground(Color.WHITE);
 		colorSwatch.setBackground(collaborator.getColor().brighter());
 		this.add(colorSwatch,BorderLayout.WEST);
 		this.add(mMessageArea,BorderLayout.CENTER);
 	}
-	
+
 	@Override
 	public Dimension getPreferredSize(){
 		return mMessageArea.getSize();
@@ -346,7 +373,7 @@ class TextInputPanel extends JPanel{
 		mMessageField.setRows(1);
 		mMessageField.setLineWrap(true);
 		mMessageField.setWrapStyleWord(true);
-		
+
 		mMessageField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), new AbstractAction(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -354,7 +381,7 @@ class TextInputPanel extends JPanel{
 				mSendButton.doClick();
 			}
 		});
-		
+
 		this.add(mMessageField,BorderLayout.CENTER);
 		this.add(mSendButton, BorderLayout.EAST);
 	}

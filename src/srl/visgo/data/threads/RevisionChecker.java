@@ -11,7 +11,7 @@ public class RevisionChecker implements Runnable{
 	@Override
 	public void run() {
 		while(true){
-			System.out.println("===Begin Revision Check===");
+			//System.out.println("===Begin Revision Check===");
 			doclist.updateAllRevisionHistory();
 			try {
 				Thread.sleep(15000);

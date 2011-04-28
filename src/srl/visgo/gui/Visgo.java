@@ -139,6 +139,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		canvas.setVisible(false);
 		editPanel.setVisible(true);
 		editPanel.revalidate();
+		data.setStatus("Editing Document "+((Document)event.getSource()).getId());
 	}
 
 	@Override
@@ -148,6 +149,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		canvas.setVisible(true);
 		canvas.revalidate();
         PBounds test = workspace.getGlobalFullBounds();
+        data.setStatus("");
 		Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 500);
 	}
 

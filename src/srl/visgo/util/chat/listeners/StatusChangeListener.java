@@ -18,5 +18,5 @@ public interface StatusChangeListener extends EventListener{
 	 * @param status - Status is the one of the following - Available, Unavailable and so on 
 	 * 				- it is one of the values of Presence.Type constants.
 	 */
-	public void StatusChanged(String userID, Presence.Type status);
+	public void StatusChanged(String userID, Presence status);
 }

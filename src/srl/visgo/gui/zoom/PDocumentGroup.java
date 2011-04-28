@@ -111,7 +111,12 @@ public class PDocumentGroup extends PNode{
 	
 	public void invalidate(){
 		invalid = true;
-		rebuild();
+		grid.setEntries(mDocumentGroup.getRootEntries());
+		grid.invalidate();
+		
+		activityBar.setRevisions(mDocumentGroup.getRevisionHistory());
+		activityBar.invalidate();
+		
 		if(this.getParent()!=null)
 		this.getParent().repaint();
 	}
@@ -157,10 +162,6 @@ public class PDocumentGroup extends PNode{
                 .getHeight()
                 + 2 * INDENT);
         localToParent(result);
-
-		mDocumentGroup.setOffsetX(result.getX());
-		mDocumentGroup.setOffsetY(result.getY());
-		mDocumentGroup.save();
         return result;
     }
 
@@ -202,7 +203,12 @@ public class PDocumentGroup extends PNode{
      */
     public void removeDocument(PDocument pDoc){
     	mDocumentGroup.removeDocument(pDoc.getDocument());
-    	invalidate();
+    	if(mDocumentGroup.getRootEntries().size()>0){
+    		invalidate();
+    	}
+    	else{
+    		Visgo.workspace.removeChild(this);
+    	}
     }
     
     /**
@@ -231,6 +237,15 @@ class PDocGroupEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseDragged(PInputEvent event){
 		event.setHandled(true);
+	}
+	@Override
+	public void mouseReleased(PInputEvent event){
+
+		PBounds bounds = mDocGroup.getGlobalFullBounds();
+		
+		mDocGroup.mDocumentGroup.setOffsetX(bounds.getX());
+		mDocGroup.mDocumentGroup.setOffsetY(bounds.getY());
+		mDocGroup.mDocumentGroup.save();
 	}
 	
 	

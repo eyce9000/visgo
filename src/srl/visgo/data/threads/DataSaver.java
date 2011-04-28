@@ -60,7 +60,7 @@ public class DataSaver implements Runnable{
 					String serialized = mapper.writeValueAsString(serialMap);
 					//System.out.println(serialized);
 					CommandMessage command = new CommandMessage("dataChange", serialized);
-					mChatManager.sendGroupCommand(command);
+					//mChatManager.sendGroupCommand(command);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
