@@ -116,7 +116,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 
 		contentPane.add(leftPanel, BorderLayout.WEST);
 		load();
-        PBounds test = workspace.getGlobalFullBounds();
+        PBounds test = Visgo.workspace.getGlobalFullBounds();
 		Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 100);
 	}
 
@@ -174,11 +174,10 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 		}
 		else if(e.getType() == PingEventType.USER_PING){
 			Collaborator self = Visgo.data.getCurrentCollaborator();
-			
+			//TODO: George, uncomment this to ignore own pings when they are being sent to others!
 			//Ignore own pings
 //			if(self == e.getCreator()){
-//			SoundFile sound = new SoundFile("audio/beacon_placed.wav");
-//			sound.play();
+
 //				return;
 //			}
 			

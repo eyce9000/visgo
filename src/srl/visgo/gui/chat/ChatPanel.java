@@ -181,11 +181,13 @@ class CollaboratorPanel extends JPanel{
 		name = new JLabel(collaborator.getName());
 
 		if(collaborator.getStatus().getType() == Presence.Type.available){
-			if(collaborator.getStatus().getStatus().equals(Visgo.data.getCurrentStatus())){
-				name.setForeground(Color.BLUE);
-			}
-			else{
-				name.setForeground(Color.BLACK);
+			if(Visgo.data.getCurrentStatus() != null){
+				if(collaborator.getStatus().getStatus().equals(Visgo.data.getCurrentStatus())){
+					name.setForeground(Color.BLUE);
+				}
+				else{
+					name.setForeground(Color.BLACK);
+				}
 			}
 		}
 		else{
@@ -212,30 +214,19 @@ class CollaboratorPanel extends JPanel{
 			    		name.setForeground(Color.black);
 			        }
 		        }
-		        else{
-		        	setOpaque(false);
-		    		name.setForeground(Color.black);
-		        }
-	        }
 	      };
 	      if(timer == null)
 	    	  timer = new Timer(1000, actionListener);
 	      if(!timer.isRunning())
 	    	  timer.start();
-		        }
-		      };
-		      if(timer == null)
-		    	  timer = new Timer(1000, actionListener);
-		      if(!timer.isRunning())
-		    	  timer.start();
 		}
 		
 		else if(type == PingEventType.DOCUMENT_ADDED){
-			//TODO: Change to only have it flash their name once and then go away!
+			//Only have it highlight their name once and then go away!
 		    ActionListener actionListener = new ActionListener() {
 		        public void actionPerformed(ActionEvent actionEvent) {
 			        if(name.getForeground().equals(Color.black)){
-				  		setBackground(Color.green);
+				  		setBackground(Color.cyan);
 						setOpaque(true);
 						name.setForeground(Color.white);
 			        }
@@ -252,6 +243,18 @@ class CollaboratorPanel extends JPanel{
 		    	  timer.setRepeats(false);
 		    	  timer.start();
 		      }
+		      
+		      final Timer timer2 = new Timer(0, new ActionListener() {
+
+			        public void actionPerformed(ActionEvent actionEvent) {
+			        	setOpaque(false);
+			    		name.setForeground(Color.black);  	
+			        }
+			      });
+			    
+			    timer2.setInitialDelay(3000);
+			    timer2.start();
+			    timer2.setRepeats(false);
 		}
 	}
 }
@@ -278,7 +281,7 @@ class CollaboratorPanelListener implements MouseListener {
 			mPanel.getParent().repaint();
 			Visgo.chatPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
-			//TODO: On click, move to the spot
+			//On click, move to the spot
 			Visgo.workspace.goToPing(mPanel.mCollaborator);
 
 		}	

@@ -189,6 +189,7 @@ public class PWorkspace extends PNode implements DocumentListener{
 			for(Document doc : Visgo.data.workspace.getRootDocuments()){
 
 				PDocument projectNode = new PDocument(doc);
+				projectNode.setScale(.75);
 				this.addChild(projectNode);
 			}
 

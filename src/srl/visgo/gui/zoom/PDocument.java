@@ -181,7 +181,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseClicked(PInputEvent event){
 		if(event.getClickCount() == 2){
-
+			event.setHandled(true);
 			PBounds test = mDocument.getGlobalFullBounds();
 			PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 700);
 
