@@ -55,7 +55,7 @@ public class PWorkspace extends PNode implements DocumentListener, CommandMessag
 
 	public PWorkspace(){
 		super();
-		this.setPaint(Color.CYAN);
+		//this.setPaint(Color.CYAN);
 		load();
 		editDocumentListeners = new LinkedList<EditDocumentListener>();
 		Visgo.data.addDocumentListener(this);
@@ -84,6 +84,9 @@ public class PWorkspace extends PNode implements DocumentListener, CommandMessag
 	 * @param collaborator
 	 */
 	public void goToPing(Collaborator collaborator){
+		
+		Visgo.instance.onCloseDocument(null);
+		
 		//TODO: Have this handle going to the location of a ping by checking overlaps
 
 		PNode layer = Visgo.workspace;
