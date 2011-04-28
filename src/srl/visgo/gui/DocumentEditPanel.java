@@ -81,7 +81,7 @@ public class DocumentEditPanel extends JPanel implements ActionListener {
 			return openBrowsers.get(doc.getHref());
 		}
 		else{
-			JWebBrowser browser = new JWebBrowser(JWebBrowser.proxyComponentHierarchy());
+			JWebBrowser browser = new JWebBrowser(JWebBrowser.proxyComponentHierarchy(),JWebBrowser.useWebkitRuntime());
 			browser.setBarsVisible(false);
 			browser.setButtonBarVisible(false);
 			browser.setPreferredSize(new Dimension(1000,1000));
