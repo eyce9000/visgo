@@ -105,6 +105,7 @@ public class PDocumentGroup extends PNode{
 		Collection<Revision> revisions = mDocumentGroup.getRevisionHistory();
 		activityBar = new PRevisionActivity(revisions,PRevisionActivity.Orientation.Horizontal);
 		activityBar.setOffset(0,-10);
+		activityBar.setPickable(false);
 		backgroundNode.addChild(activityBar);
 		invalid = false;
 	}

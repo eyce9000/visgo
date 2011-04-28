@@ -120,6 +120,7 @@ public class PDocument extends PNode {
 		});*/
 		activityBar = new PRevisionActivity(revisions,PRevisionActivity.Orientation.Vertical);
 		activityBar.setOffset(tw,10);
+		activityBar.setPickable(false);
 		backgroundNode.addChild(activityBar);
 		//makes background as big as text + image area
 		backgroundNode.setWidth(tw);
