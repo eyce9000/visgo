@@ -189,6 +189,7 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 					test.setVisible(true);
 					Visgo.canvas.getLayer().addChild(test);
 					Visgo.canvas.invalidate();
+					Visgo.canvas.repaint();
 					
 //					SoundFile sound = new SoundFile("audio/beacon_detected.wav");
 //					sound.play();
@@ -204,7 +205,8 @@ public class Visgo extends JFrame implements PingListener,EditDocumentListener,C
 
 		        public void actionPerformed(ActionEvent actionEvent) {
 					Visgo.canvas.getLayer().removeChild(test);
-					Visgo.canvas.invalidate();  	
+					Visgo.canvas.invalidate();  
+					Visgo.canvas.repaint();	
 		        }
 		      });
 		    

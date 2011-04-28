@@ -26,6 +26,7 @@ import srl.visgo.data.listeners.DocumentListener;
 import srl.visgo.gui.Login;
 import srl.visgo.util.chat.ChatManager;
 import srl.visgo.util.chat.MessageProcessor;
+import srl.visgo.util.chat.listeners.CommandMessage;
 import srl.visgo.util.chat.listeners.CommandMessageListener;
 import srl.visgo.util.chat.listeners.GroupMessage;
 import srl.visgo.util.chat.listeners.GroupMessageListener;
@@ -56,7 +57,7 @@ public class Data implements StatusChangeListener{
 	private DocumentList mDocumentList;
 	private Collaborator mCurrentCollaborator;
 	private LinkedList<DocumentListener> mDocListeners;
-	private String mCurrentStatus;
+	private String mCurrentStatus = "";
 
 	public Data(){
 		mDatabase = new GDatabase();
@@ -72,6 +73,8 @@ public class Data implements StatusChangeListener{
 			selectDatabase();
 			workspace = new Workspace(mDocumentList,mDatabase,chatManager);
 			updateCollaborators();
+
+			this.setStatus("");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -241,6 +244,12 @@ public class Data implements StatusChangeListener{
 	public GroupMessage sendGroupMessage(String text){
 		GroupMessage message = new GroupMessage(new Message(),text);
 		return chatManager.sendGroupMessage(message);
+	}
+	
+	public void setCommandMessage(String name,String message){
+
+		CommandMessage command = new CommandMessage(name, message);
+		chatManager.sendGroupCommand(command);
 	}
 	
 	public void addDocumentListener(DocumentListener listener){

@@ -2,6 +2,8 @@ package srl.visgo.data.listeners;
 
 import java.awt.Color;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
 
 import srl.visgo.data.Collaborator;
 import srl.visgo.gui.Visgo;
@@ -69,5 +71,20 @@ public class PingEvent extends EventObject{
 //		Visgo.canvas.invalidate();
 		Visgo.canvas.getCamera().animateViewToCenterBounds(bounds.getBounds2D(), true, 1000);
 	}
-
+	
+	public static Map serialize(PingEvent event){
+		Map m = new HashMap();
+		m.put("creator", event.getCreator().getUsername());
+		m.put("x", event.getX()+"");
+		m.put("y",event.getY()+"");
+		m.put("type",event.getType().toString());
+		return m;
+	}
+	public static PingEvent deserialize(Map m){
+		PingEventType type = PingEventType.valueOf(m.get("type").toString());
+		Collaborator collab = Visgo.data.getCollaborator(m.get("creator").toString());
+		int x = Integer.parseInt(m.get("x").toString());
+		int y = Integer.parseInt(m.get("y").toString());
+		return new PingEvent(type,collab,x,y);
+	}
 }

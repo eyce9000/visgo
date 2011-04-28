@@ -5,12 +5,18 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.geom.Point2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import srl.visgo.data.Collaborator;
 import srl.visgo.data.Document;
@@ -22,15 +28,18 @@ import srl.visgo.data.listeners.PingListener;
 import srl.visgo.gui.Visgo;
 import srl.visgo.gui.listeners.EditDocumentEvent;
 import srl.visgo.gui.listeners.EditDocumentListener;
+import srl.visgo.util.chat.listeners.CommandMessage;
+import srl.visgo.util.chat.listeners.CommandMessageListener;
 import edu.umd.cs.piccolo.PNode;
 import edu.umd.cs.piccolo.activities.PActivity;
 import edu.umd.cs.piccolo.activities.PTransformActivity;
 import edu.umd.cs.piccolo.util.PBounds;
 import edu.umd.cs.piccolo.util.PPaintContext;
 
-public class PWorkspace extends PNode implements DocumentListener{
+public class PWorkspace extends PNode implements DocumentListener, CommandMessageListener{
 	private static final long serialVersionUID = 1L;
 
+	ObjectMapper mapper = new ObjectMapper();
 	public static PBounds wBounds;
 	public static PBounds currentBounds;
 	boolean initialPaint = true;
@@ -50,6 +59,7 @@ public class PWorkspace extends PNode implements DocumentListener{
 		load();
 		editDocumentListeners = new LinkedList<EditDocumentListener>();
 		Visgo.data.addDocumentListener(this);
+		Visgo.data.addCommandMessageListener(this);
 	}
 
 	public void addEditDocumentListener(EditDocumentListener listener){
@@ -190,6 +200,7 @@ public class PWorkspace extends PNode implements DocumentListener{
 
 				PDocument projectNode = new PDocument(doc);
 				this.addChild(projectNode);
+				projectNode.setScale(.75);
 			}
 
 		}
@@ -333,6 +344,25 @@ public class PWorkspace extends PNode implements DocumentListener{
 		}
 		else{
 			onDocumentModified(event);
+		}
+	}
+
+	@Override
+	public void CommandReceived(CommandMessage notification) {
+		String name = notification.getCommandName().trim();
+		String message = notification.getArguments();
+		if(name.equals("ping")){
+			try {
+				Map<String,Object> map = mapper.readValue(message, Map.class);
+				PingEvent event = PingEvent.deserialize(map);
+				
+				event.getCreator().setPing(event);
+				Visgo.workspace.sendPingEvent(event);
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

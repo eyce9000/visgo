@@ -201,6 +201,7 @@ class CollaboratorPanel extends JPanel{
 	 */
 	public void addPing(){
 		ActionListener actionListener = new ActionListener() {
+			int iter = 0;
 			public void actionPerformed(ActionEvent actionEvent) {
 				if(name.getForeground().equals(Color.black)){
 					setBackground(Color.orange);
@@ -210,6 +211,19 @@ class CollaboratorPanel extends JPanel{
 				else{
 					setOpaque(false);
 					name.setForeground(Color.black);
+				}
+				iter ++;
+				if(iter == 6){
+					setOpaque(false);
+					if(mCollaborator.getStatus().getType() == Presence.Type.available){
+						if(mCollaborator.getStatus().getStatus().equals(Visgo.data.getCurrentStatus())){
+							name.setForeground(Color.BLUE);
+						}
+						else{
+							name.setForeground(Color.BLACK);
+						}
+					}
+					timer.stop();
 				}
 			}
 		};
