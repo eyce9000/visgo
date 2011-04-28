@@ -11,6 +11,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.filter.*;
 
+import srl.visgo.gui.Login;
 import srl.visgo.util.chat.listeners.CommandMessage;
 import srl.visgo.util.chat.listeners.GroupMessage;
 import srl.visgo.util.chat.listeners.IndividualMessage;
@@ -35,6 +36,8 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 	private MessageProcessor messageInterpreter = null;
 
 	private EventListenerList statusChangeListeners = null;
+	
+	private String currentStatus;
 
 	public XMPPConnection getServerConnection() {
 		return serverConnection;
@@ -322,7 +325,7 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 		System.out.println("Client ID:"+clientID);
 
 		if(usingVisgo(arg0)){
-			this.fireStatusChangeEvent(userID, arg0.getType());
+			this.fireStatusChangeEvent(userID, arg0);
 		}
 	}
 
@@ -346,7 +349,7 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 
 
 
-	public void fireStatusChangeEvent(String userID, Presence.Type status){
+	public void fireStatusChangeEvent(String userID, Presence status){
 		Object[] listenerList = statusChangeListeners.getListenerList();
 
 		for (int i = listenerList.length-2; i>=0; i-=2) {
@@ -386,7 +389,8 @@ public class ChatManager implements ChatManagerListener, RosterListener {
 	public void setStatus(String status)
 	{
 		Presence statusPacket = new Presence(Presence.Type.available, status, 0, Presence.Mode.available);
-		
+		currentStatus = status;
 		serverConnection.sendPacket(statusPacket);
+		fireStatusChangeEvent(Login.username,statusPacket);
 	}
 }

@@ -74,7 +74,7 @@ public class Workspace implements CommandMessageListener{
 			rootDocuments.put(doc.getGoogleId(), doc);
 			mDocsById.put(doc.getId(), doc);
 		}
-		manager.getMessageInterpreter().addCommandMessageListener(this);
+		//manager.getMessageInterpreter().addCommandMessageListener(this);
 		
 
 	}

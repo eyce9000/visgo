@@ -222,14 +222,14 @@ public class Document implements Entry {
 			*/
 			
 
-			//System.out.println("--Modified at:"+(diff/60000.0f)+" by:"+entry.getModifyingUser().getName());
+			System.out.println("--Modified at:"+(diff/60000.0f)+" by:"+entry.getModifyingUser().getName());
 			String contributors = "";
 			
-			for(Person contrib : entry.getAuthors()){
+			/*for(Person contrib : entry.getAuthors()){
 				contributors +=" "+contrib.getEmail();
 			}
 			System.out.println(contributors);
-			
+			*/
 			if(!doc.revisionHistory.containsKey(rev.getModifiedByUsername())){
 				doc.revisionHistory.put(rev.getModifiedBy().getUsername(),rev);
 			}

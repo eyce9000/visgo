@@ -11,7 +11,7 @@ public class Collaborator {
 	private String mName;
 	private Color mColor;
 	private PingEvent lastPing;
-	private Presence.Type mStatus = Presence.Type.unavailable;
+	private Presence mStatus;
 	public Collaborator(String username){
 		mUsername = username;
 	}
@@ -25,14 +25,7 @@ public class Collaborator {
 	}
 	
 	public Color getColor(){
-		
-		if(mStatus == Presence.Type.available){
-			return mColor;
-		}
-		else{
-			Color temp = mColor.brighter();
-			return temp;
-		}
+		return mColor;
 	}
 	public String getUsername(){
 		return mUsername;
@@ -43,10 +36,10 @@ public class Collaborator {
 		}
 		return mName;
 	}
-	public void setStatus(Presence.Type status){
+	public void setStatus(Presence status){
 		mStatus = status;
 	}
-	public Presence.Type getStatus(){
+	public Presence getStatus(){
 		return mStatus;
 	}
 	

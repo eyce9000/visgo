@@ -162,10 +162,6 @@ public class PDocumentGroup extends PNode{
                 .getHeight()
                 + 2 * INDENT);
         localToParent(result);
-
-		mDocumentGroup.setOffsetX(result.getX());
-		mDocumentGroup.setOffsetY(result.getY());
-		mDocumentGroup.save();
         return result;
     }
 
@@ -241,6 +237,15 @@ class PDocGroupEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseDragged(PInputEvent event){
 		event.setHandled(true);
+	}
+	@Override
+	public void mouseReleased(PInputEvent event){
+
+		PBounds bounds = mDocGroup.getGlobalFullBounds();
+		
+		mDocGroup.mDocumentGroup.setOffsetX(bounds.getX());
+		mDocGroup.mDocumentGroup.setOffsetY(bounds.getY());
+		mDocGroup.mDocumentGroup.save();
 	}
 	
 	

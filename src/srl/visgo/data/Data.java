@@ -56,6 +56,7 @@ public class Data implements StatusChangeListener{
 	private DocumentList mDocumentList;
 	private Collaborator mCurrentCollaborator;
 	private LinkedList<DocumentListener> mDocListeners;
+	private String mCurrentStatus;
 
 	public Data(){
 		mDatabase = new GDatabase();
@@ -137,8 +138,12 @@ public class Data implements StatusChangeListener{
 			//if(!gid.equals("eyce9000@gmail.com"))
 			//	continue;
 			Collaborator collab = new Collaborator(gid,chatManager.getNameoftheFriend(gid),color);
+			
 			if(chatManager.isLoggedInWithVisgo(gid)){
-				collab.setStatus(Presence.Type.available);
+				collab.setStatus(chatManager.getFriendsList().getPresence(gid));
+			}
+			else{
+				collab.setStatus(new Presence(Presence.Type.unavailable, "", 0, Presence.Mode.away));
 			}
 			mCollaborators.put(collab.getUsername(),collab);
 			if(!gid.equals(Login.username)){
@@ -200,7 +205,13 @@ public class Data implements StatusChangeListener{
 			break;
 		}
 	}
-	
+	public void setStatus(String status){
+		mCurrentStatus = status;
+		chatManager.setStatus(status);
+	}
+	public String getCurrentStatus(){
+		return mCurrentStatus;
+	}
 	public Collaborator getCurrentCollaborator(){
 		return mCurrentCollaborator;
 	}
@@ -280,7 +291,7 @@ public class Data implements StatusChangeListener{
 	}
 
 	@Override
-	public void StatusChanged(String userID, Type status) {
+	public void StatusChanged(String userID, Presence status) {
 		mCollaborators.get(userID).setStatus(status);
 	}
 }
