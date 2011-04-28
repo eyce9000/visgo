@@ -38,7 +38,6 @@ public class DocumentList {
 		URL feedUri = new URL("https://docs.google.com/feeds/default/private/full/?showfolders=false");
 		DocumentListFeed feed = docsService.getFeed(feedUri, DocumentListFeed.class);
 		for (DocumentListEntry listEntry : feed.getEntries()) {
-			//System.out.println(listEntry.getTitle().getPlainText());
 			//This is a document
 			Document doc = mDocuments.get(listEntry.getDocId());
 			if(doc == null){
@@ -49,6 +48,8 @@ public class DocumentList {
 					}
 				}
 				else{
+					//System.out.println(listEntry.getTitle().getPlainText());
+					//System.out.println(doc.getGoogleId());
 					mDocuments.put(doc.getGoogleId(), doc);
 					mDocsById.put(doc.getId(), doc);
 				}
