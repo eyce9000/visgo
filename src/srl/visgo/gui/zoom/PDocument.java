@@ -120,6 +120,7 @@ public class PDocument extends PNode {
 		});*/
 		activityBar = new PRevisionActivity(revisions,PRevisionActivity.Orientation.Vertical);
 		activityBar.setOffset(tw,10);
+		activityBar.setPickable(false);
 		backgroundNode.addChild(activityBar);
 		//makes background as big as text + image area
 		backgroundNode.setWidth(tw);
@@ -181,7 +182,7 @@ class PDocumentEventHandler extends PBasicInputEventHandler{
 	@Override
 	public void mouseClicked(PInputEvent event){
 		if(event.getClickCount() == 2){
-
+			event.setHandled(true);
 			PBounds test = mDocument.getGlobalFullBounds();
 			PTransformActivity animation = Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 700);
 

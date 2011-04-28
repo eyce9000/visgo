@@ -21,6 +21,9 @@ import org.openide.awt.DropDownButtonFactory;
 
 import srl.visgo.data.Document;
 import srl.visgo.data.Workspace;
+import srl.visgo.data.listeners.PingEvent;
+import srl.visgo.data.listeners.PingEventType;
+
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.docs.DocumentListEntry;
 
@@ -106,6 +109,12 @@ public class CreateDocsPanel extends JPanel
                 if(uploadFile(file, file.getName()))
                 {
                 	JOptionPane.showMessageDialog(null, "File uploaded successfully");
+					PingEvent newPing = new PingEvent(PingEventType.DOCUMENT_ADDED, 
+                			Visgo.data.getCurrentCollaborator(), 
+                			(int) Visgo.workspace.getGlobalFullBounds().getCenter2D().getX(), 
+                			(int) Visgo.workspace.getGlobalFullBounds().getCenter2D().getX());
+                	Visgo.workspace.sendPingEvent(newPing);
+                	Visgo.data.getCurrentCollaborator().setPing(newPing);
                 }
                 else
                 {
@@ -162,6 +171,12 @@ public class CreateDocsPanel extends JPanel
 				if(mWorkspace.createDocument(e.getActionCommand(), name))
 				{
 					JOptionPane.showMessageDialog(null, "File created successfully");
+					PingEvent newPing = new PingEvent(PingEventType.DOCUMENT_ADDED, 
+                			Visgo.data.getCurrentCollaborator(), 
+                			(int) Visgo.workspace.getGlobalFullBounds().getCenter2D().getX(), 
+                			(int) Visgo.workspace.getGlobalFullBounds().getCenter2D().getX());
+                	Visgo.workspace.sendPingEvent(newPing);
+                	Visgo.data.getCurrentCollaborator().setPing(newPing);
 				}
 				else
 				{
@@ -194,6 +209,12 @@ public class CreateDocsPanel extends JPanel
 			{
 				mWorkspace.createGroup(name);
 				JOptionPane.showMessageDialog(null, "Group created successfully");
+				PingEvent newPing = new PingEvent(PingEventType.GROUP_ADDED, 
+            			Visgo.data.getCurrentCollaborator(), 
+            			(int) Visgo.workspace.getGlobalFullBounds().getCenter2D().getX(), 
+            			(int) Visgo.workspace.getGlobalFullBounds().getCenter2D().getX());
+            	Visgo.workspace.sendPingEvent(newPing);
+            	Visgo.data.getCurrentCollaborator().setPing(newPing);
 			}
 			else
 			{

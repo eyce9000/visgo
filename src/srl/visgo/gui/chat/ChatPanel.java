@@ -30,6 +30,7 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Presence.Type;
 
 import srl.visgo.data.Collaborator;
+import srl.visgo.data.listeners.PingEventType;
 import srl.visgo.gui.Login;
 import srl.visgo.gui.Visgo;
 import srl.visgo.util.chat.listeners.GroupMessage;
@@ -95,9 +96,10 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 	/**
 	 * Signal that the given collaborator created a ping.
 	 * @param creator
+	 * @param type 
 	 */
-	public void addPing(Collaborator creator){
-		mCollaboratorListPanel.addPing(creator);
+	public void addPing(Collaborator creator, PingEventType type){
+		mCollaboratorListPanel.addPing(creator, type);
 	}
 
 	@Override
@@ -140,10 +142,10 @@ class CollaboratorListPanel extends JPanel implements StatusChangeListener{
 		this.revalidate();
 	}
 
-	public void addPing(Collaborator creator){
+	public void addPing(Collaborator creator, PingEventType type){
 		for(CollaboratorPanel p : panels){
 			if(p.mCollaborator.equals(creator)){
-				p.addPing();
+				p.addPing(type);
 				this.revalidate();
 				return;
 			}
@@ -183,11 +185,13 @@ class CollaboratorPanel extends JPanel{
 		name = new JLabel(collaborator.getName());
 
 		if(collaborator.getStatus().getType() == Presence.Type.available){
-			if(collaborator.getStatus().getStatus().equals(Visgo.data.getCurrentStatus())){
-				name.setForeground(Color.BLUE);
-			}
-			else{
-				name.setForeground(Color.BLACK);
+			if(Visgo.data.getCurrentStatus() != null){
+				if(collaborator.getStatus().getStatus().equals(Visgo.data.getCurrentStatus())){
+					name.setForeground(Color.BLUE);
+				}
+				else{
+					name.setForeground(Color.BLACK);
+				}
 			}
 		}
 		else{
@@ -198,39 +202,64 @@ class CollaboratorPanel extends JPanel{
 
 	/**
 	 * Indicate that the panel's collaborator has generated a ping.
+	 * @param type 
 	 */
-	public void addPing(){
-		ActionListener actionListener = new ActionListener() {
-			int iter = 0;
-			public void actionPerformed(ActionEvent actionEvent) {
-				if(name.getForeground().equals(Color.black)){
-					setBackground(Color.orange);
-					setOpaque(true);
-					name.setForeground(Color.white);
-				}
-				else{
-					setOpaque(false);
-					name.setForeground(Color.black);
-				}
-				iter ++;
-				if(iter == 6){
-					setOpaque(false);
-					if(mCollaborator.getStatus().getType() == Presence.Type.available){
-						if(mCollaborator.getStatus().getStatus().equals(Visgo.data.getCurrentStatus())){
-							name.setForeground(Color.BLUE);
-						}
-						else{
-							name.setForeground(Color.BLACK);
-						}
-					}
-					timer.stop();
-				}
-			}
-		};
-		if(timer == null)
-			timer = new Timer(1000, actionListener);
-		if(!timer.isRunning())
-			timer.start();
+	public void addPing(PingEventType type){
+		if(type == PingEventType.USER_PING) {
+		    ActionListener actionListener = new ActionListener() {
+		        public void actionPerformed(ActionEvent actionEvent) {
+			        if(name.getForeground().equals(Color.black)){
+				  		setBackground(Color.orange);
+						setOpaque(true);
+						name.setForeground(Color.white);
+			        }
+			        else{
+			        	setOpaque(false);
+			    		name.setForeground(Color.black);
+			        }
+		        }
+	      };
+	      if(timer == null)
+	    	  timer = new Timer(1000, actionListener);
+	      if(!timer.isRunning())
+	    	  timer.start();
+		}
+		
+		else if(type == PingEventType.DOCUMENT_ADDED){
+			//Only have it highlight their name once and then go away!
+		    ActionListener actionListener = new ActionListener() {
+		        public void actionPerformed(ActionEvent actionEvent) {
+			        if(name.getForeground().equals(Color.black)){
+				  		setBackground(Color.cyan);
+						setOpaque(true);
+						name.setForeground(Color.white);
+			        }
+			        else{
+			        	setOpaque(false);
+			    		name.setForeground(Color.black);
+			        }
+		        }
+		      };
+		      if(timer == null)
+		    	  timer = new Timer(3000, actionListener);
+		      if(!timer.isRunning()){
+		    	  timer.setInitialDelay(0);
+		    	  timer.setRepeats(false);
+		    	  timer.start();
+		      }
+		      
+		      final Timer timer2 = new Timer(0, new ActionListener() {
+
+			        public void actionPerformed(ActionEvent actionEvent) {
+			        	setOpaque(false);
+			    		name.setForeground(Color.black);  	
+			        }
+			      });
+			    
+			    timer2.setInitialDelay(3000);
+			    timer2.start();
+			    timer2.setRepeats(false);
+		}
 	}
 }
 
@@ -256,7 +285,7 @@ class CollaboratorPanelListener implements MouseListener {
 			mPanel.getParent().repaint();
 			Visgo.chatPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
-			//TODO: On click, move to the spot
+			//On click, move to the spot
 			Visgo.workspace.goToPing(mPanel.mCollaborator);
 
 		}	

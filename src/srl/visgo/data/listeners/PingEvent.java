@@ -13,14 +13,10 @@ import edu.umd.cs.piccolo.util.PBounds;
 
 /**
  * Create a ping for other people
- *	TODO: Be able to target certain people, return to old bounds
- *	TODO: Add ping indicator to screen. On click, moveToBounds()
  */
 public class PingEvent extends EventObject{
 	private static final long serialVersionUID = 1L;
 
-	PBounds bounds;
-	PBounds returnBounds;
 	Collaborator creator;
 	PingEventType type;
 	int originX;
@@ -29,18 +25,9 @@ public class PingEvent extends EventObject{
 	public PingEvent(PingEventType type, Collaborator collaborator, int x, int y) {
 		super(type);
 		this.type = type;
-//		bounds = Visgo.workspace.getGlobalFullBounds();
-		bounds = new PBounds(100, 100, 100, 100);
 		creator = collaborator;
 		originX = x;
 		originY = y;
-	}
-	
-	public PingEvent(PingEventType type, Collaborator collaborator, PBounds callingBounds) {
-		super(type);
-		this.type = type;
-		creator = collaborator;
-		bounds = callingBounds;
 	}
 	
 	public Collaborator getCreator(){
@@ -63,13 +50,11 @@ public class PingEvent extends EventObject{
 	 * Animate the view to that of the creator's ping origin
 	 */
 	public void moveToBounds(){
-		returnBounds = Visgo.workspace.getGlobalFullBounds();
 //		PPath test = PPath.createEllipse(100, 100, 100, 50);
 //		test.setPaint(Color.green);
 //		test.setVisible(true);
 //		Visgo.canvas.getLayer().addChild(test);
 //		Visgo.canvas.invalidate();
-		Visgo.canvas.getCamera().animateViewToCenterBounds(bounds.getBounds2D(), true, 1000);
 	}
 	
 	public static Map serialize(PingEvent event){

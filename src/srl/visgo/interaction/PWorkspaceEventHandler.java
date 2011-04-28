@@ -57,8 +57,8 @@ public class PWorkspaceEventHandler extends PBasicInputEventHandler{
 			
 		}
 		else if(event.getClickCount() == 2){			
-//		PBounds test = Visgo.workspace.getGlobalFullBounds();
-//		Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 1000);
+			PBounds test = Visgo.workspace.getGlobalFullBounds();
+			Visgo.canvas.getCamera().animateViewToCenterBounds(test.getBounds2D(), true, 700);
 		}
 	}
 }

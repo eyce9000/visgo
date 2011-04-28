@@ -51,6 +51,7 @@ public class PRevisionActivity  extends PNode{
 		for(Revision revision:mRevisions){
 			//PPath back = PPath.createRoundRectangle(0f, 0f, 10, 10, 0f, 0f);
 			PPath block = PPath.createRoundRectangle(0f, 0f, 10, 10, 5f, 5f);
+			block.setPickable(false);
 			block.setTransparency(getTransparency(revision));
 			block.setPaint(revision.getModifiedBy().getColor());
 			//back.setPaint(Color.WHITE);
