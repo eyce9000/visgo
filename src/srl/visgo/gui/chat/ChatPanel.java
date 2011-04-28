@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -60,6 +62,7 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		this.add(mCollaboratorListPanel, BorderLayout.NORTH);
 		Visgo.data.addGroupMessageListener(this);
 		mScroll.setAutoscrolls(true);
+		mScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 	}
 
 	@Override
@@ -87,6 +90,7 @@ public class ChatPanel extends JPanel implements GroupMessageListener,ActionList
 		mMessagesPanel.add(new MessagePanel(body,from));
 		mMessagesPanel.revalidate();
 		mScroll.revalidate();
+		
 	}
 
 	/**
